@@ -2,7 +2,7 @@
 
 - **Ngày:** 2026-09-11
 - **Trạng thái:** Chờ duyệt
-- **Phạm vi:** Tái cấu trúc `index.html` (1 file, ~309KB) thành trang tách file, render toàn bộ từ `data/trip.json`, kèm hệ animation theo scroll 2 lớp.
+- **Phạm vi:** Tái cấu trúc `index.html` (1 file, ~309KB) thành trang tách file, render toàn bộ từ `data/trip.json`, kèm animation: nội dung ngày hiện ra theo thời gian khi cuộn tới / đổi tab, hero và thanh tiến trình gắn theo cuộn (2 lớp A/B).
 
 ## 1. Bối cảnh
 
@@ -28,7 +28,7 @@ Trang giờ chạy trên GitHub Pages (https://huucao.github.io/dalat/) nên đ�
 2. Mọi số liệu và nhãn suy ra được (số ngày, số điểm, khung trống, khoảng giờ, thứ/ngày, buổi) do code tính.
 3. Code tách module rõ trách nhiệm: dữ liệu → model → view → controller.
 4. Giao diện tĩnh giữ nguyên như bản hiện tại.
-5. Animation phản ứng theo scroll: CSS scroll-driven khi trình duyệt hỗ trợ, IntersectionObserver + rAF khi không (mục 10).
+5. Animation: nội dung từng ngày hiện ra theo thời lượng cố định khi cuộn tới hoặc đổi tab (mọi trình duyệt); hero, bóng tabbar, thanh tiến trình gắn theo vị trí cuộn — CSS scroll-driven khi hỗ trợ, rAF khi không (mục 10).
 6. **Mobile-first:** điện thoại là môi trường xem chính, desktop vẫn đẹp; ảnh nét ở mọi màn hình mà điện thoại không tải thừa (mục 9.1).
 
 ## 3. Ngoài phạm vi
@@ -56,8 +56,8 @@ css/
   motion/
     keyframes.css           toàn bộ @keyframes
     load.css                animation vào trang của hero + tabs (mọi trình duyệt)
-    scroll-timeline.css     lớp A — @supports (animation-timeline: view())
-    reveal-fallback.css     lớp B — .no-scroll-timeline
+    scroll-timeline.css     lớp A — hero, bóng tabbar, thanh tiến trình theo cuộn (@supports)
+    reveal.css              reveal nội dung ngày theo thời gian (mọi trình duyệt)
 js/
   main.js                   điểm vào: fetch JSON → buildTrip → render → start controllers
   model/trip.js             buildTrip(raw): kiểm tra + chuẩn hóa + tính số liệu (thuần, không DOM)
@@ -74,7 +74,7 @@ js/
   views/error.js
   controllers/tabs.js       chuyển tab, bàn phím
   controllers/status.js     vòng tick: is-now / is-past / cập nhật countdown
-  controllers/reveal.js     lớp B: IntersectionObserver reveal
+  controllers/reveal.js     reveal theo IntersectionObserver, chạy lại khi đổi tab
   controllers/scroll-fx.js  lớp B: parallax hero + progress bằng rAF
 tests/
   time.test.js
@@ -223,7 +223,8 @@ Giữ nguyên nội dung hiển thị cũ, chỉ thay phần viết cứng:
 - `<div role="tablist">` gồm `Tất cả` + mỗi ngày một `<button role="tab" id="tab-day-N" aria-selected>`.
 - Chọn tab: đặt `aria-selected`, `tabindex` (roving), bật `hidden` cho panel không thuộc tab. `Tất cả` hiện mọi panel.
 - Phím ← → Home End di chuyển giữa các tab.
-- API: `createTabs(tablist, panels) → { select(id) }`, mặc định `all`.
+- API: `createTabs(tablist, panels, { onChange }) → { select(id) }`, mặc định `all`.
+- Khi người dùng chọn tab: đưa ngày được chọn lên ngay dưới thanh tab nếu đang cuộn quá nó, rồi `onChange(panelsĐangHiện)` để chạy lại reveal (mục 10.5).
 
 ### Status
 
@@ -238,7 +239,7 @@ Xem mục 10.5.
 
 ## 9. CSS và responsive
 
-- Tách theo bảng ở mục 4, nạp bằng nhiều `<link>` (không `@import`) theo thứ tự: `tokens → base → hero → tabs → timeline → countdown → motion/keyframes → motion/load → motion/scroll-timeline → motion/reveal-fallback`. Thứ tự này có ý nghĩa: rule lớp A đứng sau `load.css` nên ghi đè `animation` trên phần tử dùng chung.
+- Tách theo bảng ở mục 4, nạp bằng nhiều `<link>` (không `@import`) theo thứ tự: `tokens → base → hero → tabs → timeline → countdown → motion/keyframes → motion/load → motion/scroll-timeline → motion/reveal`. Thứ tự này có ý nghĩa: rule lớp A đứng sau `load.css` nên ghi đè `animation` trên phần tử dùng chung.
 - Bỏ: `.day-radio`, mọi selector `#day-N:checked`, `.visit-toggle`, `.visit`, `.card-footer .visit:last-child`, 12 rule `.item:nth-child(N)` delay, keyframes `rise-left`, `dot-in`, `line-in`.
 - Panel ẩn bằng thuộc tính `hidden`.
 - `.day { overflow: hidden; overflow: clip }` — `clip` để không tạo scroll container, `hidden` là fallback (xem lỗi 6 và 13, mục 10.7).
@@ -263,14 +264,17 @@ Xem mục 10.5.
 
 ## 10. Animation
 
-### 10.1 Hai lớp và quy tắc chọn
+### 10.1 Ba cơ chế
 
-| Lớp | Kỹ thuật | Dành cho |
-|---|---|---|
-| **A** | CSS scroll-driven: `animation-timeline: scroll()` / `view()`. Chạy trên compositor, nội suy theo vị trí cuộn | Chrome/Edge 115+, Safari/iOS 26+ |
-| **B** | IntersectionObserver (reveal một chiều) + rAF (parallax, progress) | Trình duyệt không hỗ trợ lớp A: Safari 15–18, Firefox, WebView cũ |
+| Cơ chế | Phần tử | Kỹ thuật | Trình duyệt |
+|---|---|---|---|
+| **Vào trang** | chữ + chip hero, thanh tab, panel khi đổi tab | keyframes theo thời gian (mục 10.4) | mọi trình duyệt |
+| **Reveal** | tiêu đề ngày, mốc, chấm, đường dọc | IntersectionObserver gắn `.in` → keyframes theo thời gian, chạy lại khi đổi tab (mục 10.5) | mọi trình duyệt |
+| **Theo cuộn** | ảnh hero, lớp phủ, chữ hero, thumbnail, bóng tabbar, thanh tiến trình | lớp A: `animation-timeline: scroll()` (mục 10.3); lớp B: rAF + `scrollFx()` (mục 10.5) | A: Chrome/Edge 115+, Safari 26+ · B: còn lại |
 
-Script inline đặt **cuối `<head>`**, chạy trước lần paint đầu:
+Nội dung ngày **không** gắn theo cuộn. Animation gắn vị trí cuộn không có thời lượng: vuốt nhanh là lướt qua, đổi tab thì mốc đã nằm sẵn trong khung nhìn nên không có hiệu ứng, còn kéo dài range thì kẹt ở cuối trang (lỗi 14–15). Hero, thanh tiến trình và bóng tabbar vẫn gắn theo cuộn vì chúng mô tả chính vị trí cuộn.
+
+Chọn lớp A/B cho hiệu ứng theo cuộn bằng script inline đặt **cuối `<head>`**, chạy trước lần paint đầu:
 
 ```html
 <script>
@@ -281,128 +285,151 @@ Script inline đặt **cuối `<head>`**, chạy trước lần paint đầu:
 ```
 
 - Hỗ trợ → không có class → lớp A (CSS trong `@supports`) tự chạy.
-- Không hỗ trợ → `html.no-scroll-timeline` → bật lớp B.
-- Đổi tên class từ `js` (bản mô tả gốc) sang `no-scroll-timeline`: ở kiến trúc mới mọi người xem đều có JS, tên `js` gây hiểu nhầm. Không dùng biến global `window.__hasTimeline`; module đọc class qua `hasScrollTimeline()` trong `lib/motion.js`.
+- Không hỗ trợ → `html.no-scroll-timeline` → `startScrollFx` chạy lớp B.
+- Tên class `no-scroll-timeline` thay cho `js` của bản mô tả gốc: mọi người xem đều có JS nên `js` gây hiểu nhầm. Module đọc class qua `hasScrollTimeline()` trong `lib/motion.js`, không dùng biến global.
 - Phải nằm trong `<head>`: đặt cuối `<body>` thì CSS kịp paint vài frame với lựa chọn sai rồi mới đổi, thấy như một cú giật.
 
 ### 10.2 Keyframes (`motion/keyframes.css`)
 
 ```css
-/* mốc lẻ và chẵn bay vào từ hai phía, có chiều sâu 3D */
+/* ---------- ENTRANCE (reveal.css) ---------- */
+/* Played on a fixed duration when day content reaches the viewport. */
+
+/* Odd and even entries swing in from opposite sides, with 3D depth. */
 @keyframes swing-left {
   from { opacity: 0; transform: translate3d(-46px, 34px, -90px) rotateY(14deg) rotateZ(-2deg); }
-  to   { opacity: 1; transform: none; }
+  to { opacity: 1; transform: none; }
 }
+
 @keyframes swing-right {
   from { opacity: 0; transform: translate3d(46px, 34px, -90px) rotateY(-14deg) rotateZ(2deg); }
-  to   { opacity: 1; transform: none; }
+  to { opacity: 1; transform: none; }
 }
 
-/* tiêu đề ngày */
 @keyframes head-in {
   from { opacity: 0; transform: translateY(26px) scale(.94); }
-  to   { opacity: 1; transform: none; }
+  to { opacity: 1; transform: none; }
 }
 
-/* chấm timeline: nảy quá đà rồi co lại, kèm vòng sáng lan ra.
-   `to` KHÔNG khai báo box-shadow: keyframe cuối tự nội suy về box-shadow
-   thật của phần tử, nên vòng sáng của .is-now / .is-past vẫn hiện (lỗi 7). */
+/* Overshoots, settles, and throws a ring of light. `to` has no box-shadow on
+   purpose: the last keyframe lands on the dot's own shadow, so the .is-now /
+   .is-past rings never jump when the pop ends. */
 @keyframes pop {
-  from { opacity: 0; transform: scale(0);    box-shadow: 0 0 0 14px rgba(var(--accent-rgb), 0); }
-  60%  { opacity: 1; transform: scale(1.45); box-shadow: 0 0 0 7px  rgba(var(--accent-rgb), .28); }
-  to   { opacity: 1; transform: scale(1); }
+  from { opacity: 0; transform: scale(0); box-shadow: 0 0 0 14px rgba(var(--accent-rgb), 0); }
+  60% { opacity: 1; transform: scale(1.45); box-shadow: 0 0 0 7px rgba(var(--accent-rgb), .28); }
+  to { opacity: 1; transform: scale(1); }
 }
 
-/* đường kẻ dọc tự vẽ từ trên xuống */
 @keyframes draw {
   from { transform: scaleY(0); }
-  to   { transform: scaleY(1); }
+  to { transform: scaleY(1); }
 }
 
-/* hero: zoom ra dần + trôi xuống.
-   Điều kiện không hở mép: scale × |translateY| ≤ (scale − 1) / 2.
-   Đầu: 1.3 × 5% = 6.5% ≤ 15%. Cuối: 1.12 × 5% = 5.6% ≤ 6% (lỗi 8). */
+/* ---------- SCROLL-LINKED (scroll-timeline.css) ---------- */
+
+/* Zoom out and drift down. No edge is uncovered while
+   scale × |translateY| ≤ (scale − 1) / 2: start 1.3 × 5% = 6.5% ≤ 15%,
+   end 1.12 × 5% = 5.6% ≤ 6%. Mirrored by heroParallax() in js/lib/motion.js. */
 @keyframes hero-parallax {
-  from { transform: scale(1.3)  translateY(-5%); }
-  to   { transform: scale(1.12) translateY(5%); }
+  from { transform: scale(1.3) translateY(-5%); }
+  to { transform: scale(1.12) translateY(5%); }
 }
 
-/* lớp phủ tối dần. Không dùng opacity > 1 — bị kẹp về 1 (lỗi 1). */
+/* Opacity above 1 is clamped, so darkening starts lighter instead. */
 @keyframes hero-darken {
   from { opacity: .85; }
-  to   { opacity: 1; }
+  to { opacity: 1; }
 }
 
-/* chữ trên hero bay lên, thu nhỏ và nhoè dần */
 @keyframes hero-lift {
   from { opacity: 1; transform: none; filter: blur(0); }
-  to   { opacity: 0; transform: translateY(-48px) scale(.92); filter: blur(5px); }
+  to { opacity: 0; transform: translateY(-48px) scale(.92); filter: blur(5px); }
 }
 
-/* 2 ảnh thumbnail văng chéo ra */
 @keyframes thumbs-out {
   from { opacity: 1; transform: none; }
-  to   { opacity: 0; transform: translate3d(60px, -20px, 0) rotate(7deg); }
+  to { opacity: 0; transform: translate3d(60px, -20px, 0) rotate(7deg); }
 }
 
-/* thanh tab dính: đổ bóng khi trang bắt đầu cuộn */
 @keyframes bar-settle {
   from { box-shadow: 0 0 0 rgba(0, 0, 0, 0); }
-  to   { box-shadow: 0 6px 18px rgba(16, 30, 25, .12); }
+  to { box-shadow: 0 6px 18px rgba(16, 30, 25, .12); }
 }
 
-/* thanh tiến trình đọc */
 @keyframes progress-grow {
   from { transform: scaleX(0); }
-  to   { transform: scaleX(1); }
+  to { transform: scaleX(1); }
 }
 
-/* vào trang (mục 10.4) — chỉ `from`, fill-mode backwards */
-@keyframes rise       { from { opacity: 0; transform: translateY(26px); } }
+/* ---------- LOAD (load.css) ---------- */
+/* `from` only, used with fill-mode backwards: the end state is the
+   element's normal style, so nothing can get stuck hidden. */
+
+@keyframes rise { from { opacity: 0; transform: translateY(26px); } }
 @keyframes rise-right { from { opacity: 0; transform: translate3d(34px, 20px, 0); } }
-@keyframes bg-in      { from { opacity: 0; transform: scale(1.22); } }
+@keyframes bg-in { from { opacity: 0; transform: scale(1.22); } }
+@keyframes fade { from { opacity: 0; transform: translateY(6px); } }
 ```
 
-So với bản mô tả gốc, chỉ đổi 3 chỗ: màu trong `pop` dùng token, `pop` bỏ `box-shadow` ở `to`, `hero-parallax` kết thúc ở `translateY(5%)` thay vì `6%`.
+So với bản mô tả gốc: màu trong `pop` dùng token, `pop` bỏ `box-shadow` ở `to`, `hero-parallax` kết thúc ở `translateY(5%)` thay vì `6%`. `swing-*`, `head-in`, `pop`, `draw` nay chạy theo thời gian (reveal) thay vì theo cuộn.
 
 ### 10.3 Lớp A — `motion/scroll-timeline.css`
 
 Mọi trạng thái ẩn đều nằm trong `@supports`. Trình duyệt không hiểu `animation-timeline` bỏ qua cả khối, nội dung không bao giờ kẹt ở `opacity: 0`.
 
 ```css
+/* Layer A: effects that describe the scroll position itself - hero, tab bar
+   shadow, reading progress. Every hidden starting state lives inside
+   @supports, so a browser without animation-timeline skips the whole block;
+   scroll-fx.js plays the same numbers there (scrollFx() in js/lib/motion.js).
+   Day content does not scrub with scroll - it would flash past on a quick
+   swipe and never play on a tab switch. See reveal.css. */
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
+    /* Resting style = each animation's starting frame. A page too short to
+       scroll (a short tab on a tall screen) has an inactive scroll timeline
+       and the animations stop applying; without these two lines the hero
+       would drop to its base zoom and overlay on that tab only. */
+    .hero-bg { transform: scale(1.3) translateY(-5%); }
+    .hero-overlay { opacity: .85; }
 
-    /* --- theo tiến trình cuộn của cả trang --- */
-    .progress     { animation: progress-grow linear both; animation-timeline: scroll(root block); }
-    .hero-bg      { animation: hero-parallax linear both; animation-timeline: scroll(root block); animation-range: 0 480px; }
-    .hero-overlay { animation: hero-darken   linear both; animation-timeline: scroll(root block); animation-range: 0 420px; }
-    .hero-inner   { animation: hero-lift     linear both; animation-timeline: scroll(root block); animation-range: 40px 360px; }
-    .hero-thumbs  { animation: thumbs-out    linear both; animation-timeline: scroll(root block); animation-range: 0 300px; }
-    .tabbar       { animation: bar-settle    linear both; animation-timeline: scroll(root block); animation-range: 120px 220px; }
+    .progress {
+      animation: progress-grow linear both;
+      animation-timeline: scroll(root block);
+    }
 
-    /* --- theo vị trí phần tử trong khung nhìn --- */
-    main      { perspective: 1100px; }
-    .timeline { perspective: 900px; }
+    .hero-bg {
+      animation: hero-parallax linear both;
+      animation-timeline: scroll(root block);
+      animation-range: 0 480px;
+    }
 
-    /* mọi range kết thúc ở `entry 100%` — mốc luôn tới được (lỗi 14) */
-    .day-head             { animation: head-in     linear both; animation-timeline: view(); animation-range: entry 10% entry 100%; }
-    .item                 { view-timeline-name: --item; }
-    .item:nth-child(odd)  { animation: swing-left  linear both; animation-timeline: view(); animation-range: entry 5% entry 100%; }
-    .item:nth-child(even) { animation: swing-right linear both; animation-timeline: view(); animation-range: entry 5% entry 100%; }
-    /* chấm cao 10px nên dùng timeline của .item, bắt đầu muộn hơn để nảy trễ một nhịp */
-    .dot                  { animation: pop         linear both; animation-timeline: --item; animation-range: entry 40% entry 100%; }
-    .timeline::before {
-      transform-origin: top center;
-      animation: draw linear both;
-      animation-timeline: view();
-      animation-range: entry 10% entry 100%;
+    .hero-overlay {
+      animation: hero-darken linear both;
+      animation-timeline: scroll(root block);
+      animation-range: 0 420px;
+    }
+
+    .hero-inner {
+      animation: hero-lift linear both;
+      animation-timeline: scroll(root block);
+      animation-range: 40px 360px;
+    }
+
+    .hero-thumbs {
+      animation: thumbs-out linear both;
+      animation-timeline: scroll(root block);
+      animation-range: 0 300px;
+    }
+
+    .tabbar {
+      animation: bar-settle linear both;
+      animation-timeline: scroll(root block);
+      animation-range: 120px 220px;
     }
   }
 }
 ```
-
-**Đọc `animation-range`:** với `view()`, hành trình của phần tử qua khung nhìn gồm các pha `entry` (đang đi vào), `contain`, `exit`, và `cover` (toàn bộ hành trình). `entry 5% entry 100%` = bắt đầu khi vừa nhú 5% của pha vào, kết thúc khi phần tử vừa lọt hẳn vào khung nhìn (phần tử cao hơn khung nhìn: khi mép trên chạm đỉnh). Mốc kết thúc luôn tới được, kể cả với ngày cuối nằm sát cuối trang; kết thúc bằng `cover …` thì không (lỗi 14).
 
 | Phần tử | Timeline | Range | Hiệu ứng |
 |---|---|---|---|
@@ -412,95 +439,123 @@ Mọi trạng thái ẩn đều nằm trong `@supports`. Trình duyệt không h
 | `.hero-inner` | scroll root | 40 → 360px | bay lên + blur 5px |
 | `.hero-thumbs` | scroll root | 0 → 300px | văng chéo + xoay 7° |
 | `.tabbar` | scroll root | 120 → 220px | hiện bóng đổ |
-| `.day-head` | view | entry 10% → entry 100% | trượt lên + scale |
-| `.item` lẻ/chẵn | view | entry 5% → entry 100% | swing 3D trái/phải |
-| `.dot` | `--item` (timeline của `.item` chứa nó) | entry 40% → entry 100% | nảy + vòng sáng, trễ hơn thẻ một nhịp |
-| `.timeline::before` | view | entry 10% → entry 100% | vẽ đường dọc |
 
-**Tab:** chuyển tab không phát lại animation. Timeline `view()` tự tính theo vị trí mới của phần tử trong panel vừa mở.
+Cuộn ngược thì các hiệu ứng này chạy ngược.
 
 ### 10.4 Animation vào trang — `motion/load.css`
 
-Thay cho lớp C cũ, chỉ giữ phần hero + tabs để trang không đứng im lúc mở. Chạy ở cả lớp A và B.
+Chạy ở mọi trình duyệt.
 
 ```css
+/* Entrance when the page opens, in every browser. Rules in
+   scroll-timeline.css load later and take over .hero-bg and .hero-thumbs
+   where scroll-driven animation is supported. */
 @media (prefers-reduced-motion: no-preference) {
-  .hero-bg     { animation: bg-in 1.1s cubic-bezier(.22, .9, .3, 1) backwards; }
-  .eyebrow, h1, .subtitle, .chips { animation: rise .75s cubic-bezier(.22, .9, .3, 1) backwards; }
-  .eyebrow     { animation-delay: .04s; }
-  h1           { animation-delay: .09s; }
-  .subtitle    { animation-delay: .14s; }
-  .chips       { animation-delay: .19s; }
-  .hero-thumbs { animation: rise-right .8s cubic-bezier(.22, .9, .3, 1) .24s backwards; }
-  .tabs        { animation: rise .6s cubic-bezier(.22, .9, .3, 1) .28s backwards; }
+  .hero-bg { animation: bg-in 1.1s var(--ease-out) backwards; }
+
+  .eyebrow,
+  h1,
+  .subtitle,
+  .chips {
+    animation: rise .75s var(--ease-out) backwards;
+  }
+
+  .eyebrow { animation-delay: .04s; }
+  h1 { animation-delay: .09s; }
+  .subtitle { animation-delay: .14s; }
+  .chips { animation-delay: .19s; }
+
+  .hero-thumbs { animation: rise-right .8s var(--ease-out) .24s backwards; }
+
+  .tabs { animation: rise .6s var(--ease-out) .28s backwards; }
+
+  /* A panel coming out of [hidden] replays this on every tab switch; its
+     entries then play their own entrance (reveal.css). */
+  .panel { animation: fade .35s var(--ease-out) backwards; }
 }
 ```
 
-- Ở lớp A, rule trong `scroll-timeline.css` nạp sau nên thay `animation` của `.hero-bg` và `.hero-thumbs` bằng bản theo scroll. Hai phần tử này không có hiệu ứng vào trang ở lớp A (chấp nhận).
+- Ở lớp A, rule trong `scroll-timeline.css` nạp sau nên thay `animation` của `.hero-bg` và `.hero-thumbs` bằng bản theo cuộn; hai phần tử này không có hiệu ứng vào trang ở lớp A (chấp nhận).
 - `.eyebrow`, `h1`, `.subtitle`, `.chips` là con của `.hero-inner` nên chạy chồng được với `hero-lift`.
 - Mọi keyframe ở đây chỉ khai báo `from` + `backwards`: trạng thái cuối chính là style bình thường.
 
-### 10.5 Lớp B — IntersectionObserver + rAF
+### 10.5 Reveal và lớp B theo cuộn
 
-#### CSS — `motion/reveal-fallback.css`
-
-Cả khối nằm trong `@media (prefers-reduced-motion: no-preference)`, **không** dùng khối `reduce` ghi đè như bản gốc (lỗi 9).
+#### Reveal — `motion/reveal.css` (mọi trình duyệt)
 
 ```css
+/* Entrance of each day's content, in every browser. startReveal() marks
+   targets .reveal and adds .in once they reach the viewport - and again
+   after a tab switch - so every entrance runs for a fixed duration however
+   fast the page is scrolled. Without .reveal (no JS) or with reduced motion,
+   nothing is hidden. Hidden states use opacity only; offsets live in the
+   keyframes, so no specificity fight can leave an entry off to the side. */
 @media (prefers-reduced-motion: no-preference) {
-  .no-scroll-timeline .reveal {
-    opacity: 0;
-    transform: translateY(30px);
-    transition: opacity .65s cubic-bezier(.22, .9, .3, 1),
-                transform .65s cubic-bezier(.22, .9, .3, 1);
+  .timeline { perspective: 900px; }
+
+  /* Entries that reach the viewport together cascade (see startReveal). */
+  .reveal { --reveal-delay: calc(min(var(--reveal-order, 0), 8) * var(--reveal-stagger)); }
+
+  .reveal:not(.in) { opacity: 0; }
+
+  .day-head.reveal.in {
+    animation: head-in var(--reveal-duration) var(--ease-out) var(--reveal-delay) backwards;
   }
 
-  .no-scroll-timeline .item.reveal:nth-child(odd)  { transform: translate3d(-38px, 22px, 0); }
-  .no-scroll-timeline .item.reveal:nth-child(even) { transform: translate3d(38px, 22px, 0); }
-
-  /* so le 40ms theo thứ tự trong ngày, tối đa .2s — thay 5 rule nth-child cứng */
-  .no-scroll-timeline .item.reveal { transition-delay: calc(min(var(--i, 0), 5) * 40ms); }
-
-  /* phải thắng specificity (0,4,0) của 2 rule :nth-child ở trên (lỗi 5) */
-  .no-scroll-timeline .reveal.in,
-  .no-scroll-timeline .item.reveal.in:nth-child(odd),
-  .no-scroll-timeline .item.reveal.in:nth-child(even) {
-    opacity: 1;
-    transform: none;
+  .item.reveal.in {
+    animation: swing-left var(--reveal-duration) var(--ease-out) var(--reveal-delay) backwards;
   }
 
-  /* chấm nảy trễ hơn thân mốc một nhịp */
-  .no-scroll-timeline .item.reveal .dot {
-    transform: scale(0);
-    transition: transform .5s cubic-bezier(.34, 1.56, .64, 1) .12s;
-  }
-  .no-scroll-timeline .item.reveal.in .dot { transform: none; }
+  .item.reveal.in:nth-child(even) { animation-name: swing-right; }
 
-  /* đường dọc vẽ khi tiêu đề ngày phía trên đã hiện — sibling selector,
-     không cần observe thêm phần tử */
-  .no-scroll-timeline .timeline::before {
-    transform: scaleY(0);
-    transform-origin: top center;
-    transition: transform 1.3s cubic-bezier(.22, .9, .3, 1) .1s;
+  /* The dot pops a beat after its card lands. */
+  .item.reveal:not(.in) .dot { transform: scale(0); }
+
+  .item.reveal.in .dot {
+    animation: pop .6s var(--ease-out) calc(var(--reveal-delay) + 250ms) backwards;
   }
-  .no-scroll-timeline .day-head.reveal.in + .timeline::before { transform: scaleY(1); }
+
+  /* The rail draws once the day title above it is in. The rail is the
+     title's sibling, not its child, so it cannot inherit --reveal-delay. */
+  .day-head.reveal + .timeline::before { transform-origin: top center; }
+  .day-head.reveal:not(.in) + .timeline::before { transform: scaleY(0); }
+
+  .day-head.reveal.in + .timeline::before {
+    animation: draw 1.4s var(--ease-out) 100ms backwards;
+  }
 }
 ```
 
-#### JS — `controllers/reveal.js`
+| Phần tử | Keyframes | Thời lượng | Delay |
+|---|---|---|---|
+| `.day-head` | `head-in` | `--reveal-duration` (0.8s) | thứ tự trong đợt × `--reveal-stagger` (90ms), tối đa 8 bậc |
+| `.item` lẻ / chẵn | `swing-left` / `swing-right` (3D, `perspective: 900px` trên `.timeline`) | 0.8s | như trên |
+| `.dot` | `pop` | 0.6s | delay của mốc + 250ms |
+| `.timeline::before` | `draw` | 1.4s | 100ms sau khi tiêu đề ngày có `.in` |
+
+- Token `--reveal-duration` và `--reveal-stagger` nằm trong `tokens.css`; chỉnh tốc độ ở một chỗ.
+- Trạng thái ẩn chỉ dùng `opacity` (và `scale(0)` cho chấm, `scaleY(0)` cho đường dọc); độ lệch, độ xoay nằm trong keyframes. Nhờ vậy không còn tranh chấp specificity kiểu lỗi 5.
+- Keyframes chạy với `backwards`: khi xong, phần tử trở về style thật (vòng sáng `.is-now` không bị che).
+
+#### Reveal — `controllers/reveal.js`
 
 ```
-startReveal(root) → void
+startReveal(root) → { replay(scope) }
 ```
 
-- Thoát ngay nếu `hasScrollTimeline()`.
-- Gắn `.reveal` cho mọi `.day-head, .item` trong `root`.
-- Có `IntersectionObserver`: observe với `{ rootMargin: '0px 0px -10% 0px', threshold: 0.1 }`; phần tử giao nhau → thêm `.in` rồi `unobserve` (một chiều, không reveal lại).
-- Không có `IntersectionObserver`: thêm `.in` cho tất cả ngay.
-- **Phải gọi đồng bộ ngay sau khi render**, cùng một task, trước lần paint kế tiếp. Nếu gọi trễ, nội dung hiện ra rồi mới bị ẩn (lỗi 12).
-- Tab: panel ẩn bằng `hidden` (`display: none`) thì không bao giờ giao với viewport, nên mốc trong panel chưa mở tự reveal đúng lúc bấm sang tab đó. Không cần xử lý thêm.
+- Gắn `.reveal` cho mọi `.day-head, .item` trong `root`. **Gọi đồng bộ ngay sau render**, cùng task, trước paint (lỗi 12).
+- `IntersectionObserver` với `{ rootMargin: '0px 0px -10% 0px', threshold: 0.1 }`. Mỗi callback: lấy các phần tử đang giao, sắp theo thứ tự DOM, gán `--reveal-order` = vị trí trong đợt, thêm `.in`, `unobserve`. Nhiều phần tử lọt vào cùng lúc (lúc tải, lúc đổi tab) thì so le; phần tử lọt vào lẻ khi đang cuộn thì chạy ngay.
+- Không có `IntersectionObserver`: thêm `.in` cho tất cả ngay, `replay` không làm gì.
+- `replay(scope)`: gỡ `.in` của các mục trong `scope` rồi observe lại → lần giao kế tiếp chạy lại hiệu ứng.
+- Panel ẩn bằng `hidden` không bao giờ giao với khung nhìn, nên mốc của tab chưa mở chờ tới khi tab được chọn.
 
-#### JS — `controllers/scroll-fx.js` + `lib/motion.js`
+#### Đổi tab — `controllers/tabs.js`
+
+- `createTabs(tablist, panels, { onChange })`. Chỉ khi **người dùng** chọn tab (click, phím): cuộn ngang tab vào tầm nhìn; nếu trang đang cuộn quá đầu ngày đầu tiên được hiện thì nhảy tức thì (`behavior: 'instant'`) để ngày đó bắt đầu cách thanh tab 12px; rồi gọi `onChange(panelsĐangHiện)`.
+- `main.js` nối `onChange` với `reveal.replay` cho từng panel đang hiện.
+- Chọn tab do chương trình (khởi tạo, tự nhảy tới ngày đang đi) không cuộn và không replay.
+
+#### Lớp B theo cuộn — `controllers/scroll-fx.js` + `lib/motion.js`
 
 ```
 startScrollFx({ bar, bg, inner, thumbs }) → void
@@ -509,7 +564,7 @@ scrollFx(y, viewportHeight, scrollHeight) → { bar, bg, inner, thumbs }   // th
 
 - Thoát ngay nếu `hasScrollTimeline()` **hoặc** `prefersReducedMotion()`. Inline style do JS gán không bị `@media (prefers-reduced-motion)` chặn, nên JS phải tự kiểm tra (lỗi 11).
 - Nghe `scroll` (`passive: true`) và `resize`; gom về tối đa 1 `requestAnimationFrame` mỗi frame; gọi 1 lần lúc khởi động.
-- `scrollFx` dùng **cùng range và cùng số** với lớp A để hai lớp nhìn giống nhau. Với `clamp01(x) = min(1, max(0, x))`:
+- `scrollFx` dùng **cùng range và cùng số** với lớp A. Với `clamp01(x) = min(1, max(0, x))`:
 
 | Đầu ra | Tiến trình | Style |
 |---|---|---|
@@ -518,7 +573,7 @@ scrollFx(y, viewportHeight, scrollHeight) → { bar, bg, inner, thumbs }   // th
 | `inner` | `l = clamp01((y − 40) / 320)` | `opacity: 1 − l`, `transform: translateY(−48l px) scale(1 − .08l)` (bỏ blur cho máy yếu) |
 | `thumbs` | `t = clamp01(y / 300)` | `opacity: 1 − t`, `transform: translate3d(60t px, −20t px, 0) rotate(7t deg)` |
 
-- Lớp B không làm `hero-overlay` tối dần và bóng đổ `.tabbar` (giữ như bản mô tả gốc).
+- Lớp B không làm `hero-overlay` tối dần và bóng đổ `.tabbar`.
 - Bỏ qua phần tử `null` (vd. không có `thumbs` trong JSON).
 
 ### 10.6 `.progress`
@@ -530,7 +585,7 @@ scrollFx(y, viewportHeight, scrollHeight) → { bar, bg, inner, thumbs }   // th
 
 ### 10.7 Các lỗi đã biết — không được lặp lại
 
-Lỗi 1–6 đã gặp khi dựng thật trên bản một file. Lỗi 7–12 phát hiện khi rà soát bản mô tả để đưa vào kiến trúc mới. Lỗi 13–14 phát hiện khi chạy kiểm thử Chrome headless.
+Lỗi 1–6 đã gặp khi dựng thật trên bản một file. Lỗi 7–12 phát hiện khi rà soát bản mô tả để đưa vào kiến trúc mới. Lỗi 13–15 phát hiện khi chạy kiểm thử Chrome headless và dùng thử. Lỗi 5, 7, 9, 14 thuộc cách làm cũ (reveal gắn theo cuộn / lớp B chỉ cho trình duyệt cũ), giữ lại để không lặp lại.
 
 1. **`opacity` > 1 không có tác dụng.** Giá trị bị kẹp về 1. Muốn tối dần: `from { opacity: .85 } to { opacity: 1 }`.
 2. **Animate `letter-spacing` gây reflow mỗi frame.** Với scroll-driven là reflow theo từng pixel cuộn, giật rõ trên điện thoại. Chỉ animate `transform`, `opacity`, `filter`, `box-shadow`.
@@ -546,24 +601,30 @@ Lỗi 1–6 đã gặp khi dựng thật trên bản một file. Lỗi 7–12 ph
 12. **Nội dung do JS render: khởi tạo reveal trễ sẽ chớp.** Gắn `.reveal` trong cùng task với render, trước paint.
 13. **`overflow: hidden` làm `view()` bám nhầm vào thẻ `.day`.** `view()` dùng scroll container gần nhất, và `overflow: hidden` vẫn là scroll container (cuộn được bằng JS). Tiến trình của mốc bị tính theo vị trí trong thẻ `.day` — vốn không bao giờ cuộn — nên các mốc cuối mỗi ngày kẹt giữa chừng animation, nghiêng và mờ vĩnh viễn. Sửa: `overflow: clip` (cắt tràn nhưng không tạo scroll container), đặt sau `overflow: hidden` làm fallback cho trình duyệt cũ (vốn chạy lớp B). Quy tắc chung: không đặt `overflow: hidden/auto/scroll` trên tổ tiên của phần tử dùng `view()`.
 14. **Range kết thúc bằng `cover …` không chạy hết ở cuối trang.** Các range gốc (`entry 5% cover 24%`, `entry 15% cover 32%`, `entry 25% cover 65%`) cần phần tử còn cuộn lên được khá xa sau khi đã lọt vào màn hình. Ngày cuối nằm sát cuối trang, hoặc cả trang ngắn khi chọn tab một ngày, không có quãng cuộn đó: đo trên Chrome ở mọi tab, thanh dọc ngày cuối chỉ vẽ 41–50%, chấm cuối kẹt ở 67–78% keyframe `pop` (đang phóng to), mốc cuối dừng ở 87–97%. Sửa: mọi range theo `view()` kết thúc ở `entry 100%`; chấm (cao 10px) dùng timeline có tên của `.item` (`view-timeline-name: --item`) với `entry 40% entry 100%` để vẫn nảy trễ một nhịp. Đánh đổi: cú swing ngắn hơn (≈ chiều cao thẻ thay vì ≈ 24% chiều cao màn hình).
+15. **Reveal gắn theo cuộn lướt qua quá nhanh và không chạy khi đổi tab.** Sau khi sửa lỗi 14, cú swing chỉ gói trong ≈ 105px cuộn: vuốt nhanh là gần như không thấy. Đổi tab thì mốc của ngày vừa mở đã nằm trong khung nhìn, tiến trình = 1, không có hiệu ứng nào ngoài một cú fade 0.22s. Không thể kéo dài range vì lỗi 14. Sửa: nội dung ngày dùng reveal theo thời gian ở mọi trình duyệt (IntersectionObserver gắn `.in` → keyframes 0.8s, so le 90ms theo đợt), chạy lại khi người dùng đổi tab; chỉ hero, bóng tabbar, thanh tiến trình còn gắn theo cuộn.
+16. **Tab ngắn trên màn hình cao làm banner đổi hình.** Tab `Day 3` chỉ cao 923px (desktop) / 932px (điện thoại 430px). Màn hình cao hơn thế thì trang không cuộn được, `scroll()` timeline chuyển inactive (`currentTime = null`) và animation theo cuộn **ngừng áp dụng hẳn** — `fill-mode` không cứu được. Hero rơi về style gốc: ảnh `scale(1.04)` thay vì `scale(1.3) translateY(-5%)`, lớp phủ `opacity: 1` thay vì `.85`, nên chỉ tab đó có banner khác. Đo bằng Chrome headless 1440×1000 và 430×932. Sửa: trong khối lớp A, style gốc của mọi phần tử theo cuộn phải bằng khung đầu của animation (`.hero-bg`, `.hero-overlay` được đặt lại; `.hero-inner`, `.hero-thumbs`, `.tabbar`, `.progress` vốn đã trùng).
 
 ### 10.8 Nguyên tắc giữ xuyên suốt
 
-- Mọi trạng thái ẩn đều nằm sau một điều kiện: `@supports (animation-timeline: view())`, hoặc `.no-scroll-timeline .reveal` (class do JS gắn). Không điều kiện nào đúng thì trang hiện đầy đủ.
-- Keyframe vào trang chỉ khai báo `from` + `animation-fill-mode: backwards`.
+- Mọi trạng thái ẩn đều nằm sau một điều kiện: `.reveal:not(.in)` (class do JS gắn) hoặc `@supports (animation-timeline: view())`. Thiếu JS thì không gì bị ẩn.
+- Trạng thái ẩn của reveal chỉ dùng `opacity` / scale về 0; độ lệch và độ xoay nằm trong keyframes.
+- Keyframes chạy theo thời gian dùng `animation-fill-mode: backwards`: trạng thái cuối là style bình thường.
 - Chỉ animate `transform`, `opacity`, `filter`, `box-shadow`.
-- Mọi animation CSS bọc trong `@media (prefers-reduced-motion: no-preference)`; JS tự kiểm tra `prefersReducedMotion()`.
-- Số liệu hiệu ứng của lớp A (mục 10.3) và `scrollFx` (mục 10.5) phải khớp nhau; sửa một bên thì sửa bên kia.
+- Mọi animation CSS nằm trong `@media (prefers-reduced-motion: no-preference)`; JS tự kiểm tra `prefersReducedMotion()` trước khi gán inline style.
+- Nội dung ngày không gắn theo cuộn (lỗi 15); không đặt `overflow: hidden/auto/scroll` lên tổ tiên của phần tử dùng `view()` (lỗi 13).
+- Số liệu lớp A (mục 10.3) và `scrollFx` (mục 10.5) phải khớp nhau; sửa một bên thì sửa bên kia.
+- Lớp A: style gốc của phần tử theo cuộn = khung đầu của animation, vì trang không cuộn được thì timeline inactive và animation không áp dụng (lỗi 16).
+- Tốc độ reveal chỉnh qua token `--reveal-duration`, `--reveal-stagger`.
 
 ### 10.9 Hỗ trợ trình duyệt
 
-| Môi trường | Lớp | Kết quả |
+| Môi trường | Theo cuộn | Vào trang + reveal |
 |---|---|---|
-| Chrome / Edge 115+ (desktop, Android) | A | Đầy đủ, nội suy theo vị trí cuộn |
+| Chrome / Edge 115+ (desktop, Android) | A | Đầy đủ |
 | Safari / iOS 26+ | A | Đầy đủ |
-| Safari / iOS 15–18 | B | Reveal theo scroll + parallax, progress bằng rAF |
-| Mở link trong trình duyệt in-app Zalo | A hoặc B | Tùy phiên bản WebView (iOS dùng engine Safari của máy, Android dùng Chrome WebView); tự phát hiện |
-| Firefox | B | Reveal theo scroll; tự chuyển sang A khi Firefox hỗ trợ `animation-timeline` |
+| Safari / iOS 15–18 | B | Đầy đủ |
+| Mở link trong trình duyệt in-app Zalo | A hoặc B (tự phát hiện theo WebView) | Đầy đủ |
+| Firefox | B (tự chuyển A khi hỗ trợ) | Đầy đủ |
 | iOS Quick Look / mở file đính kèm / `file://` | — | Không render (cần JS + HTTP). Gửi link GitHub Pages |
 
 ## 11. Luồng khởi động
@@ -572,7 +633,7 @@ Lỗi 1–6 đã gặp khi dựng thật trên bản một file. Lỗi 7–12 ph
 2. `main.js`: `fetch('data/trip.json')` (đường dẫn tương đối, chạy được dưới `/dalat/`).
 3. `buildTrip(raw)`.
 4. Render hero, tabs, countdown, các panel ngày, footer vào vùng mount của `index.html`.
-5. Cùng task: `startReveal(main)`, `startScrollFx({...})`, `createTabs(...)`, `startStatus(...)`.
+5. Cùng task: `const reveal = startReveal(main)`, `startScrollFx({...})`, `createTabs(..., { onChange: panels → reveal.replay })`, `startStatus(...)`.
 6. Lỗi ở bước 2–3 → `console.error(err)` + `renderError`.
 
 `index.html` có `<noscript>` báo cần bật JavaScript và mở bằng link.
@@ -592,9 +653,11 @@ Lỗi 1–6 đã gặp khi dựng thật trên bản một file. Lỗi 7–12 ph
 
 - So với bản cũ trên https://huucao.github.io/dalat/: hero, 4 tab, panel đếm ngược, mobile ≤ 760px.
 - Giả lập thời gian `?now=2026-10-16T12:00:00%2B07:00`: trạng thái live, `.is-now` (vòng sáng quanh chấm vẫn hiện sau `pop`), `.is-past`, tự nhảy tab; `?now=2026-10-19T00:00:00%2B07:00`: trạng thái done.
-- **Lớp A** (Chrome): cuộn chậm qua hero — parallax, chữ bay lên + blur, thumbs văng ra, bóng tabbar, progress; cuộn tới 480px+ không hở dải ở mép trên hero; từng mốc swing vào theo vị trí cuộn, cuộn ngược thì chạy ngược.
-- **Không kẹt ở cuối trang** (lớp A, iPhone và desktop, từng tab `Tất cả` / `Day 1…3`): cuộn tới cuối, mọi animation theo `view()` có `getComputedTiming().progress = 1`.
-- **Lớp B**: Firefox, hoặc Chrome với `CSS.supports` giả lập bằng cách tạm thêm class `no-scroll-timeline` ở `<head>` script. Mốc reveal một lần khi cuộn tới; mốc lẻ/chẵn về đúng vị trí (không kẹt 38px); đường dọc vẽ sau tiêu đề ngày; chuyển tab thì mốc của ngày mới reveal; parallax + progress chạy.
+- **Lớp A** (Chrome): cuộn chậm qua hero — parallax, chữ bay lên + blur, thumbs văng ra, bóng tabbar, progress; cuộn tới 480px+ không hở dải ở mép trên hero.
+- **Reveal** (cả hai lớp): mốc bay vào trong 0.8s khi cuộn tới, các mốc cùng lúc so le 90ms, chấm nảy sau thẻ (0.6s), đường dọc vẽ sau tiêu đề (1.4s).
+- **Đổi tab** (cả hai lớp): đang cuộn sâu mà chọn ngày khác thì ngày đó bắt đầu ngay dưới thanh tab và mốc chạy lại hiệu ứng.
+- **Không còn gì ẩn** (iPhone và desktop, từng tab `Tất cả` / `Day 1…3`): cuộn hết trang rồi chờ, mọi `.reveal` có `.in` và opacity 1, mọi đường dọc vẽ đủ.
+- **Lớp B**: Chrome với `CSS.supports` giả lập trả `false` và `scroll-timeline.css` bị chặn — parallax + progress chạy bằng inline style, hero không hở mép.
 - DevTools → Rendering → `prefers-reduced-motion: reduce`, cả lớp A và B: không có animation, không có nội dung bị ẩn, đường dọc giữ độ mờ `.28`, hero không parallax.
 - **Mobile-first** — Chrome headless điều khiển qua DevTools Protocol (script tạm trong scratchpad, không commit), giả lập iPhone 390×844 DPR 3 và desktop 1440×900 DPR 2:
   - `.hero-bg.currentSrc` lần lượt kết thúc bằng `hero-1600.jpg` / `hero-2560.jpg`.

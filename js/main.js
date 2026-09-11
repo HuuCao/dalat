@@ -39,7 +39,7 @@ async function start() {
     const view = mount(app, trip);
 
     // Same task as mount(), before the next paint (see startReveal).
-    startReveal(view.main);
+    const reveal = startReveal(view.main);
     startScrollFx({
       bar: document.querySelector('.progress'),
       bg: view.hero.querySelector('.hero-bg'),
@@ -47,7 +47,9 @@ async function start() {
       thumbs: view.hero.querySelector('.hero-thumbs'),
     });
 
-    const tabs = createTabs(view.tabbar.querySelector('[role="tablist"]'), view.panels);
+    const tabs = createTabs(view.tabbar.querySelector('[role="tablist"]'), view.panels, {
+      onChange: (shown) => shown.forEach((panel) => reveal.replay(panel)),
+    });
     startStatus({ trip, root: view.main, countdown: view.countdown, tabs, clock: createClock(window.location.search) });
   } catch (error) {
     console.error(error);
