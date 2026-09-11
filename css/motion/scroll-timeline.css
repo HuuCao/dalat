@@ -1,0 +1,91 @@
+/* Layer A: CSS scroll-driven animation. Every hidden starting state lives
+   inside @supports, so a browser without animation-timeline skips the whole
+   block and renders the page complete. Numbers are mirrored by scrollFx()
+   in js/lib/motion.js. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+
+    /* --- progress of the whole page --- */
+    .progress {
+      animation: progress-grow linear both;
+      animation-timeline: scroll(root block);
+    }
+
+    .hero-bg {
+      animation: hero-parallax linear both;
+      animation-timeline: scroll(root block);
+      animation-range: 0 480px;
+    }
+
+    .hero-overlay {
+      animation: hero-darken linear both;
+      animation-timeline: scroll(root block);
+      animation-range: 0 420px;
+    }
+
+    .hero-inner {
+      animation: hero-lift linear both;
+      animation-timeline: scroll(root block);
+      animation-range: 40px 360px;
+    }
+
+    .hero-thumbs {
+      animation: thumbs-out linear both;
+      animation-timeline: scroll(root block);
+      animation-range: 0 300px;
+    }
+
+    .tabbar {
+      animation: bar-settle linear both;
+      animation-timeline: scroll(root block);
+      animation-range: 120px 220px;
+    }
+
+    /* --- position of each element in the viewport --- */
+    /* Every range ends at `entry 100%`: the moment the element is fully on
+       screen (or, if taller than the screen, fills it). That point is always
+       reachable, even for the last day at the bottom of a short page. A
+       `cover …` end needs scroll room below that the page may not have, and
+       leaves the element frozen mid-animation. */
+    main { perspective: 1100px; }
+    .timeline { perspective: 900px; }
+
+    /* Never animate .day itself: it is taller than the screen, so view()
+       would leave it half-faded on load. */
+    .day-head {
+      animation: head-in linear both;
+      animation-timeline: view();
+      animation-range: entry 10% entry 100%;
+    }
+
+    .item { view-timeline-name: --item; }
+
+    .item:nth-child(odd) {
+      animation: swing-left linear both;
+      animation-timeline: view();
+      animation-range: entry 5% entry 100%;
+    }
+
+    .item:nth-child(even) {
+      animation: swing-right linear both;
+      animation-timeline: view();
+      animation-range: entry 5% entry 100%;
+    }
+
+    /* The dot is only 10px tall, so its own view() would pop within a few
+       pixels of scroll. It follows its entry's timeline instead, starting
+       later so it still lands a beat after the card. */
+    .dot {
+      animation: pop linear both;
+      animation-timeline: --item;
+      animation-range: entry 40% entry 100%;
+    }
+
+    .timeline::before {
+      transform-origin: top center;
+      animation: draw linear both;
+      animation-timeline: view();
+      animation-range: entry 10% entry 100%;
+    }
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "timezone": "+07:00",
+  "hero": {
+    "eyebrow": "✦ Travel plan · Đà Lạt",
+    "title": "Đà Lạt",
+    "subtitle": "Đà Lạt {days} ngày {nights} đêm — Let's go",
+    "chips": ["🌿 Nature", "☕ Chill", "📸 Check-in"],
+    "image": { "src": "assets/img/hero-{w}.jpg", "widths": [800, 1600, 2560] },
+    "thumbs": [
+      { "src": "assets/img/thumb-a-{w}.jpg", "widths": [240, 480] },
+      { "src": "assets/img/thumb-b-{w}.jpg", "widths": [240, 480] }
+    ]
+  },
+  "days": [
+    {
+      "date": "2026-10-16",
+      "icon": "🌿",
+      "note": "Sáng → Trưa → Chiều → Tối",
+      "items": [
+        { "start": "07:00", "end": "09:00", "icon": "🍃", "title": "Đồi chè Cầu Đất", "tag": "Nature", "map": "Đồi chè Cầu Đất Đà Lạt" },
+        { "start": "09:15", "end": "10:30", "icon": "🌸", "title": "Cánh đồng hoa / Hidden spot", "tag": "Check-in", "map": "cánh đồng hoa gần đồi chè Cầu Đất Đà Lạt" },
+        { "start": "11:00", "end": "12:15", "icon": "🍗", "title": "Gà nướng + cơm lam", "tag": "Lunch", "map": "gà nướng cơm lam gần đồi chè Cầu Đất Đà Lạt" },
+        { "start": "12:45", "end": "14:00", "icon": "🐈", "title": "Trại Mèo Mướp", "tag": "Cute spot", "map": "Trại Mèo Mướp Đà Lạt" },
+        { "start": "14:15", "end": "16:00", "icon": "☕", "title": "Phong Miên quán — forest slow café", "tag": "Coffee", "map": "Phong Miên quán forest slow café Đà Lạt" },
+        { "start": "16:30", "end": "17:45", "icon": "🌫️", "title": "Dốc Sương Nguyệt Ánh", "tag": "Sunset", "map": "Dốc Sương Nguyệt Ánh Đà Lạt" },
+        { "start": "18:00", "end": "19:00", "icon": "📡", "title": "Tháp Vinaphone Đà Lạt", "tag": "Check-in", "map": "Tháp Vinaphone Đà Lạt" },
+        { "start": "19:30", "end": "21:00", "icon": "🍜", "title": "Ăn tối — Chưa chọn", "empty": true }
+      ]
+    },
+    {
+      "date": "2026-10-17",
+      "icon": "☁️",
+      "note": "Lịch trình cần hoàn thiện",
+      "items": [
+        { "start": "08:00", "end": "10:00", "icon": "🌊", "title": "Floating Town", "tag": "Check-in", "map": "Floating Town Đà Lạt" },
+        { "start": "11:00", "end": "17:00", "icon": "📍", "title": "Chưa lên lịch", "empty": true },
+        { "start": "18:00", "end": "21:30", "icon": "🌙", "title": "Chưa lên lịch", "empty": true }
+      ]
+    },
+    {
+      "date": "2026-10-18",
+      "icon": "🌤️",
+      "note": "Ngày cuối",
+      "items": [
+        { "start": "08:00", "end": "10:30", "icon": "☕", "title": "Chưa lên lịch", "empty": true },
+        { "start": "11:00", "end": "13:00", "icon": "🚗", "title": "Go Home", "tag": "End trip" }
+      ]
+    }
+  ],
+  "footer": {
+    "title": "Đà Lạt Trip Plan · {days} Days · ✦",
+    "note": "Công ty TNHH Du lịch & Sự kiện Lần Này 4 Đứa (10/2026)"
+  }
+}

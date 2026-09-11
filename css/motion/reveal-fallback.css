@@ -1,0 +1,47 @@
+/* Layer B: browsers without scroll-driven animation. The inline script in
+   <head> adds .no-scroll-timeline and startReveal() adds .reveal / .in, so
+   without both nothing is ever hidden. Wrapped in no-preference instead of
+   a reduce override: an override would force the rail to opacity 1 and lose
+   to the :nth-child offsets. */
+@media (prefers-reduced-motion: no-preference) {
+  .no-scroll-timeline .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition:
+      opacity .65s var(--ease-out),
+      transform .65s var(--ease-out);
+  }
+
+  .no-scroll-timeline .item.reveal:nth-child(odd) { transform: translate3d(-38px, 22px, 0); }
+  .no-scroll-timeline .item.reveal:nth-child(even) { transform: translate3d(38px, 22px, 0); }
+
+  /* 40ms stagger by position in the day, capped at .2s. */
+  .no-scroll-timeline .item.reveal { transition-delay: calc(min(var(--i, 0), 5) * 40ms); }
+
+  /* Must beat the (0,4,0) :nth-child rules above, or odd and even entries
+     stay 38px off forever. */
+  .no-scroll-timeline .reveal.in,
+  .no-scroll-timeline .item.reveal.in:nth-child(odd),
+  .no-scroll-timeline .item.reveal.in:nth-child(even) {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* The dot pops a beat after its entry. */
+  .no-scroll-timeline .item.reveal .dot {
+    transform: scale(0);
+    transition: transform .5s var(--ease-spring) .12s;
+  }
+
+  .no-scroll-timeline .item.reveal.in .dot { transform: none; }
+
+  /* The rail draws once the day title above it is in - a sibling selector,
+     so no extra element needs observing. */
+  .no-scroll-timeline .timeline::before {
+    transform: scaleY(0);
+    transform-origin: top center;
+    transition: transform 1.3s var(--ease-out) .1s;
+  }
+
+  .no-scroll-timeline .day-head.reveal.in + .timeline::before { transform: scaleY(1); }
+}

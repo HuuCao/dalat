@@ -1,0 +1,9 @@
+{
+  "name": "dalat-trip-plan",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "dev": "npx --yes serve ."
+  }
+}

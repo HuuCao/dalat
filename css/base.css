@@ -1,0 +1,63 @@
+* { box-sizing: border-box; }
+
+[hidden] { display: none !important; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap { width: calc(100% - 24px); margin: 0 auto; }
+
+main { padding-bottom: 48px; }
+
+.footer {
+  text-align: center;
+  color: #8c9690;
+  font-size: 12px;
+  margin-top: 22px;
+}
+
+/* Reading progress. Must stay a direct child of <body>: an ancestor with
+   perspective, transform or filter would stop it being fixed. */
+.progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 30;
+  height: 3px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  pointer-events: none;
+}
+
+.load-error {
+  margin-top: 32px;
+  padding: 16px 18px;
+  border: 1px solid #e6c9c3;
+  border-radius: 12px;
+  background: #fbf1ef;
+  color: #7a3b2e;
+}
+
+.load-error p { margin: 6px 0 0; font-size: 13px; }
+
+.noscript {
+  max-width: 520px;
+  margin: 48px auto;
+  padding: 0 16px;
+  text-align: center;
+  color: var(--text-sub);
+}
+
+@media (min-width: 761px) {
+  .wrap { width: min(940px, calc(100% - 32px)); }
+}
