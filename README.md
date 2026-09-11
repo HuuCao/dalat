@@ -272,7 +272,7 @@ GitHub Pages phục vụ nhánh `main`, thư mục gốc. Push lên `main` là t
 
 ## Tài liệu
 
-- [Thiết kế](docs/specs/2026-09-11-dynamic-render-design.md) — kiến trúc, schema, animation chi tiết và 14 lỗi đã gặp cần tránh.
+- [Thiết kế](docs/specs/2026-09-11-dynamic-render-design.md) — kiến trúc, schema, animation chi tiết và 16 lỗi đã gặp cần tránh.
 - [Kế hoạch triển khai](docs/plans/2026-09-11-dynamic-render.md).
 
 ## Nguồn ảnh
