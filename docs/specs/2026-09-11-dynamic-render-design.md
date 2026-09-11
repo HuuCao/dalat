@@ -385,21 +385,24 @@ Mọi trạng thái ẩn đều nằm trong `@supports`. Trình duyệt không h
     main      { perspective: 1100px; }
     .timeline { perspective: 900px; }
 
-    .day-head             { animation: head-in     linear both; animation-timeline: view(); animation-range: entry 10% cover 20%; }
-    .item:nth-child(odd)  { animation: swing-left  linear both; animation-timeline: view(); animation-range: entry 5% cover 24%; }
-    .item:nth-child(even) { animation: swing-right linear both; animation-timeline: view(); animation-range: entry 5% cover 24%; }
-    .dot                  { animation: pop         linear both; animation-timeline: view(); animation-range: entry 15% cover 32%; }
+    /* mọi range kết thúc ở `entry 100%` — mốc luôn tới được (lỗi 14) */
+    .day-head             { animation: head-in     linear both; animation-timeline: view(); animation-range: entry 10% entry 100%; }
+    .item                 { view-timeline-name: --item; }
+    .item:nth-child(odd)  { animation: swing-left  linear both; animation-timeline: view(); animation-range: entry 5% entry 100%; }
+    .item:nth-child(even) { animation: swing-right linear both; animation-timeline: view(); animation-range: entry 5% entry 100%; }
+    /* chấm cao 10px nên dùng timeline của .item, bắt đầu muộn hơn để nảy trễ một nhịp */
+    .dot                  { animation: pop         linear both; animation-timeline: --item; animation-range: entry 40% entry 100%; }
     .timeline::before {
       transform-origin: top center;
       animation: draw linear both;
       animation-timeline: view();
-      animation-range: entry 25% cover 65%;
+      animation-range: entry 10% entry 100%;
     }
   }
 }
 ```
 
-**Đọc `animation-range`:** với `view()`, hành trình của phần tử qua khung nhìn gồm các pha `entry` (đang đi vào), `contain`, `exit`, và `cover` (toàn bộ hành trình). `entry 5% cover 24%` = bắt đầu khi vừa nhú 5% của pha vào, kết thúc khi đi được 24% toàn hành trình.
+**Đọc `animation-range`:** với `view()`, hành trình của phần tử qua khung nhìn gồm các pha `entry` (đang đi vào), `contain`, `exit`, và `cover` (toàn bộ hành trình). `entry 5% entry 100%` = bắt đầu khi vừa nhú 5% của pha vào, kết thúc khi phần tử vừa lọt hẳn vào khung nhìn (phần tử cao hơn khung nhìn: khi mép trên chạm đỉnh). Mốc kết thúc luôn tới được, kể cả với ngày cuối nằm sát cuối trang; kết thúc bằng `cover …` thì không (lỗi 14).
 
 | Phần tử | Timeline | Range | Hiệu ứng |
 |---|---|---|---|
@@ -409,10 +412,10 @@ Mọi trạng thái ẩn đều nằm trong `@supports`. Trình duyệt không h
 | `.hero-inner` | scroll root | 40 → 360px | bay lên + blur 5px |
 | `.hero-thumbs` | scroll root | 0 → 300px | văng chéo + xoay 7° |
 | `.tabbar` | scroll root | 120 → 220px | hiện bóng đổ |
-| `.day-head` | view | entry 10% → cover 20% | trượt lên + scale |
-| `.item` lẻ/chẵn | view | entry 5% → cover 24% | swing 3D trái/phải |
-| `.dot` | view | entry 15% → cover 32% | nảy + vòng sáng |
-| `.timeline::before` | view | entry 25% → cover 65% | vẽ đường dọc |
+| `.day-head` | view | entry 10% → entry 100% | trượt lên + scale |
+| `.item` lẻ/chẵn | view | entry 5% → entry 100% | swing 3D trái/phải |
+| `.dot` | `--item` (timeline của `.item` chứa nó) | entry 40% → entry 100% | nảy + vòng sáng, trễ hơn thẻ một nhịp |
+| `.timeline::before` | view | entry 10% → entry 100% | vẽ đường dọc |
 
 **Tab:** chuyển tab không phát lại animation. Timeline `view()` tự tính theo vị trí mới của phần tử trong panel vừa mở.
 
@@ -527,7 +530,7 @@ scrollFx(y, viewportHeight, scrollHeight) → { bar, bg, inner, thumbs }   // th
 
 ### 10.7 Các lỗi đã biết — không được lặp lại
 
-Lỗi 1–6 đã gặp khi dựng thật trên bản một file. Lỗi 7–12 phát hiện khi rà soát bản mô tả để đưa vào kiến trúc mới. Lỗi 13 phát hiện khi chạy kiểm thử Chrome headless.
+Lỗi 1–6 đã gặp khi dựng thật trên bản một file. Lỗi 7–12 phát hiện khi rà soát bản mô tả để đưa vào kiến trúc mới. Lỗi 13–14 phát hiện khi chạy kiểm thử Chrome headless.
 
 1. **`opacity` > 1 không có tác dụng.** Giá trị bị kẹp về 1. Muốn tối dần: `from { opacity: .85 } to { opacity: 1 }`.
 2. **Animate `letter-spacing` gây reflow mỗi frame.** Với scroll-driven là reflow theo từng pixel cuộn, giật rõ trên điện thoại. Chỉ animate `transform`, `opacity`, `filter`, `box-shadow`.
@@ -542,6 +545,7 @@ Lỗi 1–6 đã gặp khi dựng thật trên bản một file. Lỗi 7–12 ph
 11. **JS parallax bỏ qua reduced motion.** Inline style không bị media query chặn. `startScrollFx` phải tự kiểm tra `prefersReducedMotion()`.
 12. **Nội dung do JS render: khởi tạo reveal trễ sẽ chớp.** Gắn `.reveal` trong cùng task với render, trước paint.
 13. **`overflow: hidden` làm `view()` bám nhầm vào thẻ `.day`.** `view()` dùng scroll container gần nhất, và `overflow: hidden` vẫn là scroll container (cuộn được bằng JS). Tiến trình của mốc bị tính theo vị trí trong thẻ `.day` — vốn không bao giờ cuộn — nên các mốc cuối mỗi ngày kẹt giữa chừng animation, nghiêng và mờ vĩnh viễn. Sửa: `overflow: clip` (cắt tràn nhưng không tạo scroll container), đặt sau `overflow: hidden` làm fallback cho trình duyệt cũ (vốn chạy lớp B). Quy tắc chung: không đặt `overflow: hidden/auto/scroll` trên tổ tiên của phần tử dùng `view()`.
+14. **Range kết thúc bằng `cover …` không chạy hết ở cuối trang.** Các range gốc (`entry 5% cover 24%`, `entry 15% cover 32%`, `entry 25% cover 65%`) cần phần tử còn cuộn lên được khá xa sau khi đã lọt vào màn hình. Ngày cuối nằm sát cuối trang, hoặc cả trang ngắn khi chọn tab một ngày, không có quãng cuộn đó: đo trên Chrome ở mọi tab, thanh dọc ngày cuối chỉ vẽ 41–50%, chấm cuối kẹt ở 67–78% keyframe `pop` (đang phóng to), mốc cuối dừng ở 87–97%. Sửa: mọi range theo `view()` kết thúc ở `entry 100%`; chấm (cao 10px) dùng timeline có tên của `.item` (`view-timeline-name: --item`) với `entry 40% entry 100%` để vẫn nảy trễ một nhịp. Đánh đổi: cú swing ngắn hơn (≈ chiều cao thẻ thay vì ≈ 24% chiều cao màn hình).
 
 ### 10.8 Nguyên tắc giữ xuyên suốt
 
@@ -589,6 +593,7 @@ Lỗi 1–6 đã gặp khi dựng thật trên bản một file. Lỗi 7–12 ph
 - So với bản cũ trên https://huucao.github.io/dalat/: hero, 4 tab, panel đếm ngược, mobile ≤ 760px.
 - Giả lập thời gian `?now=2026-10-16T12:00:00%2B07:00`: trạng thái live, `.is-now` (vòng sáng quanh chấm vẫn hiện sau `pop`), `.is-past`, tự nhảy tab; `?now=2026-10-19T00:00:00%2B07:00`: trạng thái done.
 - **Lớp A** (Chrome): cuộn chậm qua hero — parallax, chữ bay lên + blur, thumbs văng ra, bóng tabbar, progress; cuộn tới 480px+ không hở dải ở mép trên hero; từng mốc swing vào theo vị trí cuộn, cuộn ngược thì chạy ngược.
+- **Không kẹt ở cuối trang** (lớp A, iPhone và desktop, từng tab `Tất cả` / `Day 1…3`): cuộn tới cuối, mọi animation theo `view()` có `getComputedTiming().progress = 1`.
 - **Lớp B**: Firefox, hoặc Chrome với `CSS.supports` giả lập bằng cách tạm thêm class `no-scroll-timeline` ở `<head>` script. Mốc reveal một lần khi cuộn tới; mốc lẻ/chẵn về đúng vị trí (không kẹt 38px); đường dọc vẽ sau tiêu đề ngày; chuyển tab thì mốc của ngày mới reveal; parallax + progress chạy.
 - DevTools → Rendering → `prefers-reduced-motion: reduce`, cả lớp A và B: không có animation, không có nội dung bị ẩn, đường dọc giữ độ mờ `.28`, hero không parallax.
 - **Mobile-first** — Chrome headless điều khiển qua DevTools Protocol (script tạm trong scratchpad, không commit), giả lập iPhone 390×844 DPR 3 và desktop 1440×900 DPR 2:

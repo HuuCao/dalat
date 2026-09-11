@@ -42,6 +42,11 @@
     }
 
     /* --- position of each element in the viewport --- */
+    /* Every range ends at `entry 100%`: the moment the element is fully on
+       screen (or, if taller than the screen, fills it). That point is always
+       reachable, even for the last day at the bottom of a short page. A
+       `cover …` end needs scroll room below that the page may not have, and
+       leaves the element frozen mid-animation. */
     main { perspective: 1100px; }
     .timeline { perspective: 900px; }
 
@@ -50,32 +55,37 @@
     .day-head {
       animation: head-in linear both;
       animation-timeline: view();
-      animation-range: entry 10% cover 20%;
+      animation-range: entry 10% entry 100%;
     }
+
+    .item { view-timeline-name: --item; }
 
     .item:nth-child(odd) {
       animation: swing-left linear both;
       animation-timeline: view();
-      animation-range: entry 5% cover 24%;
+      animation-range: entry 5% entry 100%;
     }
 
     .item:nth-child(even) {
       animation: swing-right linear both;
       animation-timeline: view();
-      animation-range: entry 5% cover 24%;
+      animation-range: entry 5% entry 100%;
     }
 
+    /* The dot is only 10px tall, so its own view() would pop within a few
+       pixels of scroll. It follows its entry's timeline instead, starting
+       later so it still lands a beat after the card. */
     .dot {
       animation: pop linear both;
-      animation-timeline: view();
-      animation-range: entry 15% cover 32%;
+      animation-timeline: --item;
+      animation-range: entry 40% entry 100%;
     }
 
     .timeline::before {
       transform-origin: top center;
       animation: draw linear both;
       animation-timeline: view();
-      animation-range: entry 25% cover 65%;
+      animation-range: entry 10% entry 100%;
     }
   }
 }
