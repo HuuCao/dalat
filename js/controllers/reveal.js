@@ -1,29 +1,47 @@
-import { hasScrollTimeline } from '../lib/motion.js';
-
 const TARGETS = '.day-head, .item';
 
-// Layer B reveal. Call in the same task as rendering: marking elements
-// .reveal after a paint would flash them visible, then hide them.
-export function startReveal(root) {
-  if (hasScrollTimeline()) return;
+const byDocumentOrder = (a, b) => (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1);
 
+// Entrance of each day's content (css/motion/reveal.css), in every browser.
+// Targets get .reveal now and .in when they reach the viewport. Call in the
+// same task as rendering: marking elements .reveal after a paint would flash
+// them visible, then hide them.
+export function startReveal(root) {
   const targets = [...root.querySelectorAll(TARGETS)];
   for (const el of targets) el.classList.add('reveal');
 
   if (!('IntersectionObserver' in window)) {
     for (const el of targets) el.classList.add('in');
-    return;
+    return { replay() {} };
   }
 
-  // Panels hidden by a tab never intersect, so their entries reveal when
-  // that tab is opened.
+  // Entries arriving in the same callback cascade; one arriving alone while
+  // scrolling starts at once. Panels hidden by a tab never intersect, so
+  // their entries wait until that tab is opened.
   const observer = new IntersectionObserver((entries) => {
-    for (const entry of entries) {
-      if (!entry.isIntersecting) continue;
-      entry.target.classList.add('in');
-      observer.unobserve(entry.target); // one-way: never hide again
-    }
+    const arriving = entries
+      .filter((entry) => entry.isIntersecting)
+      .map((entry) => entry.target)
+      .sort(byDocumentOrder);
+
+    arriving.forEach((el, order) => {
+      el.style.setProperty('--reveal-order', String(order));
+      el.classList.add('in');
+      observer.unobserve(el);
+    });
   }, { rootMargin: '0px 0px -10% 0px', threshold: 0.1 });
 
-  for (const el of targets) observer.observe(el);
+  const watch = (els) => {
+    for (const el of els) observer.observe(el);
+  };
+  watch(targets);
+
+  return {
+    // Hide the entries inside `scope` again so they enter once more.
+    replay(scope) {
+      const els = [...scope.querySelectorAll(TARGETS)];
+      for (const el of els) el.classList.remove('in');
+      watch(els);
+    },
+  };
 }

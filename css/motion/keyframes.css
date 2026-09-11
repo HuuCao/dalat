@@ -1,4 +1,5 @@
-/* ---------- SCROLL (layer A) ---------- */
+/* ---------- ENTRANCE (reveal.css) ---------- */
+/* Played on a fixed duration when day content reaches the viewport. */
 
 /* Odd and even entries swing in from opposite sides, with 3D depth. */
 @keyframes swing-left {
@@ -17,8 +18,8 @@
 }
 
 /* Overshoots, settles, and throws a ring of light. `to` has no box-shadow on
-   purpose: the last keyframe then lands on the dot's real shadow, so the
-   .is-now / .is-past rings still show under fill-mode both. */
+   purpose: the last keyframe lands on the dot's own shadow, so the .is-now /
+   .is-past rings never jump when the pop ends. */
 @keyframes pop {
   from { opacity: 0; transform: scale(0); box-shadow: 0 0 0 14px rgba(var(--accent-rgb), 0); }
   60% { opacity: 1; transform: scale(1.45); box-shadow: 0 0 0 7px rgba(var(--accent-rgb), .28); }
@@ -29,6 +30,8 @@
   from { transform: scaleY(0); }
   to { transform: scaleY(1); }
 }
+
+/* ---------- SCROLL-LINKED (scroll-timeline.css) ---------- */
 
 /* Zoom out and drift down. No edge is uncovered while
    scale × |translateY| ≤ (scale − 1) / 2: start 1.3 × 5% = 6.5% ≤ 15%,
@@ -64,7 +67,7 @@
   to { transform: scaleX(1); }
 }
 
-/* ---------- LOAD ---------- */
+/* ---------- LOAD (load.css) ---------- */
 /* `from` only, used with fill-mode backwards: the end state is the
    element's normal style, so nothing can get stuck hidden. */
 

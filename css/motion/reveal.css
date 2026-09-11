@@ -1,0 +1,40 @@
+/* Entrance of each day's content, in every browser. startReveal() marks
+   targets .reveal and adds .in once they reach the viewport - and again
+   after a tab switch - so every entrance runs for a fixed duration however
+   fast the page is scrolled. Without .reveal (no JS) or with reduced motion,
+   nothing is hidden. Hidden states use opacity only; offsets live in the
+   keyframes, so no specificity fight can leave an entry off to the side. */
+@media (prefers-reduced-motion: no-preference) {
+  .timeline { perspective: 900px; }
+
+  /* Entries that reach the viewport together cascade (see startReveal). */
+  .reveal { --reveal-delay: calc(min(var(--reveal-order, 0), 8) * var(--reveal-stagger)); }
+
+  .reveal:not(.in) { opacity: 0; }
+
+  .day-head.reveal.in {
+    animation: head-in var(--reveal-duration) var(--ease-out) var(--reveal-delay) backwards;
+  }
+
+  .item.reveal.in {
+    animation: swing-left var(--reveal-duration) var(--ease-out) var(--reveal-delay) backwards;
+  }
+
+  .item.reveal.in:nth-child(even) { animation-name: swing-right; }
+
+  /* The dot pops a beat after its card lands. */
+  .item.reveal:not(.in) .dot { transform: scale(0); }
+
+  .item.reveal.in .dot {
+    animation: pop .6s var(--ease-out) calc(var(--reveal-delay) + 250ms) backwards;
+  }
+
+  /* The rail draws once the day title above it is in. The rail is the
+     title's sibling, not its child, so it cannot inherit --reveal-delay. */
+  .day-head.reveal + .timeline::before { transform-origin: top center; }
+  .day-head.reveal:not(.in) + .timeline::before { transform: scaleY(0); }
+
+  .day-head.reveal.in + .timeline::before {
+    animation: draw 1.4s var(--ease-out) 100ms backwards;
+  }
+}

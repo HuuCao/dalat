@@ -20,6 +20,7 @@
 
   .tabs { animation: rise .6s var(--ease-out) .28s backwards; }
 
-  /* A panel coming out of [hidden] replays this on every tab switch. */
-  .panel { animation: fade .22s ease backwards; }
+  /* A panel coming out of [hidden] replays this on every tab switch; its
+     entries then play their own entrance (reveal.css). */
+  .panel { animation: fade .35s var(--ease-out) backwards; }
 }

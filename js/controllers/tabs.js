@@ -1,11 +1,15 @@
 import { ALL_TAB } from '../views/tabs.js';
 
 const ARROW_STEPS = { ArrowLeft: -1, ArrowRight: 1 };
+const GAP_BELOW_TABBAR = 12;
 
-export function createTabs(tablist, panels) {
+// onChange(shownPanels) runs after every tab the user picks, so the shown
+// days can play their entrance again.
+export function createTabs(tablist, panels, { onChange = () => {} } = {}) {
   const tabs = [...tablist.querySelectorAll('[role="tab"]')];
+  const tabbar = tablist.closest('.tabbar');
 
-  function select(id, { focus = false, scroll = false } = {}) {
+  function select(id, { focus = false, user = false } = {}) {
     const active = tabs.find((tab) => tab.dataset.tab === id) ?? tabs[0];
 
     for (const tab of tabs) {
@@ -18,13 +22,26 @@ export function createTabs(tablist, panels) {
     }
 
     if (focus) active.focus();
-    // Only for user input: on phones with many days the row scrolls sideways.
-    if (scroll) active.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    if (!user) return;
+
+    const shown = panels.filter((panel) => !panel.hidden);
+    // On phones with many days the tab row scrolls sideways.
+    active.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    bringIntoView(shown[0]);
+    onChange(shown);
+  }
+
+  // Scrolled past the start of the chosen day? Jump back so it begins right
+  // under the sticky tab bar and its entrance plays on screen.
+  function bringIntoView(panel) {
+    if (!panel) return;
+    const top = panel.getBoundingClientRect().top + window.scrollY - tabbar.offsetHeight - GAP_BELOW_TABBAR;
+    if (window.scrollY > top) window.scrollTo({ top, behavior: 'instant' });
   }
 
   tablist.addEventListener('click', (event) => {
     const tab = event.target.closest('[role="tab"]');
-    if (tab) select(tab.dataset.tab, { scroll: true });
+    if (tab) select(tab.dataset.tab, { user: true });
   });
 
   tablist.addEventListener('keydown', (event) => {
@@ -38,7 +55,7 @@ export function createTabs(tablist, panels) {
     else return;
 
     event.preventDefault();
-    select(tabs[target].dataset.tab, { focus: true, scroll: true });
+    select(tabs[target].dataset.tab, { focus: true, user: true });
   });
 
   select(ALL_TAB);

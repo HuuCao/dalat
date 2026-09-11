@@ -45,7 +45,7 @@ Toàn bộ nội dung nằm trong một file dữ liệu `data/trip.json`. Trang
 
 - Tab `Tất cả` và `Day 1…N` sinh tự động theo số ngày trong dữ liệu. Thêm ngày thứ 4 thì tab thứ 4 tự xuất hiện.
 - Thanh tab dính ở đầu màn hình khi cuộn, nền mờ kính.
-- Chọn tab hiện đúng ngày đó, `Tất cả` hiện toàn bộ; mỗi lần đổi tab nội dung mờ dần vào.
+- Chọn tab hiện đúng ngày đó, `Tất cả` hiện toàn bộ; mỗi lần đổi tab, ngày vừa mở mờ dần vào và các khung giờ bay vào lại. Đang cuộn sâu thì ngày được chọn tự đưa lên ngay dưới thanh tab.
 - Điều khiển bằng bàn phím: `←` `→` chuyển tab, `Home` / `End` về tab đầu / cuối.
 - Nhiều ngày không đủ chỗ thì hàng tab vuốt ngang được, tab vừa chọn tự cuộn vào tầm nhìn.
 
@@ -103,25 +103,33 @@ https://huucao.github.io/dalat/?now=2026-10-19T00:00:00%2B07:00   # đã kết t
 
 **Khi mở trang:** dòng nhỏ, tiêu đề, phụ đề, chip lần lượt trượt lên; thanh tab trượt lên. Ở lớp B còn thêm ảnh hero thu nhỏ hiện dần và thumbnail bay vào từ bên phải — ở lớp A hai phần này chuyển sang hiệu ứng theo cuộn bên dưới.
 
-**Khi cuộn** — trang tự chọn một trong hai lớp bằng một script nhỏ cuối `<head>`, chạy trước lần vẽ đầu tiên:
+**Nội dung từng ngày hiện ra khi cuộn tới** — chạy theo thời lượng cố định, nên vuốt nhanh hay chậm đều thấy rõ; giống nhau trên mọi trình duyệt:
+
+| Phần tử | Hiệu ứng | Thời lượng |
+|---|---|---|
+| Tiêu đề ngày | trượt lên, phóng nhẹ | 0.8s |
+| Khung giờ lẻ / chẵn | bay vào từ trái / phải, nghiêng 3D | 0.8s; các khung xuất hiện cùng lúc so le 90ms |
+| Chấm timeline | nảy quá đà rồi co lại, kèm vòng sáng | 0.6s, sau thẻ 0.25s |
+| Đường timeline | tự vẽ từ trên xuống | 1.4s, sau tiêu đề ngày |
+
+- **Đổi tab thì chạy lại** cho ngày vừa mở; panel ngày mờ dần vào (0.35s).
+- Đang cuộn sâu mà đổi tab, trang tự đưa ngày được chọn lên ngay dưới thanh tab để thấy trọn hiệu ứng.
+- Chỉnh tốc độ ở một chỗ: token `--reveal-duration` và `--reveal-stagger` trong `css/tokens.css`.
+
+**Gắn theo vị trí cuộn** — trang tự chọn lớp bằng một script nhỏ cuối `<head>`, chạy trước lần vẽ đầu tiên:
 
 | Hiệu ứng | Lớp A — CSS scroll-driven | Lớp B — dự phòng |
 |---|---|---|
-| Ảnh hero zoom ra và trôi xuống (parallax) | ✓ nội suy theo vị trí cuộn | ✓ bằng `requestAnimationFrame` |
+| Ảnh hero zoom ra và trôi xuống (parallax) | ✓ | ✓ bằng `requestAnimationFrame` |
 | Chữ hero bay lên, thu nhỏ, nhoè dần | ✓ (có blur) | ✓ (bỏ blur cho máy yếu) |
 | Thumbnail văng chéo ra | ✓ | ✓ |
 | Lớp phủ hero tối dần | ✓ | — |
 | Thanh tab hiện bóng đổ khi bắt đầu cuộn | ✓ | — |
 | Thanh tiến trình đọc ở mép trên màn hình | ✓ | ✓ |
-| Tiêu đề ngày trượt lên | ✓ theo vị trí phần tử | ✓ hiện một lần khi cuộn tới |
-| Khung giờ lẻ/chẵn bay vào từ hai phía | ✓ swing 3D | ✓ trượt chéo, so le 40ms |
-| Chấm timeline nảy kèm vòng sáng | ✓ | ✓ nảy trễ một nhịp |
-| Đường timeline tự vẽ từ trên xuống | ✓ | ✓ sau khi tiêu đề ngày hiện |
 
-- **Lớp A** chạy trên compositor, cuộn ngược thì animation chạy ngược. Mọi animation kết thúc ngay khi phần tử lọt hẳn vào màn hình, nên ngày cuối ở sát đáy trang vẫn chạy trọn.
-- **Lớp B** hiện mỗi phần tử một lần, không ẩn lại. Tab chưa mở sẽ tự hiện nội dung đúng lúc được chọn.
+- Lớp A chạy trên compositor, cuộn ngược thì hiệu ứng chạy ngược.
 - Người dùng bật **"Giảm chuyển động"** (`prefers-reduced-motion`) sẽ không thấy animation nào, nội dung hiện đầy đủ ngay.
-- Không trạng thái ẩn nào tồn tại nếu thiếu điều kiện kích hoạt — nội dung không bao giờ kẹt ở trạng thái vô hình.
+- Nội dung chỉ bị ẩn khi JavaScript đã gắn class `.reveal` — thiếu điều kiện đó thì không gì bị ẩn, nội dung không bao giờ kẹt ở trạng thái vô hình.
 
 ### 7. Tối ưu cho điện thoại
 
@@ -158,7 +166,7 @@ https://huucao.github.io/dalat/?now=2026-10-19T00:00:00%2B07:00   # đã kết t
 
 ## Hỗ trợ trình duyệt
 
-| Môi trường | Lớp animation | Kết quả |
+| Môi trường | Hiệu ứng theo cuộn | Kết quả |
 |---|---|---|
 | Chrome / Edge 115+ (máy tính, Android) | A | Đầy đủ |
 | Safari / iOS 26+ | A | Đầy đủ |
@@ -244,8 +252,8 @@ css/
   motion/
     keyframes.css       toàn bộ keyframes
     load.css            animation lúc mở trang
-    scroll-timeline.css lớp A
-    reveal-fallback.css lớp B
+    scroll-timeline.css hiệu ứng theo cuộn (lớp A)
+    reveal.css          nội dung ngày hiện ra khi cuộn tới / đổi tab
 js/
   main.js               tải dữ liệu → dựng trang → khởi động
   lib/                  giờ, đồng hồ, tính toán animation, tạo DOM
@@ -264,7 +272,7 @@ GitHub Pages phục vụ nhánh `main`, thư mục gốc. Push lên `main` là t
 
 ## Tài liệu
 
-- [Thiết kế](docs/specs/2026-09-11-dynamic-render-design.md) — kiến trúc, schema, animation chi tiết và 14 lỗi đã gặp cần tránh.
+- [Thiết kế](docs/specs/2026-09-11-dynamic-render-design.md) — kiến trúc, schema, animation chi tiết và 16 lỗi đã gặp cần tránh.
 - [Kế hoạch triển khai](docs/plans/2026-09-11-dynamic-render.md).
 
 ## Nguồn ảnh
