@@ -1,0 +1,184 @@
+/* ---------- DAY ---------- */
+.day {
+  /* Entries swing in from up to 46px off to the side; without clipping that
+     briefly widens the page and flashes a horizontal scrollbar on phones. */
+  overflow: hidden;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 16px;
+  margin-top: 18px;
+  box-shadow: var(--shadow-md);
+}
+
+.day-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.day-title { margin: 0; font-size: 18px; color: var(--primary); letter-spacing: -.01em; }
+.day-date { color: var(--text-sub); font-size: 12.5px; margin-top: 2px; }
+.day-count { font-size: 12px; color: var(--accent); font-weight: 600; }
+
+/* ---------- TIMELINE ---------- */
+.timeline { position: relative; padding-left: 18px; }
+
+.timeline::before {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  background: linear-gradient(180deg, var(--accent) 0%, var(--line) 100%);
+  opacity: .28;
+}
+
+.item { position: relative; margin-bottom: 16px; }
+.item:last-child { margin-bottom: 0; }
+
+.dot {
+  position: absolute;
+  left: -18px;
+  top: 8px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2.5px solid #fff;
+  box-shadow: 0 0 0 1px rgba(var(--accent-rgb), .45);
+}
+
+.time {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.time .clock {
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: var(--accent-soft);
+  color: var(--primary);
+  font-size: 11.5px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .01em;
+}
+
+.time .period {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--text-sub);
+  text-transform: uppercase;
+  letter-spacing: .07em;
+}
+
+/* ---------- CARD ---------- */
+/* Always two rows - title, then meta - so every entry has the same shape.
+   The tag and the map link are plain text, not chips: one box per card. */
+.card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 11px 12px;
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+
+.card h3 {
+  margin: 0;
+  font-size: 14.5px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: -.005em;
+}
+
+.card-footer {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 7px;
+}
+
+.tag {
+  color: #93a29a;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+}
+
+/* The link text stays small; padding plus an equal negative margin stretch
+   the tap target to 44px without moving anything. */
+.map-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin: -13px 0 -13px auto;
+  padding: 13px 0 13px 12px;
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 11.5px;
+  font-weight: 600;
+  transition: color .18s ease;
+}
+
+.empty { border: 1px dashed #cbd5ce; background: #f7faf8; }
+.empty h3 { color: #8a978f; font-weight: 550; }
+
+/* Touch screens would keep :hover stuck after a tap. */
+@media (hover: hover) {
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: #cfdfd6;
+  }
+
+  .empty:hover { transform: none; box-shadow: none; border-color: #b9c8bf; }
+
+  .map-btn:hover { color: var(--primary); text-decoration: underline; }
+}
+
+/* ---------- LIVE AND PAST SLOTS ---------- */
+.item.is-now .card {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), .14);
+}
+
+.item.is-now .clock { background: var(--accent); color: #fff; }
+
+.item.is-now .dot {
+  background: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent), 0 0 0 5px rgba(var(--accent-rgb), .2);
+}
+
+.now-tag {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+/* Slots that are over fade back so the eye lands on what is left. */
+.item.is-past .card:not(.empty) { background: #f3f9f4; border-color: #c9e1d0; }
+.item.is-past .card:not(.empty) h3 { color: #74897c; }
+.item.is-past .clock { opacity: .55; }
+.item.is-past .dot { background: var(--primary); box-shadow: 0 0 0 1px var(--primary); }
+
+@media (min-width: 761px) {
+  .day { padding: 20px; border-radius: var(--radius); }
+  .day-title { font-size: 20px; }
+  .timeline { padding-left: 22px; }
+  .dot { left: -21px; }
+  .item { margin-bottom: 20px; }
+  .card { padding: 12px 14px; }
+  .card h3 { font-size: 15px; }
+}
