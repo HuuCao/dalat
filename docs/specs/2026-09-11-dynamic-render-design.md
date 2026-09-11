@@ -241,7 +241,7 @@ Xem mục 10.5.
 - Tách theo bảng ở mục 4, nạp bằng nhiều `<link>` (không `@import`) theo thứ tự: `tokens → base → hero → tabs → timeline → countdown → motion/keyframes → motion/load → motion/scroll-timeline → motion/reveal-fallback`. Thứ tự này có ý nghĩa: rule lớp A đứng sau `load.css` nên ghi đè `animation` trên phần tử dùng chung.
 - Bỏ: `.day-radio`, mọi selector `#day-N:checked`, `.visit-toggle`, `.visit`, `.card-footer .visit:last-child`, 12 rule `.item:nth-child(N)` delay, keyframes `rise-left`, `dot-in`, `line-in`.
 - Panel ẩn bằng thuộc tính `hidden`.
-- `.day { overflow: hidden }` giữ nguyên (xem lỗi 6, mục 10.7).
+- `.day { overflow: hidden; overflow: clip }` — `clip` để không tạo scroll container, `hidden` là fallback (xem lỗi 6 và 13, mục 10.7).
 - `.is-past` dùng lại đúng style của trạng thái "đã tick" cũ: card nền `#f3f9f4`, viền `#c9e1d0`, `h3` màu `#74897c`, `.clock` opacity `.55`, `.dot` màu `--primary`.
 - Thêm token `--accent-rgb: 82, 121, 111` (= `--accent`), thay mọi `rgba(106, 153, 78, a)` (kể cả trong keyframes) bằng `rgba(var(--accent-rgb), a)`.
 - Xóa comment nói về "không JavaScript / Quick Look" vì không còn đúng.
@@ -527,20 +527,21 @@ scrollFx(y, viewportHeight, scrollHeight) → { bar, bg, inner, thumbs }   // th
 
 ### 10.7 Các lỗi đã biết — không được lặp lại
 
-Lỗi 1–6 đã gặp khi dựng thật trên bản một file. Lỗi 7–12 phát hiện khi rà soát bản mô tả để đưa vào kiến trúc mới, cần kiểm chứng lúc làm.
+Lỗi 1–6 đã gặp khi dựng thật trên bản một file. Lỗi 7–12 phát hiện khi rà soát bản mô tả để đưa vào kiến trúc mới. Lỗi 13 phát hiện khi chạy kiểm thử Chrome headless.
 
 1. **`opacity` > 1 không có tác dụng.** Giá trị bị kẹp về 1. Muốn tối dần: `from { opacity: .85 } to { opacity: 1 }`.
 2. **Animate `letter-spacing` gây reflow mỗi frame.** Với scroll-driven là reflow theo từng pixel cuộn, giật rõ trên điện thoại. Chỉ animate `transform`, `opacity`, `filter`, `box-shadow`.
 3. **`view()` phản tác dụng với phần tử cao hơn khung nhìn.** Cho cả `.day` (~2000px) fade vào thì lúc load tiến trình mới ~14%, card hiện ở opacity .65 như lỗi render. Không animate `.day`; để các mốc con gánh chuyển động.
 4. **Parallax hở mép nếu không tính.** `translateY(%)` trong `scale() translateY()` bị nhân hệ số scale. `scale(1.14) translateY(14%)` chỉ tràn 7% mỗi cạnh mà dịch 16% → hở dải ở mép trên. Điều kiện: `scale × |translateY| ≤ (scale − 1) / 2`.
 5. **Specificity nuốt trạng thái kết thúc.** `.item.reveal:nth-child(odd)` (0,4,0) thắng `.reveal.in` (0,3,0), mốc lẻ kẹt lệch 38px. Viết selector `.in` dài ra cho thắng.
-6. **Offset ngang tạo thanh cuộn ngang lúc load.** Mốc chẵn bắt đầu lố 38px ra mép phải, trang rộng thêm, iPhone chớp thanh cuộn ngang. Giữ `.day { overflow: hidden }`; kiểm tra bằng `scrollWidth === clientWidth`.
+6. **Offset ngang tạo thanh cuộn ngang lúc load.** Mốc chẵn bắt đầu lố 38px ra mép phải, trang rộng thêm, iPhone chớp thanh cuộn ngang. Cắt tràn ở `.day` (dùng `overflow: clip`, xem lỗi 13); kiểm tra bằng `scrollWidth === clientWidth`.
 7. **`fill-mode: both` giữ box-shadow cuối của `pop` mãi mãi.** Animation thắng mọi rule thường trong cascade, nên `to { box-shadow: … }` sẽ che vòng sáng của `.item.is-now .dot` và `.is-past .dot`. Bỏ `box-shadow` khỏi `to`.
 8. **Bản mô tả gốc vẫn hở mép ở cuối parallax.** `scale(1.12) translateY(6%)`: tràn 6% mỗi cạnh nhưng dịch 1.12 × 6% = 6.72% → hở ~0.7% chiều cao hero (~2px) ở mép trên khi cuộn quá 480px. Lớp B gốc (`scale(1.12)`, `translateY(6%)` khi `drift = 1`) cũng vậy. Sửa: kết thúc ở `translateY(5%)` → 5.6% ≤ 6%.
 9. **Khối `prefers-reduced-motion: reduce` ghi đè ở lớp B gốc có 2 lỗi.** (a) `.js .timeline::before { opacity: 1 }` làm đường dọc đậm hẳn (style gốc là `.28`). (b) `.js .reveal { transform: none }` (0,2,0) thua `.item.reveal:nth-child(odd)` (0,4,0), mốc vẫn lệch 38px tới khi giao viewport. Sửa: bọc toàn bộ lớp B trong `no-preference`, không viết khối ghi đè.
 10. **`position: fixed` bên trong phần tử có `perspective` / `transform` / `filter` không còn fixed.** Lớp A đặt `perspective` lên `main` và `filter` lên `.hero-inner`. `.progress` phải là con trực tiếp của `<body>`.
 11. **JS parallax bỏ qua reduced motion.** Inline style không bị media query chặn. `startScrollFx` phải tự kiểm tra `prefersReducedMotion()`.
 12. **Nội dung do JS render: khởi tạo reveal trễ sẽ chớp.** Gắn `.reveal` trong cùng task với render, trước paint.
+13. **`overflow: hidden` làm `view()` bám nhầm vào thẻ `.day`.** `view()` dùng scroll container gần nhất, và `overflow: hidden` vẫn là scroll container (cuộn được bằng JS). Tiến trình của mốc bị tính theo vị trí trong thẻ `.day` — vốn không bao giờ cuộn — nên các mốc cuối mỗi ngày kẹt giữa chừng animation, nghiêng và mờ vĩnh viễn. Sửa: `overflow: clip` (cắt tràn nhưng không tạo scroll container), đặt sau `overflow: hidden` làm fallback cho trình duyệt cũ (vốn chạy lớp B). Quy tắc chung: không đặt `overflow: hidden/auto/scroll` trên tổ tiên của phần tử dùng `view()`.
 
 ### 10.8 Nguyên tắc giữ xuyên suốt
 

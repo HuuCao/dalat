@@ -1,8 +1,13 @@
 /* ---------- DAY ---------- */
 .day {
   /* Entries swing in from up to 46px off to the side; without clipping that
-     briefly widens the page and flashes a horizontal scrollbar on phones. */
+     briefly widens the page and flashes a horizontal scrollbar on phones.
+     `clip`, not `hidden`: hidden makes .day a scroll container, and view()
+     would then track each entry inside the card instead of the page,
+     leaving the last entries stuck mid-swing. `hidden` stays as the
+     fallback for old browsers, which run layer B anyway. */
   overflow: hidden;
+  overflow: clip;
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: 14px;
