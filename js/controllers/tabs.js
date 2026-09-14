@@ -61,6 +61,20 @@ export function createTabs(tablist, panels, { onChange = () => {} } = {}) {
     select(tabs[target].dataset.tab, { focus: true, user: true });
   });
 
+  const TODAY = ', hôm nay';
+
+  // Lime dot on the day in progress; the clock calls this every tick, so the
+  // dot moves on at midnight.
+  function markToday(dayId) {
+    for (const tab of tabs) {
+      const today = tab.dataset.tab === dayId;
+      if (today === tab.hasAttribute('data-today')) continue;
+      tab.toggleAttribute('data-today', today);
+      const label = tab.getAttribute('aria-label');
+      if (label) tab.setAttribute('aria-label', today ? `${label}${TODAY}` : label.replace(TODAY, ''));
+    }
+  }
+
   select(ALL_TAB);
-  return { select };
+  return { select, markToday };
 }
