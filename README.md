@@ -281,7 +281,7 @@ Làm một lần, khoảng 15 phút. **Lưu ý:** link CSV đã publish là côn
    |---|---|---|---|
    | Người nhập | Menu thả xuống | Hữu, MiMi, Khanh, Trâm | có |
    | Địa điểm | Menu thả xuống | Paste kết quả bước 1 vào lựa chọn đầu tiên — Form tự tách mỗi dòng | có |
-   | Số tiền | Câu trả lời ngắn | Xác thực phản hồi: Số → Lớn hơn → `0` | có |
+   | Số tiền | Câu trả lời ngắn | Xác thực phản hồi: Biểu thức chính quy → Khớp → `^[1-9][0-9]*$`; văn bản lỗi: `Chỉ nhập số, vd 260000` | có |
    | Ai trả | Trắc nghiệm | Quỹ, Hữu, MiMi, Khanh, Trâm | có |
    | Chia cho | Hộp kiểm | Hữu, MiMi, Khanh, Trâm — mô tả: "Bỏ trống = chia đều cả nhóm" | không |
    | Ghi chú | Câu trả lời ngắn | | không |
