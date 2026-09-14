@@ -123,17 +123,17 @@ test('once the trip ends the fund is settled, largest first', () => {
   const ledger = ledgerOf(EXPENSES, CONTRIBUTIONS, AFTER);
   assert.equal(ledger.done, true);
   assert.deepEqual(ledger.settlement.map((line) => line.text), [
-    '→ Quỹ hoàn Hữu 2.695k',
-    '→ Quỹ hoàn Khanh 2.155k',
-    '→ Quỹ hoàn MiMi 1.615k',
-    '→ Quỹ hoàn Trâm 1.615k',
+    '→ Quỹ hoàn Hữu 2tr695',
+    '→ Quỹ hoàn Khanh 2tr155',
+    '→ Quỹ hoàn MiMi 1tr615',
+    '→ Quỹ hoàn Trâm 1tr615',
   ]);
-  assert.deepEqual(ledger.settlement[0], { name: 'Hữu', amount: 2_695_000, direction: 'refund', text: '→ Quỹ hoàn Hữu 2.695k' });
+  assert.deepEqual(ledger.settlement[0], { name: 'Hữu', amount: 2_695_000, direction: 'refund', text: '→ Quỹ hoàn Hữu 2tr695' });
 
   const short = ledgerOf(EXPENSES, 'Người góp,Số tiền\nHữu,1000000', AFTER);
   assert.deepEqual(short.settlement.map((line) => line.text), [
-    '→ MiMi nộp thêm vào quỹ 1.385k',
-    '→ Trâm nộp thêm vào quỹ 1.385k',
+    '→ MiMi nộp thêm vào quỹ 1tr385',
+    '→ Trâm nộp thêm vào quỹ 1tr385',
     '→ Khanh nộp thêm vào quỹ 845k',
     '→ Quỹ hoàn Hữu 695k',
   ]);
@@ -223,7 +223,7 @@ test('describeEntry reads like the sketch', () => {
 });
 
 test('describeDay shows spend, budget, extras and a capped ratio', () => {
-  assert.deepEqual(describeDay({ budget: 3_120_000, actual: 1_560_000, extra: 120_000 }), { text: '💰 1.560k / 3.120k · phát sinh 120k', ratio: 0.5, over: false });
+  assert.deepEqual(describeDay({ budget: 3_120_000, actual: 1_560_000, extra: 120_000 }), { text: '💰 1tr560 / 3tr120 · phát sinh 120k', ratio: 0.5, over: false });
   assert.deepEqual(describeDay({ budget: 100, actual: 300, extra: 0 }), { text: '💰 0,3k / 0,1k', ratio: 1, over: true });
   assert.deepEqual(describeDay({ budget: 0, actual: 0, extra: 0 }), { text: '💰 0 / 0', ratio: 0, over: false });
 });
