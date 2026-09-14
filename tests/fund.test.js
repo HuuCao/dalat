@@ -162,7 +162,7 @@ test('messy rows are normalised, flagged, and never lose money', () => {
   assert.equal(ledger.unmatched.entries[0].label, 'Day 1 · Hiden Land');
   assert.equal(ledger.totals.actual, 5_540_000 + 50000 + 70000 + 90000 + 30000);
   assert.equal(ledger.totals.fundPaid, 3_920_000 + 50000 + 70000 + 30000);
-  assert.equal(ledger.excluded, 1);
+  assert.equal(ledger.excluded, 2);
   assert.equal(balanceSum(ledger), ledger.totals.fundLeft);
 });
 
@@ -182,6 +182,7 @@ test('contributions with a bad name or amount are skipped with a warning', () =>
   ]);
   assert.equal(ledger.totals.contributed, 3_000_000);
   assert.deepEqual(ledger.contributions, [{ line: 4, date: '10/10', member: 'Hữu', amount: 3_000_000, note: '' }]);
+  assert.equal(ledger.excluded, 2);
 });
 
 test('a sheet without a required column throws a readable error', () => {
@@ -218,6 +219,7 @@ test('describeEntry reads like the sketch', () => {
   const partial = { amount: 90000, payer: 'Khanh', splitFor: ['Hữu', 'Khanh'], note: '', enteredBy: '', time: '', settled: true };
   assert.deepEqual(describeEntry(partial, MEMBERS), { amount: '90.000đ', payer: 'Khanh ứng', detail: 'chia Hữu, Khanh', meta: '' });
   assert.equal(describeEntry({ ...partial, payer: 'Tram', settled: false }, MEMBERS).payer, 'Tram trả ⚠️');
+  assert.equal(describeEntry({ ...partial, splitFor: [], settled: false }, MEMBERS).detail, 'chia ?');
 });
 
 test('describeDay shows spend, budget, extras and a capped ratio', () => {

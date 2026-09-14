@@ -101,6 +101,7 @@ export function buildLedger(trip, tables, now) {
     const amount = parseAmount(row.amount);
     if (amount === null) {
       warnings.push(`Dòng ${row.line} · Số tiền "${row.amount}" không hợp lệ`);
+      excluded += 1;
       continue;
     }
 
@@ -152,11 +153,13 @@ export function buildLedger(trip, tables, now) {
     const amount = parseAmount(row.amount);
     if (amount === null) {
       warnings.push(`GopQuy dòng ${row.line} · Số tiền "${row.amount}" không hợp lệ`);
+      excluded += 1;
       continue;
     }
     const member = memberByKey.get(keyOf(row.member));
     if (!member) {
       warnings.push(`GopQuy dòng ${row.line} · Người góp "${row.member}" không phải thành viên`);
+      excluded += 1;
       continue;
     }
     people.get(member).contributed += amount;
@@ -241,9 +244,11 @@ export function describeEntry(entry, members) {
   if (entry.payer === FUND_PAYER) payer = 'Quỹ trả';
   else if (members.includes(entry.payer)) payer = `${entry.payer} ứng`;
 
-  const split = entry.splitFor.length === members.length
-    ? `chia ${members.length}`
-    : `chia ${entry.splitFor.join(', ')}`;
+  const split = entry.splitFor.length === 0
+    ? 'chia ?'
+    : entry.splitFor.length === members.length
+      ? `chia ${members.length}`
+      : `chia ${entry.splitFor.join(', ')}`;
 
   return {
     amount: formatFull(entry.amount),

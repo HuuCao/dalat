@@ -203,7 +203,7 @@ Số dòng trong cảnh báo = số dòng trên Sheet (dòng tiêu đề là 1).
 | Góp quỹ: tên lạ | không | không | `GopQuy dòng 3 · Người góp "Tram" không phải thành viên` |
 | Góp quỹ: số tiền lỗi | không | không | `GopQuy dòng 3 · Số tiền … không hợp lệ` |
 
-Có ít nhất một dòng bị loại khỏi quyết toán → bảng quyết toán hiện `⚠️ Có N dòng cần sửa — số liệu chưa chốt`. Dòng có địa điểm không khớp hiện trong tab Quỹ dưới mục `⚠️ Không khớp địa điểm` với số tiền.
+Có ít nhất một dòng bị loại khỏi quyết toán hoặc bị bỏ vì số tiền / người góp không hợp lệ → bảng quyết toán hiện `⚠️ Có N dòng cần sửa — số liệu chưa chốt`. Dòng có địa điểm không khớp hiện trong tab Quỹ dưới mục `⚠️ Không khớp địa điểm` với số tiền.
 
 ### 6.3. Chia tiền lẻ
 
