@@ -107,7 +107,6 @@
 }
 
 /* ---------- DAY ---------- */
-.day-info { flex: 1 1 14rem; min-width: 0; }
 .day-money { margin-top: 6px; }
 
 .day-money-text {

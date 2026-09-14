@@ -15,7 +15,7 @@ export function renderDay(day, { fund = false } = {}) {
   },
   h('article', { class: 'day' },
     h('div', { class: 'day-head' },
-      h('div', { class: fund ? 'day-info' : null },
+      h('div', { class: 'day-info' },
         h('h2', { class: 'day-title', text: join(' ', day.icon, day.title) }),
         h('div', { class: 'day-date', text: join(' · ', day.dateText, day.rangeText, day.note) }),
         fund ? dayMoneySlot(day) : null),
