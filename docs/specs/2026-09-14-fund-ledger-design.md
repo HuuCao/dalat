@@ -464,3 +464,17 @@ Chrome headless, iPhone (390px, 360px) và máy tính (1440px), dùng CSV mẫu 
 - Trả HTML thay CSV → `Sheet chưa publish dạng CSV`.
 - Không có `fund` → trang giống hệt bản hiện tại.
 - `prefers-reduced-motion` → không animation.
+
+## 11. Điều chỉnh khi lập kế hoạch
+
+Các điểm dưới đây thay thế nội dung tương ứng ở trên.
+
+1. **`fund.csv` không bắt buộc.** Có `fund` mà chưa có `csv` → trang hiện dự kiến (chip `Dự kiến …`, tổng ngày, tab Quỹ với dòng `Chưa kết nối Google Sheet`, panel `💰 Dự kiến 11.360k`), không tải gì. Nhờ vậy budget lên trang được trước khi tạo Form/Sheet. Có `csv` thì phải đủ cả `expenses` và `contributions`.
+2. **Nút `➕ Nhập chi` ở panel trạng thái** chọn sẵn khung **đang diễn ra**, nếu đang giữa hai khung thì chọn khung **vừa kết thúc** (thay vì khung kế tiếp) — người ta thường trả tiền rồi mới rời đi. Trước / sau chuyến → Form trống.
+3. **Dòng quỹ ở panel trạng thái** là một thẻ sáng riêng ngay dưới panel tối, không nằm trong panel tối.
+4. **Dòng thời gian tab Quỹ:** `Cập nhật HH:MM` (vừa tải), `Dữ liệu lúc HH:MM · đang tải bản mới` (đang dùng bản lưu lúc mở trang), `Dữ liệu lúc HH:MM · chưa tải được bản mới` (tải lỗi, dùng bản lưu), `Chưa kết nối Google Sheet`.
+5. **`js/controllers/reveal.js` không cần sửa:** panel quỹ không chứa `.item` / `.day-head` nên `replay()` tự không làm gì.
+6. **Thêm `js/lib/text.js`** với `keyOf()` — chuẩn hóa dùng chung cho tên, nhãn, tên cột (mục 6.1).
+7. **`Quỹ` là tên dành riêng**, không được dùng trong `fund.members`.
+8. **Kiểm tra trùng tên khung trong ngày chỉ chạy khi có `fund`.** Thông báo: `days[1].items[4].title: trùng tên "Cà phê — Tự do" trong cùng ngày`, `…title: "Phát sinh" là tên dành riêng`.
+9. **Spike (mục 10.1) chuyển thành task cuối** — cần Form/Sheet thật của nhóm. Code đọc CSV được viết chịu lỗi định dạng (tìm cột theo tên, lọc chữ số) và kiểm bằng CSV mẫu; task cuối đối chiếu với CSV thật, lệch thì sửa parser trước khi gắn link.
