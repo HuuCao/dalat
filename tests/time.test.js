@@ -2,8 +2,14 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   isTime, isDate, isTimezone, toMinutes, toDate,
-  weekdayText, dateText, derivePeriod, fillTemplate,
+  weekdayText, dateText, dateRangeText, derivePeriod, fillTemplate,
 } from '../js/lib/time.js';
+
+test('dateRangeText shortens a shared month', () => {
+  assert.equal(dateRangeText('2026-10-16', '2026-10-18'), '16 – 18/10');
+  assert.equal(dateRangeText('2026-10-30', '2026-11-02'), '30/10 – 02/11');
+  assert.equal(dateRangeText('2026-10-16', '2026-10-16'), '16/10');
+});
 
 test('isTime accepts HH:MM only', () => {
   assert.equal(isTime('07:00'), true);

@@ -1,3 +1,10 @@
+/* Floats over the hero's lower edge, tying the hero to the plan below. */
+.status {
+  position: relative;
+  z-index: 3;
+  margin-top: -32px;
+}
+
 /* Trip status: countdown before the trip, the slot in progress during it,
    a farewell after. The copy comes from describeStatus(). */
 .countdown {
@@ -7,14 +14,13 @@
   flex-wrap: wrap;
   gap: 8px 11px;
   overflow: hidden;
-  margin-top: 16px;
-  padding: 12px 13px;
-  border-radius: 15px;
+  padding: 13px 14px;
+  border-radius: 16px;
   background:
     radial-gradient(120% 140% at 12% 0%, #31503f 0%, transparent 55%),
     linear-gradient(135deg, #24392f 0%, #16241d 58%, #22362c 100%);
   color: #e9f1eb;
-  box-shadow: 0 10px 24px rgba(16, 30, 25, .22);
+  box-shadow: 0 14px 30px rgba(16, 30, 25, .28);
 }
 
 /* Slow light sweep across the panel. */
@@ -49,19 +55,20 @@
 }
 
 /* Phones cannot fit label, note and four tiles on one line, and a
-   half-wrapped row reads as broken - the tiles get their own row. */
+   half-wrapped row reads as broken - the tiles get their own row, shared
+   out evenly across the card. */
 .cd-clock {
   position: relative;
-  display: flex;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
   flex: 1 0 100%;
-  flex-wrap: wrap;
   gap: 6px;
-  margin-left: 0;
 }
 
 .cd-unit {
-  min-width: 39px;
-  padding: 4px 5px 3px;
+  min-width: 0;
+  padding: 6px 4px 5px;
   border-radius: 10px;
   background: rgba(255, 255, 255, .07);
   border: 1px solid rgba(255, 255, 255, .13);
@@ -70,7 +77,7 @@
 
 .cd-unit b {
   display: block;
-  font-size: 15.5px;
+  font-size: 19px;
   font-weight: 700;
   line-height: 1.1;
   letter-spacing: -.02em;
@@ -204,8 +211,9 @@
 }
 
 @media (min-width: 761px) {
-  .countdown { gap: 10px 14px; padding: 13px 16px; }
-  .cd-clock { flex: 0 0 auto; margin-left: auto; }
+  .status { margin-top: -36px; }
+  .countdown { gap: 10px 14px; padding: 14px 18px; }
+  .cd-clock { display: flex; flex: 0 0 auto; margin-left: auto; }
   .countdown.soon .hourglass { width: 34px; height: 34px; }
   .cd-unit { min-width: 44px; padding: 5px 7px 4px; }
   .cd-unit b { font-size: 17px; }

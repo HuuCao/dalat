@@ -28,7 +28,7 @@ test('inside a slot shows that slot', () => {
   assert.equal(status.current.id, 'day-1-item-1');
   assert.equal(status.next.id, 'day-1-item-2');
   assert.deepEqual(describeStatus(trip, status), {
-    label: 'Đang diễn ra', tiles: null, headline: '🍃 Đồi chè Cầu Đất', note: 'Đến 09:00 · đã qua 0/9 điểm',
+    label: 'Đang diễn ra', tiles: null, headline: '🍃 Đồi chè Cầu Đất — Săn mây, ăn sáng, cà phê', note: 'Đến 09:00 · đã qua 0/16 điểm',
   });
 });
 
@@ -37,27 +37,27 @@ test('start is inclusive, end is exclusive', () => {
   assert.equal(atEnd.current, null);
   assert.ok(atEnd.pastIds.has('day-1-item-1'));
   assert.deepEqual(describeStatus(trip, atEnd), {
-    label: 'Đang di chuyển', tiles: null, headline: '🌸 Cánh đồng hoa / Hidden spot', note: 'Tiếp theo lúc 09:15 · đã qua 1/9 điểm',
+    label: 'Đang di chuyển', tiles: null, headline: '☕ Hidden Land', note: 'Tiếp theo lúc 09:15 · đã qua 1/16 điểm',
   });
   assert.equal(statusAt('2026-10-16T09:15:00+07:00').current.id, 'day-1-item-2');
 });
 
 test('empty slots are shown but not counted as places', () => {
-  assert.deepEqual(describeAt('2026-10-16T20:00:00+07:00'), {
-    label: 'Đang diễn ra', tiles: null, headline: '🍜 Ăn tối — Chưa chọn', note: 'Đến 21:00 · đã qua 7/9 điểm',
+  assert.deepEqual(describeAt('2026-10-17T10:30:00+07:00'), {
+    label: 'Đang diễn ra', tiles: null, headline: '☕ Cà phê — Tự do', note: 'Đến 11:15 · đã qua 11/16 điểm',
   });
-  const overnight = statusAt('2026-10-16T23:00:00+07:00');
-  assert.equal(overnight.pastIds.size, 8);
-  assert.equal(overnight.pastPlaces, 7);
-  assert.equal(overnight.next.id, 'day-2-item-1');
+  const afterLunch = statusAt('2026-10-17T12:45:00+07:00');
+  assert.equal(afterLunch.pastIds.size, 13);
+  assert.equal(afterLunch.pastPlaces, 11);
+  assert.equal(afterLunch.next.id, 'day-2-item-5');
 });
 
 test('after the trip says goodbye', () => {
   const status = statusAt('2026-10-18T13:00:00+07:00');
   assert.equal(status.phase, 'done');
-  assert.equal(status.pastIds.size, 13);
+  assert.equal(status.pastIds.size, 21);
   assert.deepEqual(describeStatus(trip, status), {
-    label: 'Hành trình đã khép lại', tiles: null, headline: 'Hẹn gặp lại Đà Lạt ✦', note: 'Đã đi qua 9 điểm trong 3 ngày',
+    label: 'Hành trình đã khép lại', tiles: null, headline: 'Hẹn gặp lại Đà Lạt ✦', note: 'Đã đi qua 16 điểm trong 3 ngày',
   });
 });
 

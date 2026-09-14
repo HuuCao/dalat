@@ -3,7 +3,8 @@
   min-height: 230px;
   display: flex;
   align-items: flex-end;
-  padding: 26px 0 22px;
+  /* Extra bottom room: the status card overlaps the hero's lower edge. */
+  padding: 26px 0 48px;
   overflow: hidden;
   background: #354f52;
   color: #fff;
@@ -22,7 +23,9 @@
 .hero-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(170deg, rgba(16, 30, 25, .25) 0%, rgba(16, 30, 25, .82) 100%);
+  /* Darker at the top too: the sky in the photo is bright mist, and the
+     eyebrow text sits right on it. */
+  background: linear-gradient(170deg, rgba(16, 30, 25, .5) 0%, rgba(16, 30, 25, .3) 35%, rgba(16, 30, 25, .84) 100%);
 }
 
 .hero-inner { position: relative; z-index: 2; }
@@ -32,7 +35,7 @@
   text-transform: uppercase;
   font-size: 10.5px;
   font-weight: 700;
-  color: #b9cdc0;
+  color: rgba(236, 244, 238, .86);
 }
 
 h1 {
@@ -42,8 +45,6 @@ h1 {
   font-weight: 700;
   letter-spacing: -.02em;
 }
-
-h1 span { font-size: .52em; font-weight: 400; opacity: .8; }
 
 .subtitle { font-size: 14.5px; opacity: .88; max-width: 520px; }
 
@@ -65,7 +66,7 @@ h1 span { font-size: .52em; font-weight: 400; opacity: .8; }
 .hero-thumbs {
   position: absolute;
   right: max(16px, calc((100% - 940px) / 2));
-  bottom: 26px;
+  bottom: 54px;
   z-index: 2;
   display: none;
   gap: 10px;
@@ -82,6 +83,6 @@ h1 span { font-size: .52em; font-weight: 400; opacity: .8; }
 }
 
 @media (min-width: 761px) {
-  .hero { min-height: 300px; padding: 32px 0 26px; }
+  .hero { min-height: 300px; padding: 32px 0 58px; }
   .hero-thumbs { display: flex; }
 }
