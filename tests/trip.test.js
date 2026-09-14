@@ -189,3 +189,23 @@ test('with a fund, slot titles must be unique within a day', () => {
     { date: '2026-10-17', items: [validItem] },
   ])));
 });
+
+test('budgets and fund come from the data', () => {
+  const budgetOf = (list) => list.reduce((sum, entry) => sum + (entry.budget ?? 0), 0);
+  assert.deepEqual(trip.fund.members, ['Hữu', 'MiMi', 'Khanh', 'Trâm']);
+  assert.deepEqual(trip.fund.shared.map(({ id, title, budget }) => ({ id, title, budget })), [
+    { id: 'shared-1', title: 'Vé xe 2 chiều', budget: 2_800_000 },
+    { id: 'shared-2', title: 'Khách sạn', budget: 1_080_000 },
+    { id: 'shared-3', title: 'Xe máy', budget: 400_000 },
+  ]);
+  assert.deepEqual(trip.days.map((day) => budgetOf(day.items)), [3_120_000, 3_040_000, 920_000]);
+  assert.equal(budgetOf(trip.fund.shared) + budgetOf(trip.items), 11_360_000);
+  assert.equal(trip.days[0].items[5].budget, 0);
+  assert.equal(trip.days[2].items.at(-1).budget, null);
+  assert.equal(trip.fund.labels.length, 28);
+  assert.deepEqual(trip.fund.labels.slice(0, 5), [
+    'Chung · Vé xe 2 chiều', 'Chung · Khách sạn', 'Chung · Xe máy', 'Chung · Phát sinh',
+    'Day 1 · Đồi chè Cầu Đất — Săn mây, ăn sáng, cà phê',
+  ]);
+  assert.equal(trip.fund.labels.at(-1), 'Day 3 · Phát sinh');
+});

@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "test": "node --test tests/*.test.js",
-    "dev": "npx --yes serve ."
+    "dev": "npx --yes serve .",
+    "form-options": "node scripts/form-options.js"
   }
 }
