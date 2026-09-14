@@ -1,4 +1,4 @@
-import { ALL_TAB } from '../views/tabs.js';
+import { ALL_TAB, FUND_TAB } from '../views/tabs.js';
 
 const ARROW_STEPS = { ArrowLeft: -1, ArrowRight: 1 };
 const GAP_BELOW_TABBAR = 12;
@@ -18,7 +18,10 @@ export function createTabs(tablist, panels, { onChange = () => {} } = {}) {
       tab.tabIndex = selected ? 0 : -1;
     }
     for (const panel of panels) {
-      panel.hidden = active.dataset.tab !== ALL_TAB && panel.dataset.day !== active.dataset.tab;
+      // "Tất cả" means every day; the fund panel only shows on its own tab.
+      panel.hidden = active.dataset.tab === ALL_TAB
+        ? panel.dataset.day === FUND_TAB
+        : panel.dataset.day !== active.dataset.tab;
     }
 
     if (focus) active.focus();
