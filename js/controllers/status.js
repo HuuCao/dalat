@@ -111,7 +111,8 @@ export function startStatus({ trip, root, countdown, tabs, clock, hint }) {
   tick();
 }
 
-// "Đang diễn ra" / "Đã qua" beside the period, so state never rests on colour.
+// On screen only the time chip changes colour; screen readers still hear
+// "Đang diễn ra" / "Đã qua", so the state never rests on colour alone.
 function setStateTag(el, state) {
   let tag = el.querySelector('.state-tag');
   if (!state) {
@@ -123,6 +124,4 @@ function setStateTag(el, state) {
     el.querySelector('.time').append(tag);
   }
   tag.textContent = state === 'now' ? 'Đang diễn ra' : 'Đã qua';
-  tag.classList.toggle('is-now', state === 'now');
-  tag.classList.toggle('is-past', state === 'past');
 }

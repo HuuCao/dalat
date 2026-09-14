@@ -91,8 +91,7 @@ Panel tối màu nổi đè lên mép dưới banner, nằm trên thanh tab — 
 
 Trong thời gian chuyến đi, trang tự phản ánh "bây giờ":
 
-- **Khung đang diễn ra** nổi bật: nền xanh chanh nhạt, vạch xanh chanh ở mép trái, viền và vầng sáng "thở" chậm, bóng đổ nhẹ, giờ đổi màu nhấn, nhãn `● ĐANG DIỄN RA` dạng viên thuốc có chấm nhấp nháy. Thẻ vẫn cao bằng các thẻ khác.
-- **Khung đã qua** xám hẳn: cả thẻ chuyển trắng đen (icon, màu tiền, link Maps), nền xám, giờ và chấm xám, nhãn `ĐÃ QUA` — không cần bấm gì.
+- **Chỉ ô giờ đổi màu theo thời gian**, thẻ địa điểm giữ nguyên: khung đang diễn ra có ô giờ xanh chanh và chấm có vòng sáng; khung đã qua có ô giờ và chấm xám. Trình đọc màn hình vẫn đọc "Đang diễn ra" / "Đã qua".
 - **Tự mở đúng ngày:** mở trang trong lúc đang đi, tab tự chuyển sang ngày hiện tại và cuộn tới khung đang diễn ra.
 - **Tự chuyển khi đến giờ:** khung mới bắt đầu thì trang tự đưa thẻ đó vào giữa màn hình (mở tab ngày nếu đang ở tab khác). Nếu 30 giây gần nhất bạn vừa chạm, cuộn hay gõ phím thì trang không giành cuộn mà hiện nút `📍 Đang diễn ra: …` ở góc dưới — bấm để tới, tự ẩn khi thẻ đã trên màn hình. Mở lại trang từ nền cũng bắt kịp ngay. Bật "Giảm chuyển động" thì nhảy thẳng, không cuộn mượt.
 - Giờ trong dữ liệu tính theo múi giờ chuyến đi (`+07:00`), nên xem từ máy ở múi giờ khác vẫn đúng.
