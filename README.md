@@ -150,6 +150,8 @@ https://huucao.github.io/dalat/?now=2026-10-19T00:00:00%2B07:00   # đã kết t
 - **Không cuộn ngang** ở mọi độ rộng (đã kiểm tra 360, 390, 430, 1440px).
 - Panel đếm ngược tự xuống dòng các ô số trên màn hình hẹp.
 - Thanh địa chỉ trình duyệt đổi màu xanh theo trang (`theme-color`); không chặn zoom.
+- **Icon riêng:** ghim bản đồ xanh chanh có cây thông trên nền xanh rêu — hiện trên tab trình duyệt (`favicon.svg`, dự phòng PNG 32px) và khi ghim ra màn hình chính (`apple-touch-icon.png` 180px cho iPhone, PNG 192/512px trong `site.webmanifest` cho Android).
+- **Mở như app riêng:** bấm icon trên màn hình chính, trang mở toàn màn hình không có thanh địa chỉ, tên dưới icon là `Đà Lạt`. Link Form / Maps vẫn mở bình thường; không kéo xuống để tải lại được — sổ quỹ vẫn tự cập nhật và có nút `↻`.
 
 ### 8. Dữ liệu và xử lý lỗi
 
@@ -321,7 +323,9 @@ Làm một lần, khoảng 15 phút. **Lưu ý:** link CSV đã publish là côn
 ```
 index.html              khung trang + script chọn lớp animation
 data/trip.json          toàn bộ nội dung
+site.webmanifest        tên, màu, icon khi ghim ra màn hình chính (Android)
 assets/img/             ảnh nhiều kích thước
+assets/icons/           favicon (SVG + PNG 32px), apple-touch-icon 180px, icon 192/512px
 css/
   tokens.css            màu, bo góc, bóng, easing
   base.css              nền tảng, footer, thanh tiến trình, thông báo lỗi
