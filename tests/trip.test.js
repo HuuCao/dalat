@@ -97,3 +97,95 @@ test('invalid data fails with the exact path', () => {
     /hero\.image\.src: phải chứa \{w\}/,
   );
 });
+
+const validFund = { members: ['Hữu', 'MiMi'] };
+const withFund = (fund, trip = oneItem(validItem)) => () => buildTrip({ ...trip, fund });
+
+test('budget is optional and must be a whole number of dong', () => {
+  assert.equal(buildTrip(oneItem({ ...validItem, budget: 200000 })).items[0].budget, 200000);
+  assert.equal(buildTrip(oneItem({ ...validItem, budget: 0 })).items[0].budget, 0);
+  assert.equal(buildTrip(oneItem(validItem)).items[0].budget, null);
+  assert.throws(() => buildTrip(oneItem({ ...validItem, budget: -1 })), /days\[0\]\.items\[0\]\.budget: phải là số nguyên ≥ 0/);
+  assert.throws(() => buildTrip(oneItem({ ...validItem, budget: 1.5 })), /budget: phải là số nguyên ≥ 0/);
+  assert.throws(() => buildTrip(oneItem({ ...validItem, budget: '200000' })), /budget: phải là số nguyên ≥ 0/);
+});
+
+test('a trip without fund has no fund', () => {
+  assert.equal(buildTrip(oneItem(validItem)).fund, null);
+});
+
+test('fund builds members, shared costs and labels in form order', () => {
+  const built = buildTrip({
+    ...minimalTrip([
+      { date: '2026-10-17', items: [{ start: '09:00', end: '10:00', title: 'B' }] },
+      { date: '2026-10-16', items: [
+        { start: '12:00', end: '13:00', title: 'A2' },
+        { start: '08:00', end: '09:00', title: 'A1' },
+      ] },
+    ]),
+    fund: { members: [' Hữu ', 'MiMi'], shared: [{ title: 'Khách sạn', icon: '🏨', budget: 1080000, note: '2 đêm' }, { title: 'Xe máy' }] },
+  });
+  assert.deepEqual(built.fund.labels, [
+    'Chung · Khách sạn', 'Chung · Xe máy', 'Chung · Phát sinh',
+    'Day 1 · A1', 'Day 1 · A2', 'Day 1 · Phát sinh',
+    'Day 2 · B', 'Day 2 · Phát sinh',
+  ]);
+  assert.deepEqual(built.fund.members, ['Hữu', 'MiMi']);
+  assert.deepEqual(built.fund.shared, [
+    { id: 'shared-1', icon: '🏨', title: 'Khách sạn', note: '2 đêm', budget: 1080000, formLabel: 'Chung · Khách sạn' },
+    { id: 'shared-2', icon: '', title: 'Xe máy', note: '', budget: null, formLabel: 'Chung · Xe máy' },
+  ]);
+  assert.deepEqual(built.fund.sharedExtra, { id: 'shared-extra', icon: '⚡', title: 'Phát sinh chung', note: '', budget: null, formLabel: 'Chung · Phát sinh' });
+  assert.equal(built.days[0].items[0].formLabel, 'Day 1 · A1');
+  assert.equal(built.days[0].extraLabel, 'Day 1 · Phát sinh');
+  assert.equal(built.fund.csv, null);
+  assert.equal(built.fund.form, null);
+  assert.equal(built.fund.sheet, null);
+
+  const linked = buildTrip({
+    ...oneItem(validItem),
+    fund: {
+      ...validFund,
+      csv: { expenses: 'https://docs.google.com/a', contributions: 'https://docs.google.com/b' },
+      form: { url: 'https://docs.google.com/forms/d/e/x/viewform' },
+      sheet: 'https://docs.google.com/spreadsheets/d/x/edit',
+    },
+  });
+  assert.deepEqual(linked.fund.csv, { expenses: 'https://docs.google.com/a', contributions: 'https://docs.google.com/b' });
+  assert.deepEqual(linked.fund.form, { url: 'https://docs.google.com/forms/d/e/x/viewform', placeField: null });
+  assert.equal(linked.fund.sheet, 'https://docs.google.com/spreadsheets/d/x/edit');
+});
+
+test('fund config fails with the exact path', () => {
+  assert.throws(withFund({ members: [] }), /fund\.members: phải có ít nhất 1 người/);
+  assert.throws(withFund({ members: ['Hữu', ' '] }), /fund\.members\[1\]: bắt buộc/);
+  assert.throws(withFund({ members: ['Trâm', 'Trâm'] }), /fund\.members\[1\]: trùng tên/);
+  assert.throws(withFund({ members: ['quỹ'] }), /fund\.members\[0\]: "Quỹ" là tên dành riêng/);
+  assert.throws(
+    withFund({ ...validFund, csv: { expenses: 'https://evil.example/x.csv', contributions: 'https://docs.google.com/x' } }),
+    /fund\.csv\.expenses: phải là link https:\/\/docs\.google\.com\//,
+  );
+  assert.throws(withFund({ ...validFund, csv: { expenses: 'https://docs.google.com/x' } }), /fund\.csv\.contributions: phải là link/);
+  assert.throws(withFund({ ...validFund, form: { url: 'javascript:alert(1)' } }), /fund\.form\.url: phải là link https:\/\/docs\.google\.com\/forms\//);
+  assert.throws(
+    withFund({ ...validFund, form: { url: 'https://docs.google.com/forms/d/e/x/viewform', placeField: 'abc' } }),
+    /fund\.form\.placeField: phải có dạng entry\.123456/,
+  );
+  assert.throws(withFund({ ...validFund, sheet: 'http://docs.google.com/x' }), /fund\.sheet: phải là link/);
+  assert.throws(withFund({ ...validFund, shared: {} }), /fund\.shared: phải là mảng/);
+  assert.throws(withFund({ ...validFund, shared: [{ title: 'Phát sinh' }] }), /fund\.shared\[0\]\.title: "Phát sinh" là tên dành riêng/);
+  assert.throws(withFund({ ...validFund, shared: [{ title: 'Xe' }, { title: 'xe ' }] }), /fund\.shared\[1\]\.title: trùng tên/);
+  assert.throws(withFund({ ...validFund, shared: [{ title: 'Xe', budget: -5 }] }), /fund\.shared\[0\]\.budget: phải là số nguyên ≥ 0/);
+});
+
+test('with a fund, slot titles must be unique within a day', () => {
+  const day = (items) => minimalTrip([{ date: '2026-10-16', items }]);
+  const twoX = day([validItem, { start: '10:00', end: '11:00', title: 'x' }]);
+  assert.throws(withFund(validFund, twoX), /days\[0\]\.items\[1\]\.title: trùng tên "x" trong cùng ngày/);
+  assert.throws(withFund(validFund, day([{ ...validItem, title: 'Phát sinh' }])), /days\[0\]\.items\[0\]\.title: "Phát sinh" là tên dành riêng/);
+  assert.doesNotThrow(() => buildTrip(twoX));
+  assert.doesNotThrow(withFund(validFund, minimalTrip([
+    { date: '2026-10-16', items: [validItem] },
+    { date: '2026-10-17', items: [validItem] },
+  ])));
+});

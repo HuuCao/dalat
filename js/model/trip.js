@@ -2,8 +2,17 @@ import {
   isDate, isTime, isTimezone, toMinutes, toDate,
   dateText, dateRangeText, derivePeriod, fillTemplate,
 } from '../lib/time.js';
+import { keyOf } from '../lib/text.js';
 
 const MAPS_SEARCH_URL = 'https://www.google.com/maps/search/?api=1&query=';
+const DOCS_URL = 'https://docs.google.com/';
+const FORMS_URL = 'https://docs.google.com/forms/';
+const SHARED_GROUP = 'Chung';
+
+// Reserved words of the expense form: the fund as a payer, and the bucket for
+// spending outside the plan that every day and the shared group get.
+export const FUND_PAYER = 'Quỹ';
+export const EXTRA_TITLE = 'Phát sinh';
 
 export function buildTrip(raw) {
   validateTrip(raw);
@@ -43,6 +52,7 @@ export function buildTrip(raw) {
     end: items[items.length - 1].end,
     items,
     days,
+    fund: raw.fund != null ? buildFund(raw.fund, days) : null,
   };
 }
 
@@ -55,9 +65,10 @@ export function countText(placeCount, emptyCount) {
 
 function buildDay(day, index, timezone) {
   const id = `day-${index}`;
+  const label = `Day ${index}`;
   const items = [...day.items]
     .sort((a, b) => toMinutes(a.start) - toMinutes(b.start))
-    .map((item, order) => buildItem(item, { id: `${id}-item-${order + 1}`, dayId: id, order, date: day.date, timezone }));
+    .map((item, order) => buildItem(item, { id: `${id}-item-${order + 1}`, dayId: id, dayLabel: label, order, date: day.date, timezone }));
   const placeCount = items.filter((item) => !item.empty).length;
   const emptyCount = items.length - placeCount;
 
@@ -65,7 +76,7 @@ function buildDay(day, index, timezone) {
     index,
     id,
     date: day.date,
-    label: `Day ${index}`,
+    label,
     icon: day.icon ?? '',
     dateText: dateText(day.date),
     rangeText: items.length > 0 ? `${items[0].startText} → ${items[items.length - 1].endText}` : '',
@@ -73,11 +84,12 @@ function buildDay(day, index, timezone) {
     placeCount,
     emptyCount,
     countText: countText(placeCount, emptyCount),
+    extraLabel: `${label} · ${EXTRA_TITLE}`,
     items,
   };
 }
 
-function buildItem(item, { id, dayId, order, date, timezone }) {
+function buildItem(item, { id, dayId, dayLabel, order, date, timezone }) {
   const icon = item.icon ?? '';
   return {
     id,
@@ -97,6 +109,43 @@ function buildItem(item, { id, dayId, order, date, timezone }) {
     tagKey: (item.tag ?? '').trim().toLowerCase().replace(/\s+/g, '-'),
     mapUrl: item.map ? MAPS_SEARCH_URL + encodeURIComponent(item.map) : null,
     empty: item.empty === true,
+    budget: item.budget ?? null,
+    formLabel: `${dayLabel} · ${item.title}`,
+  };
+}
+
+// Labels follow the order people meet them in the form's dropdown: shared
+// costs first, then each day's slots, each group closed by its extra bucket.
+function buildFund(fund, days) {
+  const shared = (fund.shared ?? []).map((cost, index) => ({
+    id: `shared-${index + 1}`,
+    icon: cost.icon ?? '',
+    title: cost.title,
+    note: cost.note ?? '',
+    budget: cost.budget ?? null,
+    formLabel: `${SHARED_GROUP} · ${cost.title}`,
+  }));
+  const sharedExtra = {
+    id: 'shared-extra',
+    icon: '⚡',
+    title: `${EXTRA_TITLE} chung`,
+    note: '',
+    budget: null,
+    formLabel: `${SHARED_GROUP} · ${EXTRA_TITLE}`,
+  };
+
+  return {
+    members: fund.members.map((name) => name.trim()),
+    csv: fund.csv ? { expenses: fund.csv.expenses, contributions: fund.csv.contributions } : null,
+    form: fund.form ? { url: fund.form.url, placeField: fund.form.placeField ?? null } : null,
+    sheet: fund.sheet ?? null,
+    shared,
+    sharedExtra,
+    labels: [
+      ...shared.map((cost) => cost.formLabel),
+      sharedExtra.formLabel,
+      ...days.flatMap((day) => [...day.items.map((item) => item.formLabel), day.extraLabel]),
+    ],
   };
 }
 
@@ -120,6 +169,9 @@ function fail(path, message) {
   throw new Error(`${path}: ${message}`);
 }
 
+const isBudget = (value) => Number.isInteger(value) && value >= 0;
+const isLink = (value, prefix) => typeof value === 'string' && value.startsWith(prefix);
+
 function validateTrip(raw) {
   if (!raw || typeof raw !== 'object') fail('trip', 'phải là object');
   if (!isTimezone(raw.timezone)) fail('timezone', 'phải có dạng +07:00');
@@ -129,6 +181,10 @@ function validateTrip(raw) {
   if (!Array.isArray(raw.days) || raw.days.length === 0) fail('days', 'phải là mảng có ít nhất 1 ngày');
   raw.days.forEach((day, i) => validateDay(day, `days[${i}]`));
   if (!raw.days.some((day) => day.items.length > 0)) fail('days', 'cần ít nhất 1 khung giờ');
+  if (raw.fund != null) {
+    validateFund(raw.fund);
+    raw.days.forEach((day, i) => validateFormTitles(day, `days[${i}]`));
+  }
 }
 
 function validateImage(image, path) {
@@ -152,4 +208,55 @@ function validateItem(item, path) {
   if (!isTime(item.start)) fail(`${path}.start`, 'phải có dạng HH:MM');
   if (!isTime(item.end)) fail(`${path}.end`, 'phải có dạng HH:MM');
   if (toMinutes(item.end) <= toMinutes(item.start)) fail(`${path}.end`, 'phải sau start');
+  if (item.budget !== undefined && !isBudget(item.budget)) fail(`${path}.budget`, 'phải là số nguyên ≥ 0');
+}
+
+// A form answer names its place by label, so two slots of one day must not
+// share a title, and none may take the extra bucket's name.
+function validateFormTitles(day, path) {
+  const seen = new Set();
+  day.items.forEach((item, i) => {
+    const key = keyOf(item.title);
+    if (key === keyOf(EXTRA_TITLE)) fail(`${path}.items[${i}].title`, `"${EXTRA_TITLE}" là tên dành riêng`);
+    if (seen.has(key)) fail(`${path}.items[${i}].title`, `trùng tên "${item.title}" trong cùng ngày`);
+    seen.add(key);
+  });
+}
+
+function validateFund(fund) {
+  if (typeof fund !== 'object') fail('fund', 'phải là object');
+  if (!Array.isArray(fund.members) || fund.members.length === 0) fail('fund.members', 'phải có ít nhất 1 người');
+
+  const names = new Set();
+  fund.members.forEach((name, i) => {
+    const path = `fund.members[${i}]`;
+    if (typeof name !== 'string' || !name.trim()) fail(path, 'bắt buộc');
+    if (keyOf(name) === keyOf(FUND_PAYER)) fail(path, `"${FUND_PAYER}" là tên dành riêng`);
+    if (names.has(keyOf(name))) fail(path, `trùng tên "${name.trim()}"`);
+    names.add(keyOf(name));
+  });
+
+  if (fund.csv != null) {
+    for (const key of ['expenses', 'contributions']) {
+      if (!isLink(fund.csv[key], DOCS_URL)) fail(`fund.csv.${key}`, `phải là link ${DOCS_URL}`);
+    }
+  }
+  if (fund.form != null) {
+    if (!isLink(fund.form.url, FORMS_URL)) fail('fund.form.url', `phải là link ${FORMS_URL}`);
+    if (fund.form.placeField != null && !/^entry\.\d+$/.test(fund.form.placeField)) {
+      fail('fund.form.placeField', 'phải có dạng entry.123456');
+    }
+  }
+  if (fund.sheet != null && !isLink(fund.sheet, DOCS_URL)) fail('fund.sheet', `phải là link ${DOCS_URL}`);
+
+  if (fund.shared != null && !Array.isArray(fund.shared)) fail('fund.shared', 'phải là mảng');
+  const titles = new Set();
+  (fund.shared ?? []).forEach((cost, i) => {
+    const path = `fund.shared[${i}]`;
+    if (typeof cost?.title !== 'string' || !cost.title.trim()) fail(`${path}.title`, 'bắt buộc');
+    if (keyOf(cost.title) === keyOf(EXTRA_TITLE)) fail(`${path}.title`, `"${EXTRA_TITLE}" là tên dành riêng`);
+    if (titles.has(keyOf(cost.title))) fail(`${path}.title`, `trùng tên "${cost.title.trim()}"`);
+    titles.add(keyOf(cost.title));
+    if (cost.budget !== undefined && !isBudget(cost.budget)) fail(`${path}.budget`, 'phải là số nguyên ≥ 0');
+  });
 }
