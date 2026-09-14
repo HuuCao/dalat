@@ -37,6 +37,17 @@ export function countdownTiles(ms) {
   return parts.map(({ unit, value }) => ({ unit, value: String(value).padStart(2, '0') }));
 }
 
+// A viewer who has not touched the page for this long is not in the middle
+// of something, so the page may scroll for them.
+export const IDLE_MS = 30_000;
+
+// What to do when the slot in progress changes: follow a slot that just
+// started, or only offer it while the viewer is busy.
+export function followAction({ previousId, currentId, idleMs }) {
+  if (!currentId || currentId === previousId) return null;
+  return idleMs >= IDLE_MS ? 'move' : 'hint';
+}
+
 export function describeStatus(trip, status) {
   const place = trip.hero.title;
   const progress = `${status.pastPlaces}/${trip.placeCount} điểm`;

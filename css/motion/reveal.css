@@ -29,6 +29,14 @@
     animation: pop .6s var(--ease-out) calc(var(--reveal-delay) + 250ms) backwards;
   }
 
+  /* The live dot keeps blinking after its pop (timeline.css); listed second,
+     its ring wins over the pop's. */
+  .item.reveal.in.is-now .dot {
+    animation:
+      pop .6s var(--ease-out) calc(var(--reveal-delay) + 250ms) backwards,
+      live-dot 1.6s ease-out infinite;
+  }
+
   /* The rail draws once the day title above it is in. The rail is the
      title's sibling, not its child, so it cannot inherit --reveal-delay. */
   .day-head.reveal + .timeline::before { transform-origin: top center; }

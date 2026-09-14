@@ -91,9 +91,9 @@ Panel tối màu nổi đè lên mép dưới banner, nằm trên thanh tab — 
 
 Trong thời gian chuyến đi, trang tự phản ánh "bây giờ":
 
-- **Khung đang diễn ra** được làm nổi: viền và giờ đổi màu nhấn, chấm có vòng sáng, thêm nhãn `ĐANG DIỄN RA`.
-- **Khung đã qua** giữ nguyên cỡ thẻ, chuyển nền xám, chữ nhạt, nhãn `ĐÃ QUA`, giờ mờ, chấm đổi màu đậm — không cần bấm gì.
+- **Chỉ ô giờ đổi màu theo thời gian**, thẻ địa điểm giữ nguyên: khung đang diễn ra có ô giờ xanh chanh nhấp nháy và chấm có vòng sáng lan ra (tắt khi bật "Giảm chuyển động"); khung đã qua có ô giờ và chấm xám. Trình đọc màn hình vẫn đọc "Đang diễn ra" / "Đã qua".
 - **Tự mở đúng ngày:** mở trang trong lúc đang đi, tab tự chuyển sang ngày hiện tại và cuộn tới khung đang diễn ra.
+- **Tự chuyển khi đến giờ:** khung mới bắt đầu thì trang tự đưa thẻ đó vào giữa màn hình (mở tab ngày nếu đang ở tab khác). Nếu 30 giây gần nhất bạn vừa chạm, cuộn hay gõ phím thì trang không giành cuộn mà hiện nút `📍 Đang diễn ra: …` ở góc dưới — bấm để tới, tự ẩn khi thẻ đã trên màn hình. Mở lại trang từ nền cũng bắt kịp ngay. Bật "Giảm chuyển động" thì nhảy thẳng, không cuộn mượt.
 - Giờ trong dữ liệu tính theo múi giờ chuyến đi (`+07:00`), nên xem từ máy ở múi giờ khác vẫn đúng.
 
 **Xem trước một thời điểm bất kỳ** bằng tham số `?now=` (dùng để kiểm tra, không ảnh hưởng người xem thường):
@@ -150,6 +150,8 @@ https://huucao.github.io/dalat/?now=2026-10-19T00:00:00%2B07:00   # đã kết t
 - **Không cuộn ngang** ở mọi độ rộng (đã kiểm tra 360, 390, 430, 1440px).
 - Panel đếm ngược tự xuống dòng các ô số trên màn hình hẹp.
 - Thanh địa chỉ trình duyệt đổi màu xanh theo trang (`theme-color`); không chặn zoom.
+- **Icon riêng:** ghim bản đồ xanh chanh có cây thông trên nền xanh rêu — hiện trên tab trình duyệt (`favicon.svg`, dự phòng PNG 32px) và khi ghim ra màn hình chính (`apple-touch-icon.png` 180px cho iPhone, PNG 192/512px trong `site.webmanifest` cho Android).
+- **Mở như app riêng:** bấm icon trên màn hình chính, trang mở toàn màn hình không có thanh địa chỉ, tên dưới icon là `Đà Lạt`. Link Form / Maps vẫn mở bình thường; không kéo xuống để tải lại được — sổ quỹ vẫn tự cập nhật và có nút `↻`.
 
 ### 8. Dữ liệu và xử lý lỗi
 
@@ -321,7 +323,9 @@ Làm một lần, khoảng 15 phút. **Lưu ý:** link CSV đã publish là côn
 ```
 index.html              khung trang + script chọn lớp animation
 data/trip.json          toàn bộ nội dung
+site.webmanifest        tên, màu, icon khi ghim ra màn hình chính (Android)
 assets/img/             ảnh nhiều kích thước
+assets/icons/           favicon (SVG + PNG 32px), apple-touch-icon 180px, icon 192/512px
 css/
   tokens.css            màu, bo góc, bóng, easing
   base.css              nền tảng, footer, thanh tiến trình, thông báo lỗi

@@ -2,7 +2,15 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { buildTrip } from '../js/model/trip.js';
-import { getStatus, describeStatus, countdownTiles } from '../js/model/status.js';
+import { getStatus, describeStatus, countdownTiles, followAction } from '../js/model/status.js';
+
+test('followAction moves to a slot that just started, or offers it while the viewer is busy', () => {
+  assert.equal(followAction({ previousId: 'a', currentId: 'a', idleMs: 60_000 }), null);
+  assert.equal(followAction({ previousId: 'a', currentId: null, idleMs: 60_000 }), null);
+  assert.equal(followAction({ previousId: null, currentId: 'b', idleMs: 30_000 }), 'move');
+  assert.equal(followAction({ previousId: 'a', currentId: 'b', idleMs: Infinity }), 'move');
+  assert.equal(followAction({ previousId: 'a', currentId: 'b', idleMs: 29_999 }), 'hint');
+});
 
 const trip = buildTrip(JSON.parse(readFileSync(new URL('../data/trip.json', import.meta.url), 'utf8')));
 const statusAt = (iso) => getStatus(trip, Date.parse(iso));

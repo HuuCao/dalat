@@ -5,6 +5,7 @@ import { renderHero } from './views/hero.js';
 import { renderTabs } from './views/tabs.js';
 import { renderDay } from './views/day.js';
 import { createCountdown } from './views/countdown.js';
+import { createNowHint } from './views/now-hint.js';
 import { createFundView } from './views/fund.js';
 import { renderFooter } from './views/footer.js';
 import { renderError } from './views/error.js';
@@ -32,9 +33,12 @@ function mount(app, trip, clock) {
   const tabbar = renderTabs(trip.days, { fund: Boolean(fund) });
   const panels = [...trip.days.map((day) => renderDay(day, { fund: Boolean(fund) })), fund?.panel].filter(Boolean);
   const main = h('main', { class: fund?.fab ? 'wrap has-fab' : 'wrap' }, panels, renderFooter(trip.footer));
+  // Fixed-position pieces live outside <main>: an animated ancestor would
+  // break position: fixed.
+  const hint = createNowHint();
 
-  app.replaceChildren(...[hero, status, tabbar, main, fund?.fab].filter(Boolean));
-  return { hero, tabbar, countdown, panels, main, fund };
+  app.replaceChildren(...[hero, status, tabbar, main, fund?.fab, hint.element].filter(Boolean));
+  return { hero, tabbar, countdown, panels, main, fund, hint };
 }
 
 async function start() {
@@ -57,7 +61,7 @@ async function start() {
     const tabs = createTabs(view.tabbar.querySelector('[role="tablist"]'), view.panels, {
       onChange: (shown) => shown.forEach((panel) => reveal.replay(panel)),
     });
-    startStatus({ trip, root: view.main, countdown: view.countdown, tabs, clock });
+    startStatus({ trip, root: view.main, countdown: view.countdown, tabs, clock, hint: view.hint });
     // The fund never takes the schedule down with it.
     if (view.fund) {
       try {

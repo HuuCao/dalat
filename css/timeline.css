@@ -216,13 +216,9 @@
 }
 
 /* ---------- LIVE AND PAST SLOTS ---------- */
-/* Live uses the lime family, the same colour as the ticking seconds, so
-   "now" means one thing across the page. */
-.item.is-now .card {
-  border-color: var(--live-strong);
-  box-shadow: 0 0 0 3px rgba(var(--live-rgb), .35);
-}
-
+/* Only the time chip and the dot mark a slot's state; cards look the same
+   whatever the time. Live uses the lime family, the same colour as the
+   ticking seconds, so "now" means one thing across the page. */
 .item.is-now .clock { background: var(--live); color: var(--live-ink); }
 .item.is-now .clock-end { color: rgba(29, 51, 22, .72); }
 
@@ -231,23 +227,57 @@
   box-shadow: 0 0 0 1px var(--live-strong), 0 0 0 5px rgba(var(--live-rgb), .35);
 }
 
-.state-tag {
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: .06em;
-  text-transform: uppercase;
-  color: var(--live-strong);
+/* The slot in progress blinks on its time chip and dot. reveal.css repeats
+   the dot's animation next to its entrance pop, which would override it. */
+@media (prefers-reduced-motion: no-preference) {
+  .item.is-now .clock { animation: live-chip 1.6s ease-out infinite; }
+  .item.is-now .dot { animation: live-dot 1.6s ease-out infinite; }
 }
 
-.state-tag.is-past { font-weight: 700; color: var(--text-sub); }
+/* Slots that are over: grey time chip and dot. Text stays ≥ 4.5:1. */
+.item.is-past .clock { background: #e4e8e5; color: #58605b; }
+.item.is-past .clock-end { color: #58605b; }
+.item.is-past .dot { background: #a3aba6; box-shadow: 0 0 0 1px #a3aba6; }
 
-/* Slots that are over keep their size and fade to a neutral ground, so the
-   eye lands on what is left. */
-.item.is-past .card { background: #f4f5f4; border-color: var(--line); }
-.item.is-past .card-icon { opacity: .6; }
-.item.is-past .card-title { color: var(--text-sub); }
-.item.is-past .clock { opacity: .55; }
-.item.is-past .dot { background: var(--primary); box-shadow: 0 0 0 1px var(--primary); }
+/* Read out, not shown: on screen the time chip carries the state. */
+.state-tag {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---------- NOW HINT ---------- */
+/* Offered bottom-left while the viewer is busy, clear of the floating
+   expense button on the right (and centred on it vertically); centred on
+   desktop. */
+.now-hint {
+  position: fixed;
+  left: 16px;
+  bottom: calc(20px + env(safe-area-inset-bottom));
+  z-index: 25;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: calc(100% - 172px);
+  min-height: 44px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 99px;
+  background: var(--live);
+  color: var(--live-ink);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: 0 8px 24px rgba(16, 30, 25, .25);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.now-hint-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.now-hint:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
 
 @media (min-width: 761px) {
   .day { padding: 20px; border-radius: var(--radius); }
@@ -259,4 +289,5 @@
   .card-icon { width: 44px; height: 44px; border-radius: 11px; font-size: 23px; }
   .card-title { font-size: 17px; }
   .clock-start { font-size: 17px; }
+  .now-hint { left: 50%; bottom: calc(24px + env(safe-area-inset-bottom)); max-width: 420px; transform: translateX(-50%); }
 }
