@@ -1,3 +1,5 @@
+import { durationText, shortWeekdayText } from '../lib/time.js';
+
 export function getStatus(trip, now) {
   let current = null;
   let next = null;
@@ -19,7 +21,7 @@ export function getStatus(trip, now) {
   if (now < trip.start.getTime()) phase = 'soon';
   else if (now >= trip.end.getTime()) phase = 'done';
 
-  return { phase, current, next, pastPlaces, pastIds, remainingMs: Math.max(trip.start.getTime() - now, 0) };
+  return { phase, now, current, next, pastPlaces, pastIds, remainingMs: Math.max(trip.start.getTime() - now, 0) };
 }
 
 export function countdownTiles(ms) {
@@ -38,6 +40,7 @@ export function countdownTiles(ms) {
 export function describeStatus(trip, status) {
   const place = trip.hero.title;
   const progress = `${status.pastPlaces}/${trip.placeCount} điểm`;
+  const quiet = { progress: null, next: null, mapUrl: null };
 
   if (status.phase === 'soon') {
     const [first] = trip.items;
@@ -47,6 +50,7 @@ export function describeStatus(trip, status) {
       tiles: countdownTiles(status.remainingMs),
       headline: null,
       note: `${place} đang chờ · bắt đầu ${first.startText} · ${firstDay.dateText}`,
+      ...quiet,
     };
   }
 
@@ -56,22 +60,43 @@ export function describeStatus(trip, status) {
       tiles: null,
       headline: `Hẹn gặp lại ${place} ✦`,
       note: `Đã đi qua ${trip.placeCount} điểm trong ${trip.dayCount} ngày`,
+      ...quiet,
     };
   }
 
-  if (status.current) {
+  const { current, next, now } = status;
+  if (current) {
     return {
       label: 'Đang diễn ra',
       tiles: null,
-      headline: status.current.heading,
-      note: `Đến ${status.current.endText} · đã qua ${progress}`,
+      headline: current.heading,
+      note: `Còn ${durationText(current.end.getTime() - now)} · đến ${current.endText}`,
+      progress,
+      next: upNext(trip, current),
+      mapUrl: current.mapUrl,
     };
   }
 
-  return {
-    label: 'Đang di chuyển',
-    tiles: null,
-    headline: status.next ? status.next.heading : 'Nghỉ giữa chặng',
-    note: status.next ? `Tiếp theo lúc ${status.next.startText} · đã qua ${progress}` : `Đã qua ${progress}`,
-  };
+  if (next) {
+    return {
+      label: 'Đang di chuyển',
+      tiles: null,
+      headline: next.heading,
+      note: `Bắt đầu ${next.startText} · còn ${durationText(next.start.getTime() - now)}`,
+      progress,
+      next: upNext(trip, next),
+      mapUrl: next.mapUrl,
+    };
+  }
+
+  return { label: 'Đang di chuyển', tiles: null, headline: 'Nghỉ giữa chặng', note: `Đã qua ${progress}`, ...quiet };
+}
+
+// The slot after `item`; on another day it names the weekday too.
+function upNext(trip, item) {
+  const after = trip.items[trip.items.indexOf(item) + 1];
+  if (!after) return null;
+  const day = trip.days.find((entry) => entry.id === after.dayId);
+  const when = after.dayId === item.dayId ? after.startText : `${shortWeekdayText(day.date)} ${after.startText}`;
+  return `Tiếp theo ${when} · ${after.heading}`;
 }
