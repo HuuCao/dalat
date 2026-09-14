@@ -31,6 +31,18 @@
   to { transform: scaleY(1); }
 }
 
+/* ---------- LIVE SLOT (timeline.css) ---------- */
+/* The ring around the slot in progress widens and fades, then settles. Every
+   layer of the card's shadow is repeated so the edge and lift never flicker. */
+@keyframes now-breathe {
+  0%, 100% { box-shadow: inset 4px 0 0 var(--live), 0 0 0 3px rgba(var(--live-rgb), .45), 0 10px 24px rgba(61, 90, 20, .18); }
+  50% { box-shadow: inset 4px 0 0 var(--live), 0 0 0 7px rgba(var(--live-rgb), .18), 0 10px 24px rgba(61, 90, 20, .18); }
+}
+
+@keyframes tag-blink {
+  50% { opacity: .25; }
+}
+
 /* ---------- SCROLL-LINKED (scroll-timeline.css) ---------- */
 
 /* Zoom out and drift down. No edge is uncovered while

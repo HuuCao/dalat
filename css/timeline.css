@@ -217,10 +217,16 @@
 
 /* ---------- LIVE AND PAST SLOTS ---------- */
 /* Live uses the lime family, the same colour as the ticking seconds, so
-   "now" means one thing across the page. */
+   "now" means one thing across the page. The slot in progress lifts off the
+   page: lime tint, a lime edge on the left, a stronger ring that breathes.
+   Shadows, not a thicker border, so it keeps its neighbours' height. */
 .item.is-now .card {
+  background: #f6fbe9;
   border-color: var(--live-strong);
-  box-shadow: 0 0 0 3px rgba(var(--live-rgb), .35);
+  box-shadow:
+    inset 4px 0 0 var(--live),
+    0 0 0 3px rgba(var(--live-rgb), .45),
+    0 10px 24px rgba(61, 90, 20, .18);
 }
 
 .item.is-now .clock { background: var(--live); color: var(--live-ink); }
@@ -241,13 +247,67 @@
 
 .state-tag.is-past { font-weight: 700; color: var(--text-sub); }
 
-/* Slots that are over keep their size and fade to a neutral ground, so the
-   eye lands on what is left. */
-.item.is-past .card { background: #f4f5f4; border-color: var(--line); }
+.state-tag.is-now {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 1px 8px 1px 7px;
+  border-radius: 99px;
+  background: var(--live);
+  color: var(--live-ink);
+}
+
+.state-tag.is-now::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--live-ink);
+}
+
+/* Slots that are over turn grey all over - icon, money colours, map link -
+   so the eye lands on what is left. Text colours stay ≥ 4.5:1. */
+.item.is-past .card { background: #eef0ee; border-color: #dde2de; filter: grayscale(1); }
 .item.is-past .card-icon { opacity: .6; }
 .item.is-past .card-title { color: var(--text-sub); }
-.item.is-past .clock { opacity: .55; }
-.item.is-past .dot { background: var(--primary); box-shadow: 0 0 0 1px var(--primary); }
+.item.is-past .clock { background: #e4e8e5; color: #58605b; }
+.item.is-past .clock-end { color: #58605b; }
+.item.is-past .dot { background: #a3aba6; box-shadow: 0 0 0 1px #a3aba6; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .item.is-now .card { animation: now-breathe 2.8s ease-in-out infinite; }
+  .state-tag.is-now::before { animation: tag-blink 1.6s ease-in-out infinite; }
+}
+
+/* ---------- NOW HINT ---------- */
+/* Offered bottom-left while the viewer is busy, clear of the floating
+   expense button on the right (and centred on it vertically); centred on
+   desktop. */
+.now-hint {
+  position: fixed;
+  left: 16px;
+  bottom: calc(20px + env(safe-area-inset-bottom));
+  z-index: 25;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: calc(100% - 172px);
+  min-height: 44px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 99px;
+  background: var(--live);
+  color: var(--live-ink);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: 0 8px 24px rgba(16, 30, 25, .25);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.now-hint-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.now-hint:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
 
 @media (min-width: 761px) {
   .day { padding: 20px; border-radius: var(--radius); }
@@ -259,4 +319,5 @@
   .card-icon { width: 44px; height: 44px; border-radius: 11px; font-size: 23px; }
   .card-title { font-size: 17px; }
   .clock-start { font-size: 17px; }
+  .now-hint { left: 50%; bottom: calc(24px + env(safe-area-inset-bottom)); max-width: 420px; transform: translateX(-50%); }
 }
