@@ -15,7 +15,6 @@
     {
       "date": "2026-10-16",
       "icon": "🌿",
-      "note": "Sáng → Trưa → Chiều → Tối",
       "items": [
         { "start": "07:00", "end": "09:00", "icon": "🍃", "title": "Đồi chè Cầu Đất — Săn mây, ăn sáng, cà phê", "tag": "Nature", "map": "Đồi chè Cầu Đất Đà Lạt", "budget": 280000 },
         { "start": "09:15", "end": "10:30", "icon": "☕", "title": "Hidden Land", "tag": "Coffee", "map": "Hidden Land coffee Đà Lạt", "budget": 200000 },

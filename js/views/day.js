@@ -16,7 +16,7 @@ export function renderDay(day, { fund = false } = {}) {
   h('article', { class: 'day' },
     h('div', { class: 'day-head' },
       h('div', { class: fund ? 'day-info' : null },
-        h('h2', { class: 'day-title', text: join(' ', day.icon, day.label) }),
+        h('h2', { class: 'day-title', text: join(' ', day.icon, day.title) }),
         h('div', { class: 'day-date', text: join(' · ', day.dateText, day.rangeText, day.note) }),
         fund ? dayMoneySlot(day) : null),
       h('div', { class: 'day-count', text: day.countText })),
@@ -37,19 +37,21 @@ function renderItem(item, fund) {
     renderCard(item, fund));
 }
 
+// Tag, money line and map link share one row that wraps when it runs out of
+// room; past slots fold that row into the title line (timeline.css).
 function renderCard(item, fund) {
-  const hasFooter = !item.empty && Boolean(item.tag || item.mapUrl);
+  const meta = [
+    !item.empty && item.tag ? h('span', { class: 'tag', dataset: { tag: item.tagKey }, text: item.tag }) : null,
+    fund ? moneySlot(item.id) : null,
+    !item.empty && item.mapUrl
+      ? h('a', { class: 'map-btn', href: item.mapUrl, target: '_blank', rel: 'noopener noreferrer' }, '📍 Maps')
+      : null,
+  ].filter(Boolean);
+
   return h('div', { class: item.empty ? 'card empty' : 'card' },
     item.icon ? h('span', { class: 'card-icon', 'aria-hidden': 'true', text: item.icon }) : null,
     h('div', { class: 'card-body' },
       h('h3', { class: 'card-title', text: item.name }),
       item.detail ? h('p', { class: 'card-detail', text: item.detail }) : null,
-      hasFooter
-        ? h('div', { class: 'card-footer' },
-          item.tag ? h('span', { class: 'tag', dataset: { tag: item.tagKey }, text: item.tag }) : null,
-          item.mapUrl
-            ? h('a', { class: 'map-btn', href: item.mapUrl, target: '_blank', rel: 'noopener noreferrer' }, '📍 Maps')
-            : null)
-        : null,
-      fund ? moneySlot(item.id) : null));
+      meta.length > 0 ? h('div', { class: 'card-meta' }, meta) : null));
 }

@@ -28,7 +28,7 @@
 }
 
 .day-title { margin: 0; font-size: 18px; color: var(--primary); letter-spacing: -.01em; }
-.day-date { color: var(--text-sub); font-size: 12.5px; margin-top: 2px; }
+.day-date { color: var(--text-sub); font-size: 13px; margin-top: 2px; }
 .day-count { font-size: 12px; color: var(--link); font-weight: 700; }
 
 /* ---------- TIMELINE ---------- */
@@ -65,9 +65,10 @@
    end time sits beside it, smaller. */
 .time {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 10px;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .time .clock {
@@ -95,11 +96,11 @@
 }
 
 .time .period {
-  font-size: 10.5px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--text-sub);
   text-transform: uppercase;
-  letter-spacing: .07em;
+  letter-spacing: .06em;
 }
 
 /* ---------- CARD ---------- */
@@ -108,11 +109,11 @@
 .card {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
+  gap: 10px;
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: 12px;
-  padding: 12px;
+  padding: 10px 12px;
   transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
 }
 
@@ -120,11 +121,11 @@
   flex: 0 0 auto;
   display: grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 11px;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
   background: var(--accent-soft);
-  font-size: 21px;
+  font-size: 18px;
   line-height: 1;
 }
 
@@ -146,10 +147,11 @@
   color: var(--text-sub);
 }
 
-.card-footer {
+.card-meta {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 14px;
+  gap: 2px 12px;
   margin-top: 6px;
 }
 
@@ -160,10 +162,10 @@
   align-items: center;
   gap: 6px;
   color: var(--tag);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: .07em;
+  letter-spacing: .06em;
 }
 
 .tag::before {
@@ -191,11 +193,11 @@
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  margin: -13px 0 -13px auto;
-  padding: 13px 0 13px 12px;
+  margin: -12px 0 -12px auto;
+  padding: 12px 0 12px 10px;
   color: var(--link);
   text-decoration: none;
-  font-size: 11.5px;
+  font-size: 13px;
   font-weight: 700;
   transition: color .18s ease;
 }
@@ -234,18 +236,29 @@
   box-shadow: 0 0 0 1px var(--live-strong), 0 0 0 5px rgba(var(--live-rgb), .35);
 }
 
-.now-tag {
-  font-size: 10px;
+.state-tag {
+  font-size: 12px;
   font-weight: 800;
-  letter-spacing: .08em;
+  letter-spacing: .06em;
   text-transform: uppercase;
   color: var(--live-strong);
 }
 
-/* Slots that are over fade back so the eye lands on what is left. */
-.item.is-past .card:not(.empty) { background: #f3f9f4; border-color: #c9e1d0; }
-.item.is-past .card:not(.empty) .card-title { color: #5f7466; }
-.item.is-past .card-icon { opacity: .6; }
+.state-tag.is-past { font-weight: 700; color: var(--text-sub); }
+
+/* Slots that are over fold to one line - name and money - on a neutral
+   ground, so the eye lands on what is left. Opening the money line still
+   shows the entries, on a row of their own. */
+.item.is-past .card { padding-block: 8px; background: #f4f5f4; border-color: var(--line); }
+.item.is-past .card-icon { width: 28px; height: 28px; border-radius: 8px; font-size: 15px; opacity: .6; }
+/* min-height matches the icon, so the closed line centres on it and an
+   opened list grows downwards with the icon staying at the top. */
+.item.is-past .card-body { display: flex; flex-wrap: wrap; align-items: center; column-gap: 10px; min-height: 28px; }
+.item.is-past .card-title { flex: 1 1 8rem; min-width: 0; font-size: 14px; color: var(--text-sub); }
+.item.is-past .card-detail,
+.item.is-past .tag,
+.item.is-past .map-btn { display: none; }
+.item.is-past .card-meta { display: contents; }
 .item.is-past .clock { opacity: .55; }
 .item.is-past .dot { background: var(--primary); box-shadow: 0 0 0 1px var(--primary); }
 
@@ -256,7 +269,7 @@
   .dot { left: -21px; }
   .item { margin-bottom: 22px; }
   .card { padding: 14px 16px; gap: 14px; }
-  .card-icon { width: 44px; height: 44px; font-size: 23px; }
+  .card-icon { width: 44px; height: 44px; border-radius: 11px; font-size: 23px; }
   .card-title { font-size: 17px; }
   .clock-start { font-size: 17px; }
 }

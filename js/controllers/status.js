@@ -14,9 +14,10 @@ export function startStatus({ trip, root, countdown, tabs, clock }) {
 
     for (const [id, el] of elements) {
       const live = status.current?.id === id;
+      const past = status.pastIds.has(id);
       el.classList.toggle('is-now', live);
-      el.classList.toggle('is-past', status.pastIds.has(id));
-      toggleNowTag(el, live);
+      el.classList.toggle('is-past', past);
+      setStateTag(el, live ? 'now' : past ? 'past' : null);
     }
     countdown.update(describeStatus(trip, status), status.phase);
 
@@ -40,8 +41,17 @@ export function startStatus({ trip, root, countdown, tabs, clock }) {
   tick();
 }
 
-function toggleNowTag(el, live) {
-  const tag = el.querySelector('.now-tag');
-  if (live && !tag) el.querySelector('.time').append(h('span', { class: 'now-tag', text: 'Đang diễn ra' }));
-  else if (!live && tag) tag.remove();
+// "Đang diễn ra" / "Đã qua" beside the period, so state never rests on colour.
+function setStateTag(el, state) {
+  let tag = el.querySelector('.state-tag');
+  if (!state) {
+    tag?.remove();
+    return;
+  }
+  if (!tag) {
+    tag = h('span', { class: 'state-tag' });
+    el.querySelector('.time').append(tag);
+  }
+  tag.textContent = state === 'now' ? 'Đang diễn ra' : 'Đã qua';
+  tag.classList.toggle('is-past', state === 'past');
 }

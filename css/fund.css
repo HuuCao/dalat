@@ -1,16 +1,14 @@
 /* ---------- MONEY LINE (cards and shared costs) ---------- */
-.money {
-  margin-top: 8px;
-  padding-top: 4px;
-  border-top: 1px dashed var(--line);
-  font-size: 12.5px;
-}
+/* In a card the line sits in .card-meta beside the tag; padding plus an equal
+   negative margin keep a 44px tap target without a row of its own. */
+.money { font-size: 13px; }
 
 .money-sum {
   display: flex;
   align-items: center;
-  gap: 8px;
-  min-height: 44px;
+  gap: 6px;
+  padding: 12px 0;
+  margin: -12px 0;
   list-style: none;
   cursor: pointer;
   font-weight: 700;
@@ -23,23 +21,29 @@
 
 .money-sum::after {
   content: "▾";
-  margin-left: auto;
-  font-size: 11px;
-  color: var(--text-sub);
+  font-size: 12px;
+  color: var(--link);
 }
 
 .money[open] > .money-sum::after { content: "▴"; }
 
+/* Opened, the entries take a full row below the tag and map link. */
+.money[open] { flex-basis: 100%; order: 3; }
+
+/* Shared costs in the fund tab: one full-width row each. */
+.fund-section > .money { border-top: 1px dashed var(--line); }
+.fund-section > .money > .money-sum { min-height: 44px; padding: 0; margin: 0; }
+
 .money-title { flex: 1 1 auto; min-width: 0; }
 .money-title + .money-text { font-weight: 600; }
-.money-diff { font-size: 11.5px; }
+.money-diff { font-size: 12px; }
 
 .money.is-muted .money-text { color: var(--money-muted); font-weight: 600; }
 .money.is-over .money-text,
 .money.is-over .money-diff { color: var(--money-over); }
 .money.is-under .money-diff { color: var(--money-under); }
 
-.money-body { padding: 0 0 4px; }
+.money-body { padding: 6px 0 4px; }
 .money-note { margin: 0 0 6px; font-size: 12px; color: var(--text-sub); }
 
 /* ---------- ENTRIES ---------- */
@@ -285,8 +289,6 @@
 .fund-settlement h4 { margin: 0 0 4px; font-size: 13px; color: var(--primary); }
 .fund-settlement ul { margin: 0; padding: 0; list-style: none; font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .fund-settlement p { margin: 0; font-size: 13px; }
-
-.fund-section > .money:first-of-type { margin-top: 0; }
 
 .fund-details { border-top: 1px solid var(--line); }
 
