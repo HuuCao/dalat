@@ -1,6 +1,6 @@
 import {
   isDate, isTime, isTimezone, toMinutes, toDate,
-  dateText, dateRangeText, derivePeriod, fillTemplate,
+  dateText, dateRangeText, derivePeriod, fillTemplate, shortDateText,
 } from '../lib/time.js';
 import { keyOf } from '../lib/text.js';
 
@@ -77,6 +77,9 @@ function buildDay(day, index, timezone) {
     id,
     date: day.date,
     label,
+    // Shown on the page. `label` stays "Day N": expense form answers use it.
+    title: `Ngày ${index}`,
+    shortDate: shortDateText(day.date),
     icon: day.icon ?? '',
     dateText: dateText(day.date),
     rangeText: items.length > 0 ? `${items[0].startText} → ${items[items.length - 1].endText}` : '',

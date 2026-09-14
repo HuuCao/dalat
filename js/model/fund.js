@@ -175,6 +175,7 @@ export function buildLedger(trip, tables, now) {
     return {
       id: day.id,
       label: day.label,
+      title: day.title,
       budget: sum(items, 'budget'),
       actual: sum(items, 'actual') + extraBucket.actual,
       extra: extraBucket.actual,

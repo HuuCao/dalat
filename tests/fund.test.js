@@ -77,10 +77,10 @@ test('the ledger adds up per slot, day, shared costs and trip', () => {
   assert.equal(ledger.byId.get('day-1-item-6').budget, 0);
   assert.equal(ledger.byId.get('day-3-item-4').budget, null);
   assert.equal(ledger.byId.get('shared-2').actual, 1_080_000);
-  assert.deepEqual(ledger.days.map(({ id, label, budget, actual, extra }) => ({ id, label, budget, actual, extra })), [
-    { id: 'day-1', label: 'Day 1', budget: 3_120_000, actual: 1_660_000, extra: 120_000 },
-    { id: 'day-2', label: 'Day 2', budget: 3_040_000, actual: 0, extra: 0 },
-    { id: 'day-3', label: 'Day 3', budget: 920_000, actual: 0, extra: 0 },
+  assert.deepEqual(ledger.days.map(({ id, label, title, budget, actual, extra }) => ({ id, label, title, budget, actual, extra })), [
+    { id: 'day-1', label: 'Day 1', title: 'Ngày 1', budget: 3_120_000, actual: 1_660_000, extra: 120_000 },
+    { id: 'day-2', label: 'Day 2', title: 'Ngày 2', budget: 3_040_000, actual: 0, extra: 0 },
+    { id: 'day-3', label: 'Day 3', title: 'Ngày 3', budget: 920_000, actual: 0, extra: 0 },
   ]);
   assert.equal(ledger.days[0].extraBucket.id, 'day-1-extra');
   assert.deepEqual(

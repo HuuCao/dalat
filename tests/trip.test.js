@@ -42,6 +42,17 @@ test('each day derives its labels and counts', () => {
   ]);
 });
 
+test('days get a display title and short date; form labels keep "Day N"', () => {
+  assert.deepEqual(trip.days.map(({ title, shortDate }) => ({ title, shortDate })), [
+    { title: 'Ngày 1', shortDate: 'T6 16/10' },
+    { title: 'Ngày 2', shortDate: 'T7 17/10' },
+    { title: 'Ngày 3', shortDate: 'CN 18/10' },
+  ]);
+  assert.equal(trip.days[0].label, 'Day 1');
+  assert.equal(trip.days[0].items[1].formLabel, 'Day 1 · Hidden Land');
+  assert.equal(trip.days[0].extraLabel, 'Day 1 · Phát sinh');
+});
+
 test('items carry ids, order, heading and map url', () => {
   const [first] = trip.days[0].items;
   assert.equal(first.id, 'day-1-item-1');
