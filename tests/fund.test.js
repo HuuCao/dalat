@@ -5,7 +5,7 @@ import { buildTrip } from '../js/model/trip.js';
 import { parseCsv } from '../js/lib/csv.js';
 import {
   readTable, parseAmount, splitShares, buildLedger,
-  describeBucket, describeEntry, describeDay, formUrl, placeLabelAt,
+  describeBucket, describeEntry, describeDay, describeBalance, formUrl, placeLabelAt,
 } from '../js/model/fund.js';
 
 const trip = buildTrip(JSON.parse(readFileSync(new URL('../data/trip.json', import.meta.url), 'utf8')));
@@ -123,19 +123,19 @@ test('once the trip ends the fund is settled, largest first', () => {
   const ledger = ledgerOf(EXPENSES, CONTRIBUTIONS, AFTER);
   assert.equal(ledger.done, true);
   assert.deepEqual(ledger.settlement.map((line) => line.text), [
-    '→ Quỹ hoàn Hữu 2tr695',
-    '→ Quỹ hoàn Khanh 2tr155',
-    '→ Quỹ hoàn MiMi 1tr615',
-    '→ Quỹ hoàn Trâm 1tr615',
+    '→ Quỹ hoàn Hữu 2.695.000đ',
+    '→ Quỹ hoàn Khanh 2.155.000đ',
+    '→ Quỹ hoàn MiMi 1.615.000đ',
+    '→ Quỹ hoàn Trâm 1.615.000đ',
   ]);
-  assert.deepEqual(ledger.settlement[0], { name: 'Hữu', amount: 2_695_000, direction: 'refund', text: '→ Quỹ hoàn Hữu 2tr695' });
+  assert.deepEqual(ledger.settlement[0], { name: 'Hữu', amount: 2_695_000, direction: 'refund', text: '→ Quỹ hoàn Hữu 2.695.000đ' });
 
   const short = ledgerOf(EXPENSES, 'Người góp,Số tiền\nHữu,1000000', AFTER);
   assert.deepEqual(short.settlement.map((line) => line.text), [
-    '→ MiMi nộp thêm vào quỹ 1tr385',
-    '→ Trâm nộp thêm vào quỹ 1tr385',
-    '→ Khanh nộp thêm vào quỹ 845k',
-    '→ Quỹ hoàn Hữu 695k',
+    '→ MiMi nộp thêm vào quỹ 1.385.000đ',
+    '→ Trâm nộp thêm vào quỹ 1.385.000đ',
+    '→ Khanh nộp thêm vào quỹ 845.000đ',
+    '→ Quỹ hoàn Hữu 695.000đ',
   ]);
   assert.equal(short.totals.reserve, -10_360_000);
   assert.equal(balanceSum(short), short.totals.fundLeft);
@@ -201,25 +201,31 @@ test('without sheets the ledger holds budgets only', () => {
 
 test('describeBucket covers every chip state', () => {
   const chip = (budget, actual) => describeBucket({ budget, actual }, 4);
-  assert.deepEqual(chip(200000, 0), { icon: '💰', text: 'Dự kiến 200k · 50k/người', diff: null, tone: 'muted' });
-  assert.deepEqual(chip(200000, 180000), { icon: '💰', text: '180k / 200k', diff: '▼ 20k', tone: 'under' });
-  assert.deepEqual(chip(440000, 440000), { icon: '💰', text: '440k / 440k', diff: '✓', tone: 'under' });
-  assert.deepEqual(chip(200000, 260000), { icon: '💰', text: '260k / 200k', diff: '▲ 60k', tone: 'over' });
-  assert.deepEqual(chip(0, 0), { icon: '🆓', text: 'Miễn phí', diff: null, tone: 'muted' });
-  assert.deepEqual(chip(0, 20000), { icon: '💰', text: '20k · ngoài dự kiến', diff: null, tone: 'over' });
-  assert.deepEqual(chip(null, 0), { icon: '💰', text: 'Chưa chi', diff: null, tone: 'muted' });
-  assert.deepEqual(chip(null, 540000), { icon: '💰', text: '540k', diff: null, tone: '' });
+  assert.deepEqual(chip(200000, 0), { icon: '💰', text: 'Dự kiến 200k', diff: null, tone: 'muted', perPerson: 'Mỗi người ~50k' });
+  assert.deepEqual(chip(200000, 180000), { icon: '💰', text: '180k / 200k', diff: '▼ 20k', tone: 'under', perPerson: null });
+  assert.deepEqual(chip(440000, 440000), { icon: '💰', text: '440k / 440k', diff: '✓', tone: 'under', perPerson: null });
+  assert.deepEqual(chip(200000, 260000), { icon: '💰', text: '260k / 200k', diff: '▲ 60k', tone: 'over', perPerson: null });
+  assert.deepEqual(chip(0, 0), { icon: '🆓', text: 'Miễn phí', diff: null, tone: 'muted', perPerson: null });
+  assert.deepEqual(chip(0, 20000), { icon: '💰', text: '20k · ngoài dự kiến', diff: null, tone: 'over', perPerson: null });
+  assert.deepEqual(chip(null, 0), { icon: '💰', text: 'Chưa chi', diff: null, tone: 'muted', perPerson: null });
+  assert.deepEqual(chip(null, 540000), { icon: '💰', text: '540k', diff: null, tone: '', perPerson: null });
 });
 
 test('describeEntry reads like the sketch', () => {
   const ledger = ledgerOf();
   assert.deepEqual(describeEntry(ledger.byId.get('day-1-item-2').entries[0], MEMBERS), {
-    amount: '260.000đ', payer: 'Quỹ trả', detail: '4 nước + bánh · chia 4', meta: 'MiMi nhập · 16/10 10:40',
+    amount: '260.000đ', payer: 'Quỹ trả', detail: '4 nước + bánh · chia đều 4 người', meta: 'MiMi nhập · 16/10 10:40',
   });
   const partial = { amount: 90000, payer: 'Khanh', splitFor: ['Hữu', 'Khanh'], note: '', enteredBy: '', time: '', settled: true };
-  assert.deepEqual(describeEntry(partial, MEMBERS), { amount: '90.000đ', payer: 'Khanh ứng', detail: 'chia Hữu, Khanh', meta: '' });
+  assert.deepEqual(describeEntry(partial, MEMBERS), { amount: '90.000đ', payer: 'Khanh trả hộ', detail: 'chia Hữu, Khanh', meta: '' });
   assert.equal(describeEntry({ ...partial, payer: 'Tram', settled: false }, MEMBERS).payer, 'Tram trả ⚠️');
   assert.equal(describeEntry({ ...partial, splitFor: [], settled: false }, MEMBERS).detail, 'chia ?');
+});
+
+test('describeBalance says refund, top up or even', () => {
+  assert.deepEqual(describeBalance(3_065_000), { text: 'Hoàn 3tr065', tone: 'under' });
+  assert.deepEqual(describeBalance(-845_000), { text: 'Nộp 845k', tone: 'over' });
+  assert.deepEqual(describeBalance(0), { text: 'Đủ', tone: null });
 });
 
 test('describeDay shows spend, budget, extras and a capped ratio', () => {

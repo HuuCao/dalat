@@ -183,6 +183,7 @@ function fillMoney(el, bucket, ctx, { title = null, note = '' } = {}) {
   ].filter(Boolean));
   el.querySelector('.money-body').replaceChildren(...[
     note ? h('p', { class: 'money-note', text: note }) : null,
+    view.perPerson ? h('p', { class: 'money-note', text: view.perPerson }) : null,
     renderEntries(bucket.entries, ctx),
     addLink(ctx.fund, bucket.label, '➕ Nhập chi ở đây'),
   ].filter(Boolean));
