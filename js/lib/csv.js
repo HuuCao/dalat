@@ -2,7 +2,7 @@
 // quotes and line breaks. Blank rows are kept so row index + 1 is the line
 // number people see in the sheet.
 export function parseCsv(text) {
-  const input = text.replace(/^﻿/, '');
+  const input = text.replace(/^\uFEFF/, '');
   const rows = [];
   let row = [];
   let cell = '';
@@ -44,6 +44,6 @@ export function parseCsv(text) {
 
 // An unpublished sheet answers with Google's sign-in page instead of CSV.
 export function assertCsv(text) {
-  if (text.replace(/^﻿/, '').trimStart().startsWith('<')) throw new Error('Sheet chưa publish dạng CSV');
+  if (text.replace(/^\uFEFF/, '').trimStart().startsWith('<')) throw new Error('Sheet chưa publish dạng CSV');
   return text;
 }

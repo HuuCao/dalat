@@ -16,7 +16,7 @@ test('quoted cells keep commas, quotes and line breaks', () => {
 
 test('CRLF, BOM and trailing line break', () => {
   assert.deepEqual(parseCsv('a,b\r\n1,2\r\n'), [['a', 'b'], ['1', '2']]);
-  assert.deepEqual(parseCsv('﻿a,b\n'), [['a', 'b']]);
+  assert.deepEqual(parseCsv('\uFEFFa,b\n'), [['a', 'b']]);
 });
 
 test('blank rows stay so line numbers match the sheet', () => {
@@ -25,5 +25,5 @@ test('blank rows stay so line numbers match the sheet', () => {
 
 test('assertCsv rejects an HTML page', () => {
   assert.equal(assertCsv('a,b'), 'a,b');
-  assert.throws(() => assertCsv('﻿  <!DOCTYPE html><html>'), /Sheet chưa publish dạng CSV/);
+  assert.throws(() => assertCsv('\uFEFF  <!DOCTYPE html><html>'), /Sheet chưa publish dạng CSV/);
 });
