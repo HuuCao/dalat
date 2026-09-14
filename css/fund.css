@@ -106,6 +106,7 @@
 @media (hover: hover) {
   .fund-btn:hover { background: #dbe8e0; }
   .fund-btn.is-ghost:hover { background: var(--accent-soft); }
+  .fund-status .fund-btn:hover { background: rgba(255, 255, 255, .18); }
 }
 
 /* ---------- DAY ---------- */
@@ -160,19 +161,21 @@
 }
 
 /* ---------- STATUS ROW ---------- */
-/* A light card under the dark status panel: the panel repaints itself every
-   tick, so the fund line lives outside it. */
+/* Joined under the dark status panel as one block. It stays a separate
+   element: the panel repaints every tick, the fund line does not. */
+.status.has-fund .countdown { border-radius: 16px 16px 0 0; }
+
 .fund-status {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  margin-top: 8px;
-  padding: 4px 4px 4px 14px;
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  box-shadow: var(--shadow-sm);
+  padding: 0 6px 0 14px;
+  background: #16241d;
+  border-top: 1px solid rgba(255, 255, 255, .1);
+  border-radius: 0 0 16px 16px;
+  box-shadow: 0 14px 30px rgba(16, 30, 25, .28);
 }
 
 .fund-status-text {
@@ -181,9 +184,37 @@
   align-items: center;
   font-size: 13px;
   font-weight: 700;
-  color: var(--primary);
+  color: #e9f1eb;
   font-variant-numeric: tabular-nums;
 }
+
+/* Phones use the floating button instead. */
+.fund-status .fund-btn { display: none; }
+
+/* ---------- FLOATING BUTTON (phones) ---------- */
+.fab {
+  position: fixed;
+  right: 16px;
+  bottom: calc(16px + env(safe-area-inset-bottom));
+  z-index: 25;
+  display: inline-flex;
+  align-items: center;
+  min-height: 52px;
+  padding: 0 20px;
+  border-radius: 99px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 8px 24px rgba(16, 30, 25, .3);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.fab:focus-visible { outline: 2px solid var(--live); outline-offset: 3px; }
+
+/* Room so the button never covers the last card or "Nhập phát sinh". */
+main.has-fab { padding-bottom: 88px; }
 
 /* ---------- FUND TAB ---------- */
 .fund {
@@ -319,6 +350,15 @@
 .fund .load-error .fund-btn { margin-top: 10px; }
 
 @media (min-width: 761px) {
+  .fund-status .fund-btn {
+    display: inline-flex;
+    min-height: 36px;
+    margin: 4px 0;
+    background: rgba(255, 255, 255, .1);
+    color: #fff;
+  }
+  .fab { display: none; }
+  main.has-fab { padding-bottom: 48px; }
   .fund { padding: 20px; border-radius: var(--radius); }
   .fund-title { font-size: 20px; }
   .fund-tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); }

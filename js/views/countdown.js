@@ -20,23 +20,37 @@ function renderHourglass() {
 
 export function createCountdown() {
   const label = h('span', { class: 'cd-label-text' });
+  const progress = h('span', { class: 'cd-progress' });
+  const headline = h('div', { class: 'cd-headline' });
+  const map = h('a', { class: 'cd-map', target: '_blank', rel: 'noopener noreferrer', hidden: true }, '📍 Maps');
+  const headlineRow = h('div', { class: 'cd-headline-row' }, headline, map);
   const note = h('div', { class: 'cd-note' });
+  const next = h('div', { class: 'cd-next', hidden: true });
   const clock = h('div', { class: 'cd-clock' });
 
+  // Order of importance: what is happening, how long, what comes next.
   const element = h('section', { class: 'countdown', 'aria-label': 'Trạng thái chuyến đi' },
     h('div', { class: 'cd-glow', 'aria-hidden': 'true' }),
     renderHourglass(),
     h('div', { class: 'cd-body' },
-      h('div', { class: 'cd-label' }, h('span', { class: 'pulse' }), label),
+      h('div', { class: 'cd-label' }, h('span', { class: 'pulse' }), label, progress),
+      headlineRow,
       note),
-    clock);
+    clock,
+    next);
 
   function update(description, phase) {
     label.textContent = description.label;
+    progress.textContent = description.progress ?? '';
+    headline.textContent = description.headline ?? '';
+    headlineRow.hidden = !description.headline;
+    map.hidden = !description.mapUrl;
+    if (description.mapUrl) map.href = description.mapUrl;
     note.textContent = description.note;
-    clock.replaceChildren(...(description.tiles
-      ? description.tiles.map(renderTile)
-      : [h('div', { class: 'cd-headline', text: description.headline })]));
+    next.textContent = description.next ?? '';
+    next.hidden = !description.next;
+    clock.hidden = !description.tiles;
+    clock.replaceChildren(...(description.tiles ?? []).map(renderTile));
     element.classList.toggle('soon', phase === 'soon');
     element.classList.toggle('live', phase === 'live');
   }

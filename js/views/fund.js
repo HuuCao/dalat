@@ -31,16 +31,24 @@ export function createFundView({ trip, clock }) {
   let refresh = () => {};
 
   const statusText = h('span', { class: 'fund-status-text', text: '💰 Quỹ …' });
-  const statusLink = addLink(fund, null, '➕ Nhập chi');
+  // Both sit on dark green: a plain "+" takes the white text colour, where
+  // the ➕ emoji stays dark grey.
+  const statusLink = addLink(fund, null, '+ Nhập chi');
+  // Phones get a floating copy in thumb reach (css/fund.css hides it on
+  // desktop). Mounted outside <main>: an animated ancestor would break fixed.
+  const fab = addLink(fund, null, '+ Nhập chi');
+  fab?.classList.replace('fund-btn', 'fab');
   // Worked out ahead of the tap, so the pre-filled place follows the clock.
   // Runs on pointerdown and focus too (not just click), so long-press "open
   // in new tab" and middle-click — which never fire a click event — still
   // get the current place.
-  const updateStatusLinkPlace = () => {
-    statusLink.href = formUrl(fund, placeLabelAt(trip, clock()));
+  const updateLinkPlace = (event) => {
+    event.currentTarget.href = formUrl(fund, placeLabelAt(trip, clock()));
   };
-  for (const type of ['pointerdown', 'focus', 'click']) {
-    statusLink?.addEventListener(type, updateStatusLinkPlace);
+  for (const link of [statusLink, fab]) {
+    for (const type of ['pointerdown', 'focus', 'click']) {
+      link?.addEventListener(type, updateLinkPlace);
+    }
   }
   const statusRow = h('div', { class: 'fund-status' }, statusText, statusLink);
 
@@ -122,6 +130,7 @@ export function createFundView({ trip, clock }) {
   return {
     panel,
     statusRow,
+    fab,
     update,
     fail,
     onRefresh(handler) {

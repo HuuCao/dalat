@@ -28,12 +28,12 @@ function mount(app, trip, clock) {
   const fund = trip.fund ? createFundView({ trip, clock }) : null;
   // The status is about the whole trip, so it sits between the hero and the
   // day tabs; the tabs stay right above the content they switch.
-  const status = h('div', { class: 'status wrap' }, countdown.element, fund?.statusRow);
+  const status = h('div', { class: fund ? 'status wrap has-fund' : 'status wrap' }, countdown.element, fund?.statusRow);
   const tabbar = renderTabs(trip.days, { fund: Boolean(fund) });
   const panels = [...trip.days.map((day) => renderDay(day, { fund: Boolean(fund) })), fund?.panel].filter(Boolean);
-  const main = h('main', { class: 'wrap' }, panels, renderFooter(trip.footer));
+  const main = h('main', { class: fund?.fab ? 'wrap has-fab' : 'wrap' }, panels, renderFooter(trip.footer));
 
-  app.replaceChildren(hero, status, tabbar, main);
+  app.replaceChildren(...[hero, status, tabbar, main, fund?.fab].filter(Boolean));
   return { hero, tabbar, countdown, panels, main, fund };
 }
 
