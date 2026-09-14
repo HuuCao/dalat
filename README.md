@@ -20,10 +20,12 @@ Toàn bộ nội dung nằm trong một file dữ liệu `data/trip.json`. Trang
   - [Tối ưu cho điện thoại](#7-tối-ưu-cho-điện-thoại)
   - [Dữ liệu và xử lý lỗi](#8-dữ-liệu-và-xử-lý-lỗi)
   - [Truy cập và an toàn](#9-truy-cập-và-an-toàn)
+  - [Quỹ chung & chi phí](#10-quỹ-chung--chi-phí)
 - [Hỗ trợ trình duyệt](#hỗ-trợ-trình-duyệt)
 - [Chạy local](#chạy-local)
 - [Kiểm thử](#kiểm-thử)
 - [Sửa lịch trình](#sửa-lịch-trình)
+- [Kết nối Google Form / Sheet](#kết-nối-google-form--sheet)
 - [Cấu trúc thư mục](#cấu-trúc-thư-mục)
 - [Deploy](#deploy)
 - [Tài liệu](#tài-liệu)
@@ -164,6 +166,21 @@ https://huucao.github.io/dalat/?now=2026-10-19T00:00:00%2B07:00   # đã kết t
 - Nội dung từ dữ liệu luôn được chèn dạng văn bản (`textContent`), không bao giờ dạng HTML.
 - Link ngoài mở tab mới với `rel="noopener noreferrer"`.
 
+### 10. Quỹ chung & chi phí
+
+Nhóm đóng quỹ chung; mọi khoản chi được ghi qua Google Form, trang đọc Google Sheet và tự tính.
+
+- **Từng khung giờ:** dòng `💰` so dự kiến với thực chi — `💰 260k / 200k ▲ 60k` (vượt, cam đỏ), `▼ 20k` / `✓` (xanh), `💰 Dự kiến 200k · 50k/người` (chưa chi), `🆓 Miễn phí`. Bấm để xem từng khoản: số tiền, quỹ trả hay ai ứng, chia cho ai, ai nhập, lúc nào — kèm nút `➕ Nhập chi ở đây` mở Form **đã chọn sẵn địa điểm**.
+- **Từng ngày:** `💰 1.660k / 3.120k · phát sinh 120k` và thanh tiến độ; cuối ngày có khối `⚡ Phát sinh ngoài plan` với nút `➕ Nhập phát sinh`.
+- **Dưới panel trạng thái:** `💰 Quỹ còn 8.080k` và nút `➕ Nhập chi` — chọn sẵn khung đang diễn ra, giữa hai khung thì chọn khung vừa kết thúc.
+- **Tab `💰 Quỹ`:** đã góp · đã chi · quỹ còn · dự phòng; bảng theo ngày; chi phí chung (vé xe, khách sạn, xe máy, phát sinh chung); quyết toán từng người; sổ góp quỹ và sổ chi đầy đủ; nút mở Form và Sheet. Tab `Tất cả` không gồm tab này.
+- **Quyết toán:** `Còn lại = Đã góp + Đã ứng − Phần phải chịu`; tổng cột Còn lại luôn bằng số quỹ còn. Trong chuyến ghi `tạm tính`; khi chuyến đi kết thúc hiện `Chốt quỹ` — `→ Quỹ hoàn Hữu 2.695k`, `→ Khanh nộp thêm vào quỹ 845k` — mỗi người chỉ một giao dịch với quỹ.
+- **Chia lẻ đúng từng đồng:** 100.000đ chia 3 = 33.334 + 33.333 + 33.333.
+- **Nhập sai không mất tiền:** sai tên địa điểm → vẫn tính vào tổng, hiện ở mục `Không khớp địa điểm`; sai tên người → vẫn tính vào tổng nhưng chưa quyết toán (`⚠️ Có N dòng cần sửa — số liệu chưa chốt`); sai số tiền → bỏ dòng. Mỗi lỗi báo đúng dòng trong Sheet, vd. `Dòng 9 · Ai trả "Tram" không phải thành viên`.
+- **Tự cập nhật:** tải lại mỗi 5 phút khi trang đang mở, ngay khi mở lại trang, hoặc bấm `↻` — mục nào đang mở vẫn giữ nguyên. Google cần khoảng 5 phút sau khi gửi Form mới công bố số mới.
+- **Mất sóng:** dùng bản lưu gần nhất trên máy — `Dữ liệu lúc 14:05 · chưa tải được bản mới`. Lỗi phần quỹ không bao giờ làm hỏng lịch trình.
+- **Chưa kết nối Sheet:** trang vẫn hiện toàn bộ dự kiến, tab Quỹ ghi `Chưa kết nối Google Sheet`.
+
 ---
 
 ## Hỗ trợ trình duyệt
@@ -202,10 +219,14 @@ Cần Node ≥ 18, không phải cài package nào. Unit test phủ phần logic
 | File | Kiểm tra |
 |---|---|
 | `tests/time.test.js` | Định dạng giờ/ngày, thứ trong tuần, suy ra buổi cho mọi khung giờ, điền `{days}`/`{nights}` |
-| `tests/trip.test.js` | Số ngày/đêm/điểm/khung trống, `srcset`, link Maps, sắp xếp, thông báo lỗi dữ liệu |
+| `tests/trip.test.js` | Số ngày/đêm/điểm/khung trống, `srcset`, link Maps, sắp xếp, thông báo lỗi dữ liệu, budget, cấu hình quỹ, nhãn Form |
 | `tests/status.test.js` | Trạng thái trước / trong / giữa / sau chuyến đi, biên đầu–cuối khung giờ, ô đếm ngược |
 | `tests/motion.test.js` | Parallax dự phòng khớp CSS, giới hạn giá trị, ảnh hero không bao giờ hở mép |
 | `tests/clock.test.js` | Tham số `?now=` |
+| `tests/csv.test.js` | Đọc CSV: nháy kép, dấu phẩy và xuống dòng trong ô, CRLF, BOM, trang HTML thay vì CSV |
+| `tests/text.test.js` | So tên không phân biệt hoa thường, khoảng trắng thừa, dạng Unicode |
+| `tests/money.test.js` | `1.660k`, `33,3k`, `260.000đ`, ▲ ▼ ✓, số dư |
+| `tests/fund.test.js` | Tìm cột theo tên, đọc số tiền, chia lẻ, tổng khung/ngày/chung/chuyến, quyết toán, dòng lỗi, link Form điền sẵn |
 
 Phần giao diện được kiểm tra trên Chrome headless (iPhone và máy tính): chọn đúng ảnh, không cuộn ngang, trạng thái thời gian thực, cả hai lớp animation, giảm chuyển động, dữ liệu lỗi, thêm ngày mới.
 
@@ -240,6 +261,56 @@ Chỉ sửa `data/trip.json`. Thêm ngày = thêm một object vào `days`; thê
 | `items[].icon`, `items[].tag` | không | |
 | `items[].map` | không | Từ khóa tìm trên Google Maps; có thì hiện link `📍 Maps` |
 | `items[].empty` | không | `true` = khung trống, không tính là điểm |
+| `items[].budget` | không | Dự kiến, VND, số nguyên ≥ 0. `0` = `Miễn phí` |
+| `fund.members[]` | có (khi có `fund`) | Tên thành viên, không trùng, không được là `Quỹ` |
+| `fund.shared[]` | không | `{ "title", "icon", "budget", "note" }` — chi phí chung không thuộc ngày nào |
+| `fund.csv.expenses`, `fund.csv.contributions` | không | Link CSV publish của tab `ChiTieu` và `GopQuy`. Thiếu thì trang chỉ hiện dự kiến |
+| `fund.form.url`, `fund.form.placeField` | không | Link Form (`…/viewform`) và `entry.…` của câu hỏi Địa điểm |
+| `fund.sheet` | không | Link mở Google Sheet |
+
+Khi có `fund`, các khung trong cùng một ngày không được trùng `title` và không được đặt tên `Phát sinh` — Form phân biệt địa điểm bằng tên.
+
+## Kết nối Google Form / Sheet
+
+Làm một lần, khoảng 15 phút. **Lưu ý:** link CSV đã publish là công khai — ai có link (kể cả người xem source trang) đọc được tên và số tiền, nhưng không sửa được.
+
+1. **Lấy danh sách địa điểm:** chạy `npm run form-options`, copy toàn bộ kết quả.
+2. **Tạo Google Form** "Chi tiêu Đà Lạt". Tên câu hỏi phải giữ **đúng chữ** như bảng:
+
+   | Câu hỏi | Loại | Lựa chọn / xác thực | Bắt buộc |
+   |---|---|---|---|
+   | Người nhập | Menu thả xuống | Hữu, MiMi, Khanh, Trâm | có |
+   | Địa điểm | Menu thả xuống | Paste kết quả bước 1 vào lựa chọn đầu tiên — Form tự tách mỗi dòng | có |
+   | Số tiền | Câu trả lời ngắn | Xác thực phản hồi: Số → Lớn hơn → `0` | có |
+   | Ai trả | Trắc nghiệm | Quỹ, Hữu, MiMi, Khanh, Trâm | có |
+   | Chia cho | Hộp kiểm | Hữu, MiMi, Khanh, Trâm — mô tả: "Bỏ trống = chia đều cả nhóm" | không |
+   | Ghi chú | Câu trả lời ngắn | | không |
+
+   Trong Cài đặt → Câu trả lời: tắt thu thập email và giới hạn 1 câu trả lời, để nhập không cần đăng nhập.
+3. **Liên kết Sheet:** tab Câu trả lời → Liên kết với Trang tính → tạo bảng tính mới. Đổi tên tab câu trả lời thành `ChiTieu`.
+4. **Tạo tab `GopQuy`** trong cùng bảng tính, dòng 1 là `Ngày`, `Người góp`, `Số tiền`, `Ghi chú`. Mỗi lần góp quỹ nhập một dòng.
+5. **Đặt khu vực:** Tệp → Cài đặt → Ngôn ngữ và khu vực = **Việt Nam**.
+6. **Publish CSV:** Tệp → Chia sẻ → Công bố lên web → chọn tab `ChiTieu`, định dạng **Giá trị được phân tách bằng dấu phẩy (.csv)** → Công bố → copy link. Làm lại cho `GopQuy`. Giữ bật "Tự động công bố lại khi có thay đổi".
+7. **Lấy `placeField`:** trong Form, menu ⋮ → Nhận đường liên kết điền sẵn → chọn một Địa điểm bất kỳ → Nhận đường liên kết → Sao chép. Link có đoạn `entry.123456789=…`; lấy phần `entry.123456789`. Phần trước dấu `?` (kết thúc bằng `/viewform`) là link Form.
+8. **Chia sẻ bảng tính** quyền chỉnh sửa cho cả nhóm, để ai cũng sửa được dòng nhập sai.
+9. **Điền vào `data/trip.json`:**
+
+   ```json
+   "fund": {
+     "members": ["Hữu", "MiMi", "Khanh", "Trâm"],
+     "csv": {
+       "expenses": "https://docs.google.com/spreadsheets/d/e/…/pub?gid=…&single=true&output=csv",
+       "contributions": "https://docs.google.com/spreadsheets/d/e/…/pub?gid=…&single=true&output=csv"
+     },
+     "form": { "url": "https://docs.google.com/forms/d/e/…/viewform", "placeField": "entry.123456789" },
+     "sheet": "https://docs.google.com/spreadsheets/d/…/edit",
+     "shared": [ … giữ nguyên … ]
+   }
+   ```
+
+10. `npm test`, mở trang local → tab `💰 Quỹ` hiện `Cập nhật HH:MM`. Push lên `main`.
+
+Đổi tên hoặc thêm khung giờ sau này: chạy lại `npm run form-options` và cập nhật lựa chọn của câu hỏi Địa điểm. Dòng cũ không khớp tên mới vẫn được tính và hiện ở mục `Không khớp địa điểm` — sửa tên trong Sheet là hết.
 
 ## Cấu trúc thư mục
 
@@ -250,7 +321,7 @@ assets/img/             ảnh nhiều kích thước
 css/
   tokens.css            màu, bo góc, bóng, easing
   base.css              nền tảng, footer, thanh tiến trình, thông báo lỗi
-  hero.css · tabs.css · timeline.css · countdown.css
+  hero.css · tabs.css · timeline.css · countdown.css · fund.css
   motion/
     keyframes.css       toàn bộ keyframes
     load.css            animation lúc mở trang
@@ -258,10 +329,11 @@ css/
     reveal.css          nội dung ngày hiện ra khi cuộn tới / đổi tab
 js/
   main.js               tải dữ liệu → dựng trang → khởi động
-  lib/                  giờ, đồng hồ, tính toán animation, tạo DOM
-  model/                dữ liệu → model, trạng thái chuyến đi (thuần, có test)
-  views/                hero, tabs, ngày, panel trạng thái, footer, lỗi
-  controllers/          tabs, đồng hồ thời gian thực, reveal, parallax dự phòng
+  lib/                  giờ, đồng hồ, animation, tạo DOM, đọc CSV, định dạng tiền, so tên
+  model/                dữ liệu → model, trạng thái chuyến đi, sổ quỹ (thuần, có test)
+  views/                hero, tabs, ngày, panel trạng thái, quỹ, footer, lỗi
+  controllers/          tabs, đồng hồ thời gian thực, reveal, parallax dự phòng, tải sổ quỹ
+scripts/form-options.js in danh sách địa điểm cho Google Form
 tests/                  node --test
 docs/                   spec và plan
 ```
@@ -276,6 +348,8 @@ GitHub Pages phục vụ nhánh `main`, thư mục gốc. Push lên `main` là t
 
 - [Thiết kế](docs/specs/2026-09-11-dynamic-render-design.md) — kiến trúc, schema, animation chi tiết và 16 lỗi đã gặp cần tránh.
 - [Kế hoạch triển khai](docs/plans/2026-09-11-dynamic-render.md).
+- [Thiết kế quỹ chung & chi phí](docs/specs/2026-09-14-fund-ledger-design.md) — dữ liệu, cách tính, giao diện, xử lý lỗi.
+- [Kế hoạch triển khai quỹ](docs/plans/2026-09-14-fund-ledger.md).
 
 ## Nguồn ảnh
 
