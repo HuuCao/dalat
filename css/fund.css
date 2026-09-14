@@ -203,6 +203,7 @@
 
 .fund-title { margin: 0; font-size: 18px; color: var(--primary); letter-spacing: -.01em; }
 .fund-meta { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--text-sub); }
+.fund-meta-error { flex: 1 0 100%; margin: 0; font-size: 12px; color: #7a3b2e; }
 
 .fund-refresh {
   min-width: 44px;
@@ -293,11 +294,23 @@
   display: flex;
   align-items: center;
   min-height: 44px;
+  list-style: none;
   cursor: pointer;
   font-size: 13px;
   font-weight: 700;
   color: var(--primary);
 }
+
+.fund-details > summary::-webkit-details-marker { display: none; }
+
+.fund-details > summary::after {
+  content: "▾";
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--text-sub);
+}
+
+.fund-details[open] > summary::after { content: "▴"; }
 
 .fund-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
 .fund .load-error { margin-top: 14px; }
