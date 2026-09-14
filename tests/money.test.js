@@ -1,6 +1,14 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { formatShort, formatFull, formatDiff } from '../js/lib/money.js';
+import { formatShort, formatFull, formatDiff, formatExact } from '../js/lib/money.js';
+
+test('formatExact writes round thousands short and anything else in full', () => {
+  assert.equal(formatExact(2_200_000), '2tr200');
+  assert.equal(formatExact(3_000_000), '3tr');
+  assert.equal(formatExact(320_000), '320k');
+  assert.equal(formatExact(1_234_567), '1.234.567đ');
+  assert.equal(formatExact(33_334), '33.334đ');
+});
 
 test('formatShort writes thousands under a million', () => {
   assert.equal(formatShort(0), '0');

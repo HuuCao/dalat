@@ -1,5 +1,5 @@
 import { h } from '../lib/dom.js';
-import { formatShort, formatFull } from '../lib/money.js';
+import { formatShort, formatExact } from '../lib/money.js';
 import {
   describeBucket, describeEntry, describeDay, describeBalance, progressOf, formUrl, placeLabelAt,
 } from '../model/fund.js';
@@ -27,8 +27,11 @@ export function extraSlot(day) {
 
 export function createFundView({ trip, clock }) {
   const { fund } = trip;
-  const ctx = { fund, members: fund.members };
+  const ctx = { fund, members: fund.members, places: placeIndex(trip), groups: ledgerGroups(trip) };
   let refresh = () => {};
+  // Which book the "Sổ sách" switch shows; kept across refreshes.
+  let book = 'entries';
+  let lastLedger = null;
 
   const statusText = h('span', { class: 'fund-status-text', text: '💰 Quỹ …' });
   // Both sit on dark green: a plain "+" takes the white text colour, where
@@ -61,6 +64,12 @@ export function createFundView({ trip, clock }) {
   }, h('article', { class: 'fund' }, renderHead('Đang tải…', false)));
   panel.addEventListener('click', (event) => {
     if (event.target.closest('[data-action="refresh"]')) refresh();
+    const pick = event.target.closest('[data-book]');
+    if (pick && lastLedger && pick.dataset.book !== book) {
+      book = pick.dataset.book;
+      panel.querySelector('.books').replaceWith(renderBooks(lastLedger));
+      panel.querySelector(`[data-book="${book}"]`).focus();
+    }
   });
 
   const scope = () => panel.closest('main') ?? document;
@@ -100,6 +109,7 @@ export function createFundView({ trip, clock }) {
     const detailsKey = (el) => el.dataset.key ?? el.dataset.money;
     const open = new Set([...panel.querySelectorAll('details[open]')].map(detailsKey));
     const { totals } = ledger;
+    lastLedger = ledger;
 
     panel.replaceChildren(h('article', { class: 'fund' },
       renderHead(metaText(meta), meta.state !== 'unlinked', meta.error),
@@ -109,17 +119,13 @@ export function createFundView({ trip, clock }) {
       ledger.unmatched.entries.length > 0
         ? section('Không khớp địa điểm',
           details('unmatched', `⚠️ ${ledger.unmatched.entries.length} khoản · ${formatShort(ledger.unmatched.actual)}`,
-            renderEntries(ledger.unmatched.entries, ctx, { withLabel: true })))
+            renderEntries(ledger.unmatched.entries, ctx, { withPlace: true })))
         : null,
       renderOverview(totals),
       renderSettlement(ledger),
       renderByDay(ledger),
       renderShared(ledger, ctx),
-      section('Sổ sách',
-        details('contributions', `Sổ góp quỹ · ${ledger.contributions.length} khoản · ${formatShort(totals.contributed)}`,
-          renderContributions(ledger.contributions)),
-        details('entries', `Sổ chi · ${ledger.entries.length} khoản · ${formatShort(totals.actual)}`,
-          renderEntries(ledger.entries, ctx, { withLabel: true }))),
+      renderBooks(ledger),
       h('div', { class: 'fund-actions' },
         addLink(fund, null, '➕ Nhập chi tiêu'),
         fund.sheet ? h('a', { class: 'fund-btn is-ghost', href: fund.sheet, ...LINK }, '📄 Mở Google Sheet') : null)));
@@ -127,6 +133,26 @@ export function createFundView({ trip, clock }) {
     for (const el of panel.querySelectorAll('details')) {
       if (open.has(detailsKey(el))) el.open = true;
     }
+  }
+
+  // One book at a time behind a two-way switch, instead of two long lists
+  // opened one under the other.
+  function renderBooks(ledger) {
+    const { entries, contributions, totals } = ledger;
+    const pick = (key, text) => h('button', {
+      class: 'book-tab',
+      type: 'button',
+      'aria-pressed': String(book === key),
+      dataset: { book: key },
+    }, text);
+    return h('section', { class: 'fund-section books' },
+      h('h3', { class: 'fund-h', text: 'Sổ sách' }),
+      h('div', { class: 'book-tabs' },
+        pick('entries', `Sổ chi · ${entries.length} · ${formatShort(totals.actual)}`),
+        pick('contributions', `Góp quỹ · ${contributions.length} · ${formatShort(totals.contributed)}`)),
+      book === 'entries'
+        ? renderLedger(entries, ctx)
+        : renderContributions(contributions, totals.contributed));
   }
 
   return {
@@ -217,25 +243,82 @@ function fillExtra(el, bucket, ctx) {
   ].filter(Boolean));
 }
 
-function renderEntries(entries, ctx, { withLabel = false } = {}) {
+// Short place names and their ledger group, by bucket id: the sheet's own
+// label ("Day 1 · Đồi chè Cầu Đất — Săn mây…") is too long to repeat per row.
+function placeIndex(trip) {
+  const { fund } = trip;
+  const index = new Map();
+  for (const cost of fund.shared) index.set(cost.id, { group: 'shared', name: `${cost.icon} ${cost.title}`.trim() });
+  index.set(fund.sharedExtra.id, { group: 'shared', name: '⚡ Phát sinh chung' });
+  for (const day of trip.days) {
+    for (const item of day.items) index.set(item.id, { group: day.id, name: item.name });
+    index.set(`${day.id}-extra`, { group: day.id, name: '⚡ Phát sinh' });
+  }
+  return index;
+}
+
+function ledgerGroups(trip) {
+  return [
+    { id: 'shared', title: 'Chung' },
+    ...trip.days.map((day) => ({ id: day.id, title: day.title })),
+    { id: 'unmatched', title: 'Không khớp địa điểm' },
+  ];
+}
+
+// Two lines per entry. With a place (ledger lists): place and amount, then
+// who paid, note, split and who entered it. Inside a card the place is
+// already known, so the first line is who paid and the amount.
+function renderEntry(entry, ctx, { withPlace }) {
+  const view = describeEntry(entry, ctx.members);
+  const unmatched = entry.bucketId === 'unmatched';
+  const kind = unmatched ? 'warn' : view.kind;
+  const badge = h('span', { class: 'entry-badge', text: view.payer });
+  const place = withPlace
+    ? h('span', { class: 'entry-place', text: unmatched ? entry.label : (ctx.places.get(entry.bucketId)?.name ?? entry.label) })
+    : null;
+  const sub = [
+    place ? badge : null,
+    view.detail ? h('span', { class: 'entry-detail', text: view.detail }) : null,
+    view.meta ? h('span', { class: 'entry-meta', text: view.meta }) : null,
+  ].filter(Boolean);
+
+  return h('li', { class: `entry is-${kind}` },
+    h('div', { class: 'entry-top' }, place ?? badge, h('b', { class: 'entry-amount', text: view.amount })),
+    sub.length > 0 ? h('div', { class: 'entry-sub' }, sub) : null);
+}
+
+function renderEntries(entries, ctx, { withPlace = false } = {}) {
   if (entries.length === 0) return h('p', { class: 'entries-empty', text: 'Chưa có khoản chi' });
-  return h('ul', { class: 'entries' }, entries.map((entry) => {
-    const view = describeEntry(entry, ctx.members);
-    return h('li', { class: entry.settled ? 'entry' : 'entry is-warn' },
-      withLabel ? h('div', { class: 'entry-label', text: entry.label }) : null,
-      h('div', { class: 'entry-top' }, h('b', { text: view.amount }), h('span', { text: view.payer })),
-      view.detail ? h('div', { class: 'entry-detail', text: view.detail }) : null,
-      view.meta ? h('div', { class: 'entry-meta', text: view.meta }) : null);
+  return h('ul', { class: 'entries' }, entries.map((entry) => renderEntry(entry, ctx, { withPlace })));
+}
+
+// The expense book grouped Chung → Ngày 1…N → Không khớp, each with its total.
+function renderLedger(entries, ctx) {
+  if (entries.length === 0) return h('p', { class: 'entries-empty', text: 'Chưa có khoản chi' });
+  const groupOf = (entry) => ctx.places.get(entry.bucketId)?.group ?? 'unmatched';
+  return h('div', { class: 'ledger' }, ctx.groups.map((group) => {
+    const list = entries.filter((entry) => groupOf(entry) === group.id);
+    if (list.length === 0) return null;
+    const total = list.reduce((sum, entry) => sum + entry.amount, 0);
+    return h('section', { class: group.id === 'unmatched' ? 'ledger-group is-warn' : 'ledger-group' },
+      h('h4', { class: 'ledger-h' }, h('span', { text: group.title }), h('span', { text: formatShort(total) })),
+      renderEntries(list, ctx, { withPlace: true }));
   }));
 }
 
-function renderContributions(contributions) {
+// One row per contribution: who, how much, when, note.
+function renderContributions(contributions, total) {
   if (contributions.length === 0) return h('p', { class: 'entries-empty', text: 'Chưa có khoản góp' });
-  return h('ul', { class: 'entries' }, contributions.map((line) => h('li', { class: 'entry' },
-    h('div', { class: 'entry-top' }, h('b', { text: formatFull(line.amount) }), h('span', { text: line.member })),
-    line.date || line.note
-      ? h('div', { class: 'entry-meta', text: [line.date, line.note].filter(Boolean).join(' · ') })
-      : null)));
+  return h('table', { class: 'fund-table contrib' },
+    h('tbody', {}, contributions.map((line) => h('tr', {},
+      h('th', { scope: 'row', text: line.member }),
+      h('td', { class: 'contrib-amount', text: formatExact(line.amount) }),
+      h('td', { class: 'contrib-date', text: line.date }),
+      h('td', { class: 'contrib-note', text: line.note })))),
+    h('tfoot', {}, h('tr', {},
+      h('th', { scope: 'row', text: 'Tổng' }),
+      h('td', { class: 'contrib-amount', text: formatShort(total) }),
+      h('td', { colspan: '2' }))));
 }
 
 function renderWarnings(warnings) {

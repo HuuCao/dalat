@@ -33,6 +33,15 @@
   --money-under: #2f7a55;
   --money-muted: #6b746f;
 
+  /* Who paid a ledger entry: the fund, a member on its behalf, or a row that
+     needs fixing. Each text colour ≥ 4.5:1 on its tint. */
+  --pay-fund: #276b49;
+  --pay-fund-bg: #e3f0e8;
+  --pay-member: #9a5b13;
+  --pay-member-bg: #fbeedc;
+  --pay-warn: #b44d28;
+  --pay-warn-bg: #fbe9e4;
+
   --radius: 16px;
   --shadow-sm: 0 1px 2px rgba(20, 40, 30, .05);
   --shadow-md: 0 6px 20px rgba(20, 40, 30, .07);

@@ -25,6 +25,12 @@ export function formatFull(amount) {
   return `${sign}${groupThousands(Math.abs(amount))}đ`;
 }
 
+// Entries in lists: short when that loses nothing ("2tr200", "320k"), every
+// dong otherwise.
+export function formatExact(amount) {
+  return amount % 1000 === 0 ? formatShort(amount) : formatFull(amount);
+}
+
 export function formatDiff(actual, budget) {
   const diff = actual - budget;
   if (diff > 0) return { text: `▲ ${formatShort(diff)}`, tone: 'over' };

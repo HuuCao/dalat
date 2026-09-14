@@ -99,10 +99,12 @@ test('entries are newest first and keep who entered them', () => {
   const ledger = ledgerOf();
   assert.deepEqual(ledger.entries.map((entry) => entry.line), [8, 7, 6, 5, 4, 3, 2]);
   assert.deepEqual(ledger.entries[0], {
-    line: 8, label: 'Day 1 · Trại Mèo Mướp', amount: 440000, payer: 'Quỹ', splitFor: MEMBERS,
+    line: 8, label: 'Day 1 · Trại Mèo Mướp', bucketId: 'day-1-item-4', amount: 440000, payer: 'Quỹ', splitFor: MEMBERS,
     note: 'Vé kèm nước', enteredBy: 'Trâm', time: '16/10 14:00', sortKey: Date.UTC(2026, 9, 16, 14, 0), settled: true,
   });
   assert.equal(ledger.byId.get('day-1-item-1').entries[0].time, '16/10 08:50');
+  assert.equal(ledger.byId.get('day-1-extra').entries[0].bucketId, 'day-1-extra');
+  assert.equal(ledger.byId.get('shared-2').entries[0].bucketId, 'shared-2');
   assert.deepEqual(ledger.contributions[3], { line: 5, date: '11/10', member: 'Trâm', amount: 3_000_000, note: 'CK' });
 });
 
@@ -160,6 +162,7 @@ test('messy rows are normalised, flagged, and never lose money', () => {
   assert.equal(hidden.entries.find((entry) => entry.line === 12).settled, false);
   assert.equal(ledger.unmatched.actual, 70000);
   assert.equal(ledger.unmatched.entries[0].label, 'Day 1 · Hiden Land');
+  assert.equal(ledger.unmatched.entries[0].bucketId, 'unmatched');
   assert.equal(ledger.totals.actual, 5_540_000 + 50000 + 70000 + 90000 + 30000);
   assert.equal(ledger.totals.fundPaid, 3_920_000 + 50000 + 70000 + 30000);
   assert.equal(ledger.excluded, 2);
@@ -214,12 +217,17 @@ test('describeBucket covers every chip state', () => {
 test('describeEntry reads like the sketch', () => {
   const ledger = ledgerOf();
   assert.deepEqual(describeEntry(ledger.byId.get('day-1-item-2').entries[0], MEMBERS), {
-    amount: '260.000đ', payer: 'Quỹ trả', detail: '4 nước + bánh · chia đều 4 người', meta: 'MiMi nhập · 16/10 10:40',
+    amount: '260k', payer: 'Quỹ trả', kind: 'fund', detail: '4 nước + bánh · chia đều 4 người', meta: 'MiMi nhập · 16/10 10:40',
   });
   const partial = { amount: 90000, payer: 'Khanh', splitFor: ['Hữu', 'Khanh'], note: '', enteredBy: '', time: '', settled: true };
-  assert.deepEqual(describeEntry(partial, MEMBERS), { amount: '90.000đ', payer: 'Khanh trả hộ', detail: 'chia Hữu, Khanh', meta: '' });
-  assert.equal(describeEntry({ ...partial, payer: 'Tram', settled: false }, MEMBERS).payer, 'Tram trả ⚠️');
-  assert.equal(describeEntry({ ...partial, splitFor: [], settled: false }, MEMBERS).detail, 'chia ?');
+  assert.deepEqual(describeEntry(partial, MEMBERS), { amount: '90k', payer: 'Khanh trả hộ', kind: 'member', detail: 'chia Hữu, Khanh', meta: '' });
+  assert.equal(describeEntry({ ...partial, amount: 33_334 }, MEMBERS).amount, '33.334đ');
+  const unknownPayer = describeEntry({ ...partial, payer: 'Tram', settled: false }, MEMBERS);
+  assert.equal(unknownPayer.payer, 'Tram trả ⚠️');
+  assert.equal(unknownPayer.kind, 'warn');
+  const unknownSplit = describeEntry({ ...partial, splitFor: [], settled: false }, MEMBERS);
+  assert.equal(unknownSplit.detail, 'chia ?');
+  assert.equal(unknownSplit.kind, 'warn');
 });
 
 test('describeBalance says refund, top up or even', () => {

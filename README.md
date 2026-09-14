@@ -173,12 +173,12 @@ https://huucao.github.io/dalat/?now=2026-10-19T00:00:00%2B07:00   # đã kết t
 
 Nhóm đóng quỹ chung; mọi khoản chi được ghi qua Google Form, trang đọc Google Sheet và tự tính.
 
-- **Từng khung giờ:** dòng `💰` so dự kiến với thực chi — `💰 260k / 200k ▲ 60k` (vượt, cam đỏ), `▼ 20k` / `✓` (xanh), `💰 Dự kiến 200k` (chưa chi; mở ra thấy `Mỗi người ~50k`), `🆓 Miễn phí`. Bấm để xem từng khoản: số tiền, quỹ trả hay ai ứng, chia cho ai, ai nhập, lúc nào — kèm nút `➕ Nhập chi ở đây` mở Form **đã chọn sẵn địa điểm**.
+- **Từng khung giờ:** dòng `💰` so dự kiến với thực chi — `💰 260k / 200k ▲ 60k` (vượt, cam đỏ), `▼ 20k` / `✓` (xanh), `💰 Dự kiến 200k` (chưa chi; mở ra thấy `Mỗi người ~50k`), `🆓 Miễn phí`. Bấm để xem từng khoản: viền và nhãn màu theo người trả (xanh `Quỹ trả`, cam `Hữu trả hộ`, đỏ dòng cần sửa), số tiền, ghi chú, chia cho ai, ai nhập, lúc nào — kèm nút `➕ Nhập chi ở đây` mở Form **đã chọn sẵn địa điểm**.
 - **Từng ngày:** `💰 1tr660 / 3tr120 · phát sinh 120k` và thanh tiến độ; cuối ngày có khối `⚡ Phát sinh ngoài plan` với nút `➕ Nhập phát sinh`.
 - **Dính liền panel trạng thái:** `💰 Quỹ còn 8tr080`; nút `+ Nhập chi` trên máy tính, nút nổi trên điện thoại — chọn sẵn khung đang diễn ra, giữa hai khung thì chọn khung vừa kết thúc.
-- **Tab `💰 Quỹ`:** cảnh báo và khoản không khớp địa điểm (nếu có); quỹ còn (ô lớn) · đã góp · đã chi · dư/thiếu so với dự kiến; quyết toán; bảng theo ngày; chi phí chung (vé xe, khách sạn, xe máy, phát sinh chung); sổ góp quỹ và sổ chi đầy đủ; nút mở Form và Sheet. Tab `Tất cả` không gồm tab này.
+- **Tab `💰 Quỹ`:** cảnh báo và khoản không khớp địa điểm (nếu có); quỹ còn (ô lớn) · đã góp · đã chi · dư/thiếu so với dự kiến; quyết toán; bảng theo ngày; chi phí chung (vé xe, khách sạn, xe máy, phát sinh chung); sổ sách với nút chuyển `Sổ chi` / `Góp quỹ` — sổ chi nhóm theo Chung → Ngày 1…N → Không khớp, mỗi nhóm có tổng, mỗi khoản ghi tên địa điểm gọn và số tiền; góp quỹ mỗi khoản một hàng kèm dòng tổng; nút mở Form và Sheet. Tab `Tất cả` không gồm tab này.
 - **Quyết toán:** `Kết quả = Đã góp + Trả hộ − Phần chịu`, ghi bằng chữ: `Hoàn 2tr695`, `Nộp 845k`, `Đủ`; tổng các kết quả luôn bằng số quỹ còn. Trong chuyến ghi `tạm tính`; khi chuyến đi kết thúc hiện `Chốt quỹ` ghi đủ từng đồng — `→ Quỹ hoàn Hữu 2.695.000đ`, `→ Khanh nộp thêm vào quỹ 845.000đ` — mỗi người chỉ một giao dịch với quỹ.
-- **Cách viết tiền:** dưới 1 triệu `640k`, `33,3k`; từ 1 triệu `11tr760`, `12tr`; từng khoản chi và chốt quỹ ghi đủ đồng `260.000đ`.
+- **Cách viết tiền:** dưới 1 triệu `640k`, `33,3k`; từ 1 triệu `11tr760`, `12tr`; từng khoản trong sổ viết gọn khi tròn nghìn (`2tr200`, `320k`), lẻ đồng thì ghi đủ (`1.234.567đ`); chốt quỹ luôn ghi đủ đồng.
 - **Chia lẻ đúng từng đồng:** 100.000đ chia 3 = 33.334 + 33.333 + 33.333.
 - **Nhập sai không mất tiền:** sai tên địa điểm → vẫn tính vào tổng, hiện ở mục `Không khớp địa điểm`; sai tên người → vẫn tính vào tổng nhưng chưa quyết toán (`⚠️ Có N dòng cần sửa — số liệu chưa chốt`); sai số tiền → bỏ dòng. Mỗi lỗi báo đúng dòng trong Sheet, vd. `Dòng 9 · Ai trả "Tram" không phải thành viên`.
 - **Tự cập nhật:** tải lại mỗi 5 phút khi trang đang mở, ngay khi mở lại trang, hoặc bấm `↻` — mục nào đang mở vẫn giữ nguyên. Google cần khoảng 5 phút sau khi gửi Form mới công bố số mới.
@@ -229,7 +229,7 @@ Cần Node ≥ 18, không phải cài package nào. Unit test phủ phần logic
 | `tests/clock.test.js` | Tham số `?now=` |
 | `tests/csv.test.js` | Đọc CSV: nháy kép, dấu phẩy và xuống dòng trong ô, CRLF, BOM, trang HTML thay vì CSV |
 | `tests/text.test.js` | So tên không phân biệt hoa thường, khoảng trắng thừa, dạng Unicode |
-| `tests/money.test.js` | `1tr660`, `12tr`, `33,3k`, `260.000đ`, ▲ ▼ ✓ |
+| `tests/money.test.js` | `1tr660`, `12tr`, `33,3k`, `260.000đ`, ▲ ▼ ✓, khoản tròn nghìn viết gọn / lẻ đồng ghi đủ |
 | `tests/fund.test.js` | Tìm cột theo tên, đọc số tiền, chia lẻ, tổng khung/ngày/chung/chuyến, quyết toán, chữ Hoàn / Nộp / Đủ, dòng lỗi, link Form điền sẵn |
 
 Phần giao diện được kiểm tra trên Chrome headless (iPhone và máy tính): chọn đúng ảnh, không cuộn ngang, trạng thái thời gian thực, cả hai lớp animation, giảm chuyển động, dữ liệu lỗi, thêm ngày mới.

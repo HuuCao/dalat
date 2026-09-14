@@ -1,5 +1,5 @@
 import { keyOf } from '../lib/text.js';
-import { formatShort, formatFull, formatDiff } from '../lib/money.js';
+import { formatShort, formatFull, formatDiff, formatExact } from '../lib/money.js';
 import { FUND_PAYER } from './trip.js';
 
 const EXPENSE_COLUMNS = {
@@ -118,9 +118,11 @@ export function buildLedger(trip, tables, now) {
     const splitFor = named.length === 0 ? [...members] : members.filter((name) => chosen.has(name));
 
     const settled = Boolean(payer) && unknown.length === 0;
+    const target = bucket ?? unmatched;
     const entry = {
       line: row.line,
       label: row.place,
+      bucketId: target.id,
       amount,
       payer: payer ?? row.payer,
       splitFor,
@@ -129,7 +131,6 @@ export function buildLedger(trip, tables, now) {
       ...readTime(row.time),
       settled,
     };
-    const target = bucket ?? unmatched;
     target.actual += amount;
     target.entries.push(entry);
     entries.push(entry);
@@ -251,9 +252,14 @@ export function describeEntry(entry, members) {
       ? `chia đều ${members.length} người`
       : `chia ${entry.splitFor.join(', ')}`;
 
+  // Colour of the row: paid by the fund, by a member, or needs fixing.
+  let kind = 'warn';
+  if (entry.settled) kind = entry.payer === FUND_PAYER ? 'fund' : 'member';
+
   return {
-    amount: formatFull(entry.amount),
+    amount: formatExact(entry.amount),
     payer,
+    kind,
     detail: [entry.note, split].filter(Boolean).join(' · '),
     meta: [entry.enteredBy ? `${entry.enteredBy} nhập` : '', entry.time].filter(Boolean).join(' · '),
   };
