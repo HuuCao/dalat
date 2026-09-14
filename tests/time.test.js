@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   isTime, isDate, isTimezone, toMinutes, toDate,
   weekdayText, dateText, dateRangeText, derivePeriod, fillTemplate,
+  shortWeekdayText, shortDateText, durationText, localDateOf,
 } from '../js/lib/time.js';
 
 test('dateRangeText shortens a shared month', () => {
@@ -47,21 +48,21 @@ test('weekdayText and dateText', () => {
   assert.equal(dateText('2026-03-05'), 'Th 5, 05/03');
 });
 
-test('derivePeriod labels every current slot', () => {
+test('derivePeriod names the part of the day', () => {
   const cases = [
-    ['07:00', '09:00', 'Buổi sáng'],
-    ['09:15', '10:30', 'Buổi sáng'],
-    ['11:00', '12:15', 'Buổi trưa'],
+    ['07:00', '09:00', 'Sáng'],
+    ['09:15', '10:30', 'Sáng'],
+    ['11:00', '12:15', 'Trưa'],
     ['12:45', '14:00', 'Trưa → chiều'],
-    ['14:15', '16:00', 'Buổi chiều'],
-    ['16:30', '17:45', 'Buổi chiều'],
-    ['18:00', '19:00', 'Buổi tối'],
-    ['19:30', '21:00', 'Buổi tối'],
-    ['08:00', '10:00', 'Buổi sáng'],
+    ['14:15', '16:00', 'Chiều'],
+    ['16:30', '17:45', 'Chiều'],
+    ['18:00', '19:00', 'Tối'],
+    ['19:30', '21:00', 'Tối'],
+    ['08:00', '10:00', 'Sáng'],
     ['11:00', '17:00', 'Trưa → chiều'],
-    ['18:00', '21:30', 'Buổi tối'],
-    ['08:00', '10:30', 'Buổi sáng'],
-    ['11:00', '13:00', 'Buổi trưa'],
+    ['18:00', '21:30', 'Tối'],
+    ['08:00', '10:30', 'Sáng'],
+    ['11:00', '13:00', 'Trưa'],
   ];
   for (const [start, end, expected] of cases) {
     assert.equal(derivePeriod(start, end), expected, `${start}–${end}`);
@@ -70,4 +71,28 @@ test('derivePeriod labels every current slot', () => {
 
 test('fillTemplate replaces known keys and keeps unknown ones', () => {
   assert.equal(fillTemplate('{days} ngày {nights} đêm {x}', { days: 3, nights: 2 }), '3 ngày 2 đêm {x}');
+});
+
+test('short weekday and date for tabs', () => {
+  assert.equal(shortWeekdayText('2026-10-16'), 'T6');
+  assert.equal(shortWeekdayText('2026-10-18'), 'CN');
+  assert.equal(shortDateText('2026-10-16'), 'T6 16/10');
+  assert.equal(shortDateText('2026-10-18'), 'CN 18/10');
+  assert.equal(shortDateText('2026-03-05'), 'T5 05/03');
+});
+
+test('durationText rounds up to the minute', () => {
+  assert.equal(durationText(30_000), '< 1 phút');
+  assert.equal(durationText(60_000), '1 phút');
+  assert.equal(durationText(61_000), '2 phút');
+  assert.equal(durationText(59 * 60_000), '59 phút');
+  assert.equal(durationText(59 * 60_000 + 1), '1 giờ');
+  assert.equal(durationText(2 * 3_600_000), '2 giờ');
+  assert.equal(durationText(80 * 60_000), '1 giờ 20 phút');
+});
+
+test('localDateOf reads the calendar date in the trip timezone', () => {
+  assert.equal(localDateOf(Date.parse('2026-10-16T16:59:00Z'), '+07:00'), '2026-10-16');
+  assert.equal(localDateOf(Date.parse('2026-10-16T17:00:00Z'), '+07:00'), '2026-10-17');
+  assert.equal(localDateOf(Date.parse('2026-10-17T03:00:00Z'), '-03:30'), '2026-10-16');
 });

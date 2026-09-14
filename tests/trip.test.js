@@ -50,7 +50,7 @@ test('items carry ids, order, heading and map url', () => {
   assert.equal(first.heading, '🍃 Đồi chè Cầu Đất — Săn mây, ăn sáng, cà phê');
   assert.equal(first.name, 'Đồi chè Cầu Đất');
   assert.equal(first.detail, 'Săn mây, ăn sáng, cà phê');
-  assert.equal(first.period, 'Buổi sáng');
+  assert.equal(first.period, 'Sáng');
   assert.equal(first.mapUrl, `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent('Đồi chè Cầu Đất Đà Lạt')}`);
   assert.doesNotMatch(first.mapUrl, /\s/);
 
