@@ -25,24 +25,25 @@ function renderItem(item) {
   return h('div', { class: 'item', dataset: { id: item.id }, style: { '--i': String(item.order) } },
     h('span', { class: 'dot' }),
     h('div', { class: 'time' },
-      h('span', { class: 'clock', text: `${item.startText} – ${item.endText}` }),
+      h('span', { class: 'clock' },
+        h('b', { class: 'clock-start', text: item.startText }),
+        h('span', { class: 'clock-end', text: `– ${item.endText}` })),
       h('span', { class: 'period', text: item.period })),
-    item.empty ? renderEmptyCard(item) : renderCard(item));
+    renderCard(item));
 }
 
 function renderCard(item) {
-  const hasFooter = Boolean(item.tag || item.mapUrl);
-  return h('div', { class: 'card' },
-    h('h3', { text: item.heading }),
-    hasFooter
-      ? h('div', { class: 'card-footer' },
-        item.tag ? h('span', { class: 'tag', text: item.tag }) : null,
-        item.mapUrl
-          ? h('a', { class: 'map-btn', href: item.mapUrl, target: '_blank', rel: 'noopener noreferrer' }, '📍 Maps')
-          : null)
-      : null);
-}
-
-function renderEmptyCard(item) {
-  return h('div', { class: 'card empty' }, h('h3', { text: item.heading }));
+  const hasFooter = !item.empty && Boolean(item.tag || item.mapUrl);
+  return h('div', { class: item.empty ? 'card empty' : 'card' },
+    item.icon ? h('span', { class: 'card-icon', 'aria-hidden': 'true', text: item.icon }) : null,
+    h('div', { class: 'card-body' },
+      h('h3', { class: 'card-title', text: item.name }),
+      item.detail ? h('p', { class: 'card-detail', text: item.detail }) : null,
+      hasFooter
+        ? h('div', { class: 'card-footer' },
+          item.tag ? h('span', { class: 'tag', dataset: { tag: item.tagKey }, text: item.tag }) : null,
+          item.mapUrl
+            ? h('a', { class: 'map-btn', href: item.mapUrl, target: '_blank', rel: 'noopener noreferrer' }, '📍 Maps')
+            : null)
+        : null));
 }

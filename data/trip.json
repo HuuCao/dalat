@@ -3,7 +3,7 @@
   "hero": {
     "eyebrow": "✦ Travel plan · Đà Lạt",
     "title": "Đà Lạt",
-    "subtitle": "Đà Lạt {days} ngày {nights} đêm — Let's go",
+    "subtitle": "{dates} · {days} ngày {nights} đêm — Let's go",
     "chips": ["🌿 Nature", "☕ Chill", "📸 Check-in"],
     "image": { "src": "assets/img/hero-{w}.jpg", "widths": [800, 1600, 2560] },
     "thumbs": [
@@ -17,24 +17,30 @@
       "icon": "🌿",
       "note": "Sáng → Trưa → Chiều → Tối",
       "items": [
-        { "start": "07:00", "end": "09:00", "icon": "🍃", "title": "Đồi chè Cầu Đất", "tag": "Nature", "map": "Đồi chè Cầu Đất Đà Lạt" },
-        { "start": "09:15", "end": "10:30", "icon": "🌸", "title": "Cánh đồng hoa / Hidden spot", "tag": "Check-in", "map": "cánh đồng hoa gần đồi chè Cầu Đất Đà Lạt" },
-        { "start": "11:00", "end": "12:15", "icon": "🍗", "title": "Gà nướng + cơm lam", "tag": "Lunch", "map": "gà nướng cơm lam gần đồi chè Cầu Đất Đà Lạt" },
+        { "start": "07:00", "end": "09:00", "icon": "🍃", "title": "Đồi chè Cầu Đất — Săn mây, ăn sáng, cà phê", "tag": "Nature", "map": "Đồi chè Cầu Đất Đà Lạt" },
+        { "start": "09:15", "end": "10:30", "icon": "☕", "title": "Hidden Land", "tag": "Coffee", "map": "Hidden Land coffee Đà Lạt" },
+        { "start": "11:00", "end": "12:15", "icon": "🍗", "title": "Gà nướng + Cơm lam", "tag": "Lunch", "map": "gà nướng cơm lam gần đồi chè Cầu Đất Đà Lạt" },
         { "start": "12:45", "end": "14:00", "icon": "🐈", "title": "Trại Mèo Mướp", "tag": "Cute spot", "map": "Trại Mèo Mướp Đà Lạt" },
-        { "start": "14:15", "end": "16:00", "icon": "☕", "title": "Phong Miên quán — forest slow café", "tag": "Coffee", "map": "Phong Miên quán forest slow café Đà Lạt" },
+        { "start": "14:15", "end": "16:00", "icon": "☕", "title": "Phong Miên quán — Forest slow café", "tag": "Coffee", "map": "Phong Miên quán forest slow café Đà Lạt" },
         { "start": "16:30", "end": "17:45", "icon": "🌫️", "title": "Dốc Sương Nguyệt Ánh", "tag": "Sunset", "map": "Dốc Sương Nguyệt Ánh Đà Lạt" },
         { "start": "18:00", "end": "19:00", "icon": "📡", "title": "Tháp Vinaphone Đà Lạt", "tag": "Check-in", "map": "Tháp Vinaphone Đà Lạt" },
-        { "start": "19:30", "end": "21:00", "icon": "🍜", "title": "Ăn tối — Chưa chọn", "empty": true }
+        { "start": "19:15", "end": "20:30", "icon": "🍢", "title": "Ăn tối — Đồ nướng", "tag": "Dinner", "map": "quán nướng Đà Lạt" },
+        { "start": "20:45", "end": "22:00", "icon": "🍡", "title": "Ăn vặt chợ Đà Lạt", "tag": "Street food", "map": "Chợ Đà Lạt" }
       ]
     },
     {
       "date": "2026-10-17",
       "icon": "☁️",
-      "note": "Lịch trình cần hoàn thiện",
+      "note": "Cà phê · Lẩu · Chợ Đà Lạt",
       "items": [
-        { "start": "08:00", "end": "10:00", "icon": "🌊", "title": "Floating Town", "tag": "Check-in", "map": "Floating Town Đà Lạt" },
-        { "start": "11:00", "end": "17:00", "icon": "📍", "title": "Chưa lên lịch", "empty": true },
-        { "start": "18:00", "end": "21:30", "icon": "🌙", "title": "Chưa lên lịch", "empty": true }
+        { "start": "07:00", "end": "07:45", "icon": "🥞", "title": "Ăn sáng — Bánh căn", "tag": "Breakfast", "map": "bánh căn Đà Lạt" },
+        { "start": "08:00", "end": "10:00", "icon": "🌊", "title": "Floating Town", "tag": "Coffee", "map": "Floating Town Đà Lạt" },
+        { "start": "10:15", "end": "11:15", "icon": "☕", "title": "Cà phê — Tự do", "empty": true },
+        { "start": "11:30", "end": "12:30", "icon": "🍚", "title": "Ăn trưa — Tự do", "empty": true },
+        { "start": "13:00", "end": "15:00", "icon": "☕", "title": "Cà phê Chênh Vênh", "tag": "Coffee", "map": "Chênh Vênh coffee Đà Lạt" },
+        { "start": "15:30", "end": "17:30", "icon": "⛰️", "title": "Mountain Chill", "tag": "Coffee", "map": "Mountain Chill coffee Đà Lạt" },
+        { "start": "18:30", "end": "20:00", "icon": "🍲", "title": "Ăn tối — Lẩu", "tag": "Dinner", "map": "quán lẩu Đà Lạt" },
+        { "start": "20:15", "end": "21:30", "icon": "🍡", "title": "Ăn vặt chợ Đà Lạt", "tag": "Street food", "map": "Chợ Đà Lạt" }
       ]
     },
     {
@@ -42,13 +48,15 @@
       "icon": "🌤️",
       "note": "Ngày cuối",
       "items": [
-        { "start": "08:00", "end": "10:30", "icon": "☕", "title": "Chưa lên lịch", "empty": true },
-        { "start": "11:00", "end": "13:00", "icon": "🚗", "title": "Go Home", "tag": "End trip" }
+        { "start": "07:30", "end": "08:30", "icon": "🥖", "title": "Ăn sáng — Tự do", "empty": true },
+        { "start": "08:45", "end": "10:30", "icon": "☕", "title": "Cà phê — Tự do", "empty": true },
+        { "start": "11:00", "end": "12:00", "icon": "🍚", "title": "Ăn trưa — Tự do", "empty": true },
+        { "start": "12:15", "end": "13:00", "icon": "🚗", "title": "Go Home", "tag": "End trip" }
       ]
     }
   ],
   "footer": {
     "title": "Đà Lạt Trip Plan · {days} Days · ✦",
-    "note": "Công ty TNHH Du lịch & Sự kiện Lần Này 4 Đứa (10/2026)"
+    "note": "Công ty TNHH Du lịch & Sự kiện Gia Đình (10/2026)"
   }
 }

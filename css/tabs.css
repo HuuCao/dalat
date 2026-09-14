@@ -2,12 +2,13 @@
   position: sticky;
   top: 0;
   z-index: 20;
-  margin-top: 18px;
-  padding: 10px 0;
-  background: rgba(242, 245, 243, .88);
+  margin-top: 12px;
+  padding: 8px 0;
+  /* Same colour as the page, no border: at rest the bar blends in; once it
+     sticks, the blur and the scroll shadow (bar-settle) set it apart. */
+  background: rgba(235, 240, 236, .88);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--line);
 }
 
 /* One column per tab. Past what fits, the row scrolls sideways instead of

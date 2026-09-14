@@ -13,14 +13,14 @@ const validItem = { start: '08:00', end: '09:00', title: 'X' };
 test('trip totals come from the data', () => {
   assert.equal(trip.dayCount, 3);
   assert.equal(trip.nightCount, 2);
-  assert.equal(trip.placeCount, 9);
-  assert.equal(trip.items.length, 13);
+  assert.equal(trip.placeCount, 16);
+  assert.equal(trip.items.length, 21);
   assert.equal(trip.start.toISOString(), '2026-10-16T00:00:00.000Z');
   assert.equal(trip.end.toISOString(), '2026-10-18T06:00:00.000Z');
 });
 
 test('templates are filled', () => {
-  assert.equal(trip.hero.subtitle, "Đà Lạt 3 ngày 2 đêm — Let's go");
+  assert.equal(trip.hero.subtitle, "16 – 18/10 · 3 ngày 2 đêm — Let's go");
   assert.equal(trip.footer.title, 'Đà Lạt Trip Plan · 3 Days · ✦');
 });
 
@@ -36,9 +36,9 @@ test('images become srcsets', () => {
 test('each day derives its labels and counts', () => {
   const summary = trip.days.map(({ id, label, dateText, rangeText, countText: count }) => ({ id, label, dateText, rangeText, count }));
   assert.deepEqual(summary, [
-    { id: 'day-1', label: 'Day 1', dateText: 'Th 6, 16/10', rangeText: '07:00 → 21:00', count: '7 điểm · 1 khung trống' },
-    { id: 'day-2', label: 'Day 2', dateText: 'Th 7, 17/10', rangeText: '08:00 → 21:30', count: '1 điểm · 2 khung trống' },
-    { id: 'day-3', label: 'Day 3', dateText: 'CN, 18/10', rangeText: '08:00 → 13:00', count: '1 điểm · 1 khung trống' },
+    { id: 'day-1', label: 'Day 1', dateText: 'Th 6, 16/10', rangeText: '07:00 → 22:00', count: '9 điểm' },
+    { id: 'day-2', label: 'Day 2', dateText: 'Th 7, 17/10', rangeText: '07:00 → 21:30', count: '6 điểm · 2 khung trống' },
+    { id: 'day-3', label: 'Day 3', dateText: 'CN, 18/10', rangeText: '07:30 → 13:00', count: '1 điểm · 3 khung trống' },
   ]);
 });
 
@@ -47,15 +47,22 @@ test('items carry ids, order, heading and map url', () => {
   assert.equal(first.id, 'day-1-item-1');
   assert.equal(first.dayId, 'day-1');
   assert.equal(first.order, 0);
-  assert.equal(first.heading, '🍃 Đồi chè Cầu Đất');
+  assert.equal(first.heading, '🍃 Đồi chè Cầu Đất — Săn mây, ăn sáng, cà phê');
+  assert.equal(first.name, 'Đồi chè Cầu Đất');
+  assert.equal(first.detail, 'Săn mây, ăn sáng, cà phê');
   assert.equal(first.period, 'Buổi sáng');
   assert.equal(first.mapUrl, `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent('Đồi chè Cầu Đất Đà Lạt')}`);
   assert.doesNotMatch(first.mapUrl, /\s/);
 
-  const [emptySlot, goHome] = trip.days[2].items;
-  assert.equal(emptySlot.empty, true);
+  const lastDay = trip.days[2].items;
+  const goHome = lastDay[lastDay.length - 1];
+  assert.equal(lastDay[0].empty, true);
   assert.equal(goHome.title, 'Go Home');
+  assert.equal(goHome.name, 'Go Home');
+  assert.equal(goHome.detail, '');
   assert.equal(goHome.tag, 'End trip');
+  assert.equal(goHome.tagKey, 'end-trip');
+  assert.equal(trip.days[0].items.at(-1).tagKey, 'street-food');
   assert.equal(goHome.mapUrl, null);
   assert.equal(goHome.empty, false);
 });

@@ -1,6 +1,6 @@
 import {
   isDate, isTime, isTimezone, toMinutes, toDate,
-  dateText, derivePeriod, fillTemplate,
+  dateText, dateRangeText, derivePeriod, fillTemplate,
 } from '../lib/time.js';
 
 const MAPS_SEARCH_URL = 'https://www.google.com/maps/search/?api=1&query=';
@@ -14,7 +14,11 @@ export function buildTrip(raw) {
   const items = days.flatMap((day) => day.items);
   const dayCount = days.length;
   const nightCount = Math.max(dayCount - 1, 0);
-  const vars = { days: dayCount, nights: nightCount };
+  const vars = {
+    days: dayCount,
+    nights: nightCount,
+    dates: dateRangeText(days[0].date, days[days.length - 1].date),
+  };
   const { hero } = raw;
   const footer = raw.footer ?? {};
 
@@ -86,11 +90,21 @@ function buildItem(item, { id, dayId, order, date, timezone }) {
     period: derivePeriod(item.start, item.end),
     icon,
     title: item.title,
+    ...splitTitle(item.title),
     heading: icon ? `${icon} ${item.title}` : item.title,
     tag: item.tag ?? '',
+    // "Street food" → "street-food": picks the category colour in CSS.
+    tagKey: (item.tag ?? '').trim().toLowerCase().replace(/\s+/g, '-'),
     mapUrl: item.map ? MAPS_SEARCH_URL + encodeURIComponent(item.map) : null,
     empty: item.empty === true,
   };
+}
+
+// "Đồi chè Cầu Đất — săn mây, ăn sáng" → name + detail, so a card can set the
+// place apart from what happens there.
+function splitTitle(title) {
+  const [name, ...rest] = title.split(' — ');
+  return { name, detail: rest.join(' — ') };
 }
 
 function buildImageSet(image) {

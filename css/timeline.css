@@ -29,7 +29,7 @@
 
 .day-title { margin: 0; font-size: 18px; color: var(--primary); letter-spacing: -.01em; }
 .day-date { color: var(--text-sub); font-size: 12.5px; margin-top: 2px; }
-.day-count { font-size: 12px; color: var(--accent); font-weight: 600; }
+.day-count { font-size: 12px; color: var(--link); font-weight: 700; }
 
 /* ---------- TIMELINE ---------- */
 .timeline { position: relative; padding-left: 18px; }
@@ -38,20 +38,20 @@
   content: "";
   position: absolute;
   left: 5px;
-  top: 8px;
-  bottom: 8px;
+  top: 10px;
+  bottom: 10px;
   width: 2px;
   background: linear-gradient(180deg, var(--accent) 0%, var(--line) 100%);
   opacity: .28;
 }
 
-.item { position: relative; margin-bottom: 16px; }
+.item { position: relative; margin-bottom: 18px; }
 .item:last-child { margin-bottom: 0; }
 
 .dot {
   position: absolute;
   left: -18px;
-  top: 8px;
+  top: 10px;
   width: 10px;
   height: 10px;
   border-radius: 50%;
@@ -60,22 +60,38 @@
   box-shadow: 0 0 0 1px rgba(var(--accent-rgb), .45);
 }
 
+/* ---------- TIME ---------- */
+/* The start time is what people scan for, so it carries the weight; the
+   end time sits beside it, smaller. */
 .time {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 6px;
+  gap: 10px;
+  margin-bottom: 8px;
 }
 
 .time .clock {
-  padding: 2px 8px;
-  border-radius: 6px;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 8px;
   background: var(--accent-soft);
   color: var(--primary);
-  font-size: 11.5px;
-  font-weight: 700;
   font-variant-numeric: tabular-nums;
-  letter-spacing: .01em;
+}
+
+.clock-start {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -.01em;
+  line-height: 1.35;
+}
+
+.clock-end {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-sub);
 }
 
 .time .period {
@@ -87,38 +103,87 @@
 }
 
 /* ---------- CARD ---------- */
-/* Always two rows - title, then meta - so every entry has the same shape.
-   The tag and the map link are plain text, not chips: one box per card. */
+/* Icon tile, then the place name in bold with what happens there below it,
+   then tag and map link. */
 .card {
-  background: #fff;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--card);
   border: 1px solid var(--line);
   border-radius: 12px;
-  padding: 11px 12px;
+  padding: 12px;
   transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
 }
 
-.card h3 {
+.card-icon {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  background: var(--accent-soft);
+  font-size: 21px;
+  line-height: 1;
+}
+
+.card-body { flex: 1 1 auto; min-width: 0; }
+
+.card-title {
   margin: 0;
-  font-size: 14.5px;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: -.01em;
+  color: var(--text);
+}
+
+.card-detail {
+  margin: 2px 0 0;
+  font-size: 13px;
   line-height: 1.4;
-  letter-spacing: -.005em;
+  color: var(--text-sub);
 }
 
 .card-footer {
   display: flex;
   align-items: center;
   gap: 14px;
-  margin-top: 7px;
+  margin-top: 6px;
 }
 
+/* Category colour: a dot keyed by the tag (data-tag, set in views/day.js).
+   An unknown tag gets a neutral dot, so any new tag still works. */
 .tag {
-  color: #93a29a;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--tag);
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: .07em;
 }
+
+.tag::before {
+  content: "";
+  flex: 0 0 auto;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--tag-color, #a3aea7);
+}
+
+.tag[data-tag="breakfast"],
+.tag[data-tag="lunch"],
+.tag[data-tag="dinner"],
+.tag[data-tag="street-food"] { --tag-color: #e0893a; }
+.tag[data-tag="coffee"] { --tag-color: #9b6b45; }
+.tag[data-tag="nature"] { --tag-color: #4c9a61; }
+.tag[data-tag="sunset"] { --tag-color: #e2735a; }
+.tag[data-tag="check-in"],
+.tag[data-tag="cute-spot"] { --tag-color: #4a86c5; }
 
 /* The link text stays small; padding plus an equal negative margin stretch
    the tap target to 44px without moving anything. */
@@ -128,53 +193,59 @@
   gap: 3px;
   margin: -13px 0 -13px auto;
   padding: 13px 0 13px 12px;
-  color: var(--accent);
+  color: var(--link);
   text-decoration: none;
   font-size: 11.5px;
-  font-weight: 600;
+  font-weight: 700;
   transition: color .18s ease;
 }
 
-.empty { border: 1px dashed #cbd5ce; background: #f7faf8; }
-.empty h3 { color: #8a978f; font-weight: 550; }
+.empty { border: 1px dashed #c3cfc7; background: #f7faf8; }
+.empty .card-icon { background: transparent; border: 1px dashed #c3cfc7; }
+.empty .card-title { color: var(--empty-ink); font-weight: 600; }
+.empty .card-detail { color: var(--tag); }
 
 /* Touch screens would keep :hover stuck after a tap. */
 @media (hover: hover) {
   .card:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow-md);
-    border-color: #cfdfd6;
+    border-color: #c9d9cf;
   }
 
-  .empty:hover { transform: none; box-shadow: none; border-color: #b9c8bf; }
+  .empty:hover { transform: none; box-shadow: none; border-color: #aebdb3; }
 
   .map-btn:hover { color: var(--primary); text-decoration: underline; }
 }
 
 /* ---------- LIVE AND PAST SLOTS ---------- */
+/* Live uses the lime family, the same colour as the ticking seconds, so
+   "now" means one thing across the page. */
 .item.is-now .card {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), .14);
+  border-color: var(--live-strong);
+  box-shadow: 0 0 0 3px rgba(var(--live-rgb), .35);
 }
 
-.item.is-now .clock { background: var(--accent); color: #fff; }
+.item.is-now .clock { background: var(--live); color: var(--live-ink); }
+.item.is-now .clock-end { color: rgba(29, 51, 22, .72); }
 
 .item.is-now .dot {
-  background: var(--accent);
-  box-shadow: 0 0 0 1px var(--accent), 0 0 0 5px rgba(var(--accent-rgb), .2);
+  background: var(--live);
+  box-shadow: 0 0 0 1px var(--live-strong), 0 0 0 5px rgba(var(--live-rgb), .35);
 }
 
 .now-tag {
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: .08em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: var(--live-strong);
 }
 
 /* Slots that are over fade back so the eye lands on what is left. */
 .item.is-past .card:not(.empty) { background: #f3f9f4; border-color: #c9e1d0; }
-.item.is-past .card:not(.empty) h3 { color: #74897c; }
+.item.is-past .card:not(.empty) .card-title { color: #5f7466; }
+.item.is-past .card-icon { opacity: .6; }
 .item.is-past .clock { opacity: .55; }
 .item.is-past .dot { background: var(--primary); box-shadow: 0 0 0 1px var(--primary); }
 
@@ -183,7 +254,9 @@
   .day-title { font-size: 20px; }
   .timeline { padding-left: 22px; }
   .dot { left: -21px; }
-  .item { margin-bottom: 20px; }
-  .card { padding: 12px 14px; }
-  .card h3 { font-size: 15px; }
+  .item { margin-bottom: 22px; }
+  .card { padding: 14px 16px; gap: 14px; }
+  .card-icon { width: 44px; height: 44px; font-size: 23px; }
+  .card-title { font-size: 17px; }
+  .clock-start { font-size: 17px; }
 }

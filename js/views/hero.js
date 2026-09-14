@@ -1,6 +1,6 @@
 import { h } from '../lib/dom.js';
 
-export function renderHero(hero, dayCount) {
+export function renderHero(hero) {
   return h('header', { class: 'hero' },
     hero.image
       ? renderImage('hero-bg', hero.image, { sizes: '130vw', fetchpriority: 'high' })
@@ -8,7 +8,7 @@ export function renderHero(hero, dayCount) {
     h('div', { class: 'hero-overlay' }),
     h('div', { class: 'hero-inner wrap' },
       h('div', { class: 'eyebrow', text: hero.eyebrow }),
-      h('h1', {}, hero.title, ' ', h('span', { text: `${dayCount} Days` })),
+      h('h1', { text: hero.title }),
       h('div', { class: 'subtitle', text: hero.subtitle }),
       h('div', { class: 'chips' }, hero.chips.map((chip) => h('span', { class: 'chip', text: chip })))),
     hero.thumbs.length > 0

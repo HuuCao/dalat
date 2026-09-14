@@ -48,6 +48,15 @@ export function dateText(date) {
   return `${weekdayText(date)}, ${day}/${month}`;
 }
 
+// "16 – 18/10" within a month, "30/10 – 02/11" across two.
+export function dateRangeText(start, end) {
+  const [, startMonth, startDay] = start.split('-');
+  const [, endMonth, endDay] = end.split('-');
+  if (start === end) return `${startDay}/${startMonth}`;
+  if (startMonth === endMonth) return `${startDay} – ${endDay}/${endMonth}`;
+  return `${startDay}/${startMonth} – ${endDay}/${endMonth}`;
+}
+
 function periodAt(minutes) {
   let name = PERIODS[0][1];
   for (const [from, period] of PERIODS) {

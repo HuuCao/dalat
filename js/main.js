@@ -21,13 +21,16 @@ async function loadTrip() {
 }
 
 function mount(app, trip) {
-  const hero = renderHero(trip.hero, trip.dayCount);
-  const tabbar = renderTabs(trip.days);
+  const hero = renderHero(trip.hero);
   const countdown = createCountdown();
+  // The status is about the whole trip, so it sits between the hero and the
+  // day tabs; the tabs stay right above the content they switch.
+  const status = h('div', { class: 'status wrap' }, countdown.element);
+  const tabbar = renderTabs(trip.days);
   const panels = trip.days.map(renderDay);
-  const main = h('main', { class: 'wrap' }, countdown.element, panels, renderFooter(trip.footer));
+  const main = h('main', { class: 'wrap' }, panels, renderFooter(trip.footer));
 
-  app.replaceChildren(hero, tabbar, main);
+  app.replaceChildren(hero, status, tabbar, main);
   return { hero, tabbar, countdown, panels, main };
 }
 

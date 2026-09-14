@@ -36,8 +36,8 @@ Toàn bộ nội dung nằm trong một file dữ liệu `data/trip.json`. Trang
 ### 1. Hero
 
 - Ảnh nền toàn chiều ngang, phủ lớp gradient tối để chữ luôn dễ đọc.
-- Dòng nhỏ phía trên (`✦ Travel plan · Đà Lạt`), tiêu đề lớn kèm số ngày tự đếm (`Đà Lạt 3 Days`).
-- Phụ đề tự điền số ngày/đêm từ dữ liệu (`Đà Lạt 3 ngày 2 đêm — Let's go`).
+- Dòng nhỏ phía trên (`✦ Travel plan · Đà Lạt`) và tiêu đề lớn (`Đà Lạt`).
+- Phụ đề tự điền khoảng ngày và số ngày/đêm từ dữ liệu (`16 – 18/10 · 3 ngày 2 đêm — Let's go`).
 - Các chip chủ đề: `🌿 Nature`, `☕ Chill`, `📸 Check-in`.
 - Hai ảnh thumbnail ở góc phải — chỉ hiện trên máy tính.
 
@@ -54,28 +54,30 @@ Toàn bộ nội dung nằm trong một file dữ liệu `data/trip.json`. Trang
 Mỗi ngày là một thẻ gồm:
 
 - **Tiêu đề:** icon + `Day N`.
-- **Dòng thông tin tự tính:** thứ/ngày, giờ bắt đầu → kết thúc, ghi chú — ví dụ `Th 6, 16/10 · 07:00 → 21:00 · Sáng → Trưa → Chiều → Tối`.
-- **Bộ đếm tự tính:** `7 điểm · 1 khung trống` (bỏ vế bằng 0; ngày chưa có gì hiện `Chưa có lịch`).
+- **Dòng thông tin tự tính:** thứ/ngày, giờ bắt đầu → kết thúc, ghi chú — ví dụ `Th 6, 16/10 · 07:00 → 22:00 · Sáng → Trưa → Chiều → Tối`.
+- **Bộ đếm tự tính:** `6 điểm · 2 khung trống` (bỏ vế bằng 0; ngày chưa có gì hiện `Chưa có lịch`).
 - **Đường timeline dọc** nối các khung giờ, mỗi khung có một chấm tròn.
 
 Mỗi khung giờ gồm:
 
 - **Giờ** (`07:00 – 09:00`) và **buổi tự suy ra**: `Buổi sáng`, `Buổi trưa`, `Buổi chiều`, `Buổi tối`, hoặc khung vắt qua hai buổi như `Trưa → chiều`.
   - Sáng trước 11:00 · Trưa 11:00–12:59 · Chiều 13:00–17:59 · Tối từ 18:00.
-- **Thẻ địa điểm:** icon + tên, nhãn phân loại (`NATURE`, `COFFEE`, `SUNSET`…).
+- **Giờ nổi bật:** giờ bắt đầu in đậm cỡ lớn, giờ kết thúc nhỏ bên cạnh.
+- **Chấm màu theo loại** cạnh nhãn: ăn uống (`Breakfast`, `Lunch`, `Dinner`, `Street food`) cam · `Coffee` nâu · `Nature` xanh lá · `Sunset` cam hồng · `Check-in`, `Cute spot` xanh dương. Nhãn khác hiện chấm xám; thêm màu mới trong `css/timeline.css` (`.tag[data-tag="…"]`).
+- **Thẻ địa điểm:** icon trong ô màu, tên địa điểm in đậm cỡ lớn, nhãn phân loại (`NATURE`, `COFFEE`, `SUNSET`…). Phần sau dấu ` — ` trong `title` hiện thành dòng mô tả nhỏ bên dưới tên (vd. `Đồi chè Cầu Đất — Săn mây, ăn sáng, cà phê`).
 - **Link `📍 Maps`:** mở Google Maps tìm đúng địa điểm trong tab mới.
-- **Khung trống:** thẻ viền nét đứt (`🍜 Ăn tối — Chưa chọn`), không tính vào số điểm.
+- **Khung trống:** thẻ viền nét đứt (`🍚 Ăn trưa — Tự do`), không tính vào số điểm.
 
 ### 4. Trạng thái chuyến đi
 
-Panel tối màu ở đầu lịch trình, tự đổi nội dung theo thời điểm:
+Panel tối màu nổi đè lên mép dưới banner, nằm trên thanh tab — vì nó thuộc về cả chuyến đi chứ không riêng ngày nào. Nội dung tự đổi theo thời điểm:
 
 | Thời điểm | Nhãn | Nội dung |
 |---|---|---|
 | **Trước chuyến đi** | `Đếm ngược khởi hành` | Ô đếm ngược `ngày · giờ · phút · giây` (bỏ đơn vị 0 ở đầu, luôn giữ ít nhất 2 ô), đồng hồ cát lật cát chảy, ghi chú `Đà Lạt đang chờ · bắt đầu 07:00 · Th 6, 16/10` |
-| **Đang ở một khung giờ** | `Đang diễn ra` | Tên điểm hiện tại, ghi chú `Đến 12:15 · đã qua 2/9 điểm`, chấm xanh nhấp nháy |
-| **Giữa hai khung giờ** | `Đang di chuyển` | Tên điểm kế tiếp, ghi chú `Tiếp theo lúc 09:15 · đã qua 1/9 điểm` |
-| **Sau chuyến đi** | `Hành trình đã khép lại` | `Hẹn gặp lại Đà Lạt ✦`, ghi chú `Đã đi qua 9 điểm trong 3 ngày` |
+| **Đang ở một khung giờ** | `Đang diễn ra` | Tên điểm hiện tại, ghi chú `Đến 12:15 · đã qua 2/16 điểm`, chấm xanh nhấp nháy |
+| **Giữa hai khung giờ** | `Đang di chuyển` | Tên điểm kế tiếp, ghi chú `Tiếp theo lúc 09:15 · đã qua 1/16 điểm` |
+| **Sau chuyến đi** | `Hành trình đã khép lại` | `Hẹn gặp lại Đà Lạt ✦`, ghi chú `Đã đi qua 16 điểm trong 3 ngày` |
 
 - Đếm ngược cập nhật mỗi giây; các trạng thái còn lại cập nhật mỗi 15 giây.
 - Tiến độ chỉ đếm địa điểm thật, không đếm khung trống.
@@ -228,7 +230,7 @@ Chỉ sửa `data/trip.json`. Thêm ngày = thêm một object vào `days`; thê
 | `timezone` | có | Múi giờ chuyến đi, dạng `+07:00` |
 | `hero.title` | có | |
 | `hero.eyebrow`, `hero.chips[]` | không | |
-| `hero.subtitle`, `footer.title` | không | Dùng được `{days}`, `{nights}` |
+| `hero.subtitle`, `footer.title` | không | Dùng được `{days}`, `{nights}`, `{dates}` (vd. `16 – 18/10`) |
 | `hero.image`, `hero.thumbs[]` | không | `{ "src": "assets/img/hero-{w}.jpg", "widths": [800, 1600, 2560] }` — mỗi width là một file có sẵn |
 | `footer.note` | không | |
 | `days[].date` | có | `YYYY-MM-DD` |
