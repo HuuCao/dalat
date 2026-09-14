@@ -159,7 +159,7 @@ test('fund builds members, shared costs and labels in form order', () => {
 test('fund config fails with the exact path', () => {
   assert.throws(withFund({ members: [] }), /fund\.members: phải có ít nhất 1 người/);
   assert.throws(withFund({ members: ['Hữu', ' '] }), /fund\.members\[1\]: bắt buộc/);
-  assert.throws(withFund({ members: ['Trâm', 'Trâm'] }), /fund\.members\[1\]: trùng tên/);
+  assert.throws(withFund({ members: ['Trâm', 'Tra\u0302m'] }), /fund\.members\[1\]: trùng tên/);
   assert.throws(withFund({ members: ['quỹ'] }), /fund\.members\[0\]: "Quỹ" là tên dành riêng/);
   assert.throws(
     withFund({ ...validFund, csv: { expenses: 'https://evil.example/x.csv', contributions: 'https://docs.google.com/x' } }),
