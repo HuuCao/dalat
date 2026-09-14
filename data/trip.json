@@ -57,6 +57,12 @@
   ],
   "fund": {
     "members": ["Hữu", "MiMi", "Khanh", "Trâm"],
+    "csv": {
+      "expenses": "https://docs.google.com/spreadsheets/d/e/2PACX-1vSuA0xcl9Tbq8NmPv0A1hOmkvrwqIZBZnnHjZeNVZVjJRg1MMPJtbf63CR9JOgdwBiWtF7Ckb-Aca9P/pub?gid=824356129&single=true&output=csv",
+      "contributions": "https://docs.google.com/spreadsheets/d/e/2PACX-1vSuA0xcl9Tbq8NmPv0A1hOmkvrwqIZBZnnHjZeNVZVjJRg1MMPJtbf63CR9JOgdwBiWtF7Ckb-Aca9P/pub?gid=1507554042&single=true&output=csv"
+    },
+    "form": { "url": "https://docs.google.com/forms/d/e/1FAIpQLSc44xadc_jVAsdd_udwt8UFb_Wau4_peIxYNrHqWMDyTkC0IQ/viewform", "placeField": "entry.115103053" },
+    "sheet": "https://docs.google.com/spreadsheets/d/1inFgfHyyBSKzI0HL8awfuHYDIytTq9DOyj_9LPCIB78/edit#gid=824356129",
     "shared": [
       { "title": "Vé xe 2 chiều", "icon": "🚌", "budget": 2800000, "note": "700k/người" },
       { "title": "Khách sạn", "icon": "🏨", "budget": 1080000, "note": "270k/đêm/phòng" },
