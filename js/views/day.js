@@ -37,21 +37,26 @@ function renderItem(item, fund) {
     renderCard(item, fund));
 }
 
-// Tag, money line and map link share one row that wraps when it runs out of
-// room; past slots fold that row into the title line (timeline.css).
+// Every place card has the same three lines - name with its map link, the
+// description (kept even when empty), the money line - so all cards are the
+// same height (timeline.css).
 function renderCard(item, fund) {
-  const meta = [
-    !item.empty && item.tag ? h('span', { class: 'tag', dataset: { tag: item.tagKey }, text: item.tag }) : null,
-    fund ? moneySlot(item.id) : null,
-    !item.empty && item.mapUrl
-      ? h('a', { class: 'map-btn', href: item.mapUrl, target: '_blank', rel: 'noopener noreferrer' }, '📍 Maps')
-      : null,
-  ].filter(Boolean);
-
   return h('div', { class: item.empty ? 'card empty' : 'card' },
     item.icon ? h('span', { class: 'card-icon', 'aria-hidden': 'true', text: item.icon }) : null,
     h('div', { class: 'card-body' },
-      h('h3', { class: 'card-title', text: item.name }),
-      item.detail ? h('p', { class: 'card-detail', text: item.detail }) : null,
-      meta.length > 0 ? h('div', { class: 'card-meta' }, meta) : null));
+      h('div', { class: 'card-head' },
+        h('h3', { class: 'card-title', title: item.name, text: item.name }),
+        !item.empty && item.mapUrl
+          ? h('a', {
+            class: 'map-btn',
+            href: item.mapUrl,
+            target: '_blank',
+            rel: 'noopener noreferrer',
+            'aria-label': `Mở Google Maps: ${item.name}`,
+          },
+          h('span', { 'aria-hidden': 'true', text: '📍' }),
+          h('span', { class: 'map-btn-text', text: 'Maps' }))
+          : null),
+      h('p', { class: 'card-detail', text: item.detail }),
+      fund ? moneySlot(item.id) : null));
 }

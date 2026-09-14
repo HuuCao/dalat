@@ -65,10 +65,9 @@ Mỗi khung giờ gồm:
 - **Giờ** (`07:00 – 09:00`) và **buổi tự suy ra**: `Sáng`, `Trưa`, `Chiều`, `Tối`, hoặc khung vắt qua hai buổi như `Trưa → chiều`.
   - Sáng trước 11:00 · Trưa 11:00–12:59 · Chiều 13:00–17:59 · Tối từ 18:00.
 - **Giờ nổi bật:** giờ bắt đầu in đậm cỡ lớn, giờ kết thúc nhỏ bên cạnh.
-- **Chấm màu theo loại** cạnh nhãn: ăn uống (`Breakfast`, `Lunch`, `Dinner`, `Street food`) cam · `Coffee` nâu · `Nature` xanh lá · `Sunset` cam hồng · `Check-in`, `Cute spot` xanh dương. Nhãn khác hiện chấm xám; thêm màu mới trong `css/timeline.css` (`.tag[data-tag="…"]`).
-- **Thẻ địa điểm:** icon trong ô màu, tên địa điểm in đậm cỡ lớn, nhãn phân loại (`NATURE`, `COFFEE`, `SUNSET`…). Phần sau dấu ` — ` trong `title` hiện thành dòng mô tả nhỏ bên dưới tên (vd. `Đồi chè Cầu Đất — Săn mây, ăn sáng, cà phê`).
-- **Link `📍 Maps`:** mở Google Maps tìm đúng địa điểm trong tab mới.
-- **Một hàng thông tin:** nhãn phân loại, dòng 💰 và link `📍 Maps` nằm chung một hàng, hẹp thì tự xuống dòng.
+- **Thẻ địa điểm:** icon trong ô màu, tên địa điểm in đậm cỡ lớn. Phần sau dấu ` — ` trong `title` hiện thành dòng mô tả nhỏ bên dưới tên (vd. `Đồi chè Cầu Đất — Săn mây, ăn sáng, cà phê`).
+- **Link `📍 Maps`** nằm cùng hàng với tên, mở Google Maps tìm đúng địa điểm trong tab mới. Máy dưới 380px chỉ hiện 📍 để tên dài vẫn vừa một dòng.
+- **Mọi thẻ cao bằng nhau:** tên một dòng, mô tả một dòng (giữ chỗ khi không có), dòng 💰; chữ quá dài hiện `…`.
 - **Khung trống:** thẻ viền nét đứt (`🍚 Ăn trưa — Tự do`), không tính vào số điểm.
 
 ### 4. Trạng thái chuyến đi
@@ -93,7 +92,7 @@ Panel tối màu nổi đè lên mép dưới banner, nằm trên thanh tab — 
 Trong thời gian chuyến đi, trang tự phản ánh "bây giờ":
 
 - **Khung đang diễn ra** được làm nổi: viền và giờ đổi màu nhấn, chấm có vòng sáng, thêm nhãn `ĐANG DIỄN RA`.
-- **Khung đã qua** thu gọn: thẻ còn một hàng (tên + dòng 💰) trên nền xám, nhãn `ĐÃ QUA`, giờ mờ, chấm đổi màu đậm — vẫn bấm được để xem các khoản chi.
+- **Khung đã qua** giữ nguyên cỡ thẻ, chuyển nền xám, chữ nhạt, nhãn `ĐÃ QUA`, giờ mờ, chấm đổi màu đậm — không cần bấm gì.
 - **Tự mở đúng ngày:** mở trang trong lúc đang đi, tab tự chuyển sang ngày hiện tại và cuộn tới khung đang diễn ra.
 - Giờ trong dữ liệu tính theo múi giờ chuyến đi (`+07:00`), nên xem từ máy ở múi giờ khác vẫn đúng.
 
@@ -245,7 +244,7 @@ Chỉ sửa `data/trip.json`. Thêm ngày = thêm một object vào `days`; thê
   "icon": "🧳",
   "note": "Ngày thêm",
   "items": [
-    { "start": "09:00", "end": "10:30", "icon": "☕", "title": "Cà phê sáng", "tag": "Coffee", "map": "cà phê view đồi Đà Lạt" },
+    { "start": "09:00", "end": "10:30", "icon": "☕", "title": "Cà phê sáng", "map": "cà phê view đồi Đà Lạt" },
     { "start": "11:00", "end": "12:00", "icon": "🍜", "title": "Ăn trưa — Chưa chọn", "empty": true }
   ]
 }
@@ -263,7 +262,7 @@ Chỉ sửa `data/trip.json`. Thêm ngày = thêm một object vào `days`; thê
 | `days[].icon`, `days[].note` | không | |
 | `items[].start`, `items[].end` | có | `HH:MM`, cùng ngày, `end` sau `start` |
 | `items[].title` | có | |
-| `items[].icon`, `items[].tag` | không | |
+| `items[].icon` | không | |
 | `items[].map` | không | Từ khóa tìm trên Google Maps; có thì hiện link `📍 Maps` |
 | `items[].empty` | không | `true` = khung trống, không tính là điểm |
 | `items[].budget` | không | Dự kiến, VND, số nguyên ≥ 0. `0` = `Miễn phí` |

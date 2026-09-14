@@ -1,6 +1,6 @@
 /* ---------- MONEY LINE (cards and shared costs) ---------- */
-/* In a card the line sits in .card-meta beside the tag; padding plus an equal
-   negative margin keep a 44px tap target without a row of its own. */
+/* In a card this is the last of three fixed lines; padding plus an equal
+   negative margin keep a 44px tap target without a taller row. */
 .money { font-size: 13px; }
 
 .money-sum {
@@ -26,9 +26,6 @@
 }
 
 .money[open] > .money-sum::after { content: "▴"; }
-
-/* Opened, the entries take a full row below the tag and map link. */
-.money[open] { flex-basis: 100%; order: 3; }
 
 /* Shared costs in the fund tab: one full-width row each. */
 .fund-section > .money { border-top: 1px dashed var(--line); }

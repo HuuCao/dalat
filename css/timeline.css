@@ -104,8 +104,9 @@
 }
 
 /* ---------- CARD ---------- */
-/* Icon tile, then the place name in bold with what happens there below it,
-   then tag and map link. */
+/* Icon tile, then three fixed lines: place name with its map link, what
+   happens there, the money line. Name and description never wrap, so every
+   place card is the same height. */
 .card {
   display: flex;
   align-items: flex-start;
@@ -131,7 +132,22 @@
 
 .card-body { flex: 1 1 auto; min-width: 0; }
 
+.card-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.card-title,
+.card-detail {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .card-title {
+  flex: 1 1 auto;
+  min-width: 0;
   margin: 0;
   font-size: 16px;
   font-weight: 700;
@@ -140,66 +156,39 @@
   color: var(--text);
 }
 
+/* Holds its line even when a place has no description. */
 .card-detail {
+  min-height: 1.4em;
   margin: 2px 0 0;
   font-size: 13px;
   line-height: 1.4;
   color: var(--text-sub);
 }
 
-.card-meta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 2px 12px;
-  margin-top: 6px;
-}
+.card-body > .money { margin-top: 6px; }
 
-/* Category colour: a dot keyed by the tag (data-tag, set in views/day.js).
-   An unknown tag gets a neutral dot, so any new tag still works. */
-.tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--tag);
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: .06em;
-}
-
-.tag::before {
-  content: "";
-  flex: 0 0 auto;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--tag-color, #a3aea7);
-}
-
-.tag[data-tag="breakfast"],
-.tag[data-tag="lunch"],
-.tag[data-tag="dinner"],
-.tag[data-tag="street-food"] { --tag-color: #e0893a; }
-.tag[data-tag="coffee"] { --tag-color: #9b6b45; }
-.tag[data-tag="nature"] { --tag-color: #4c9a61; }
-.tag[data-tag="sunset"] { --tag-color: #e2735a; }
-.tag[data-tag="check-in"],
-.tag[data-tag="cute-spot"] { --tag-color: #4a86c5; }
-
-/* The link text stays small; padding plus an equal negative margin stretch
-   the tap target to 44px without moving anything. */
+/* Padding plus an equal negative margin stretch the tap target to 44px
+   without taking room from the place name. Phones under 380px show the pin
+   alone, so the longest names still fit on one line. */
 .map-btn {
+  flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  margin: -12px 0 -12px auto;
-  padding: 12px 0 12px 10px;
+  margin: -12px -14px;
+  padding: 12px 14px;
   color: var(--link);
   text-decoration: none;
   font-size: 13px;
   font-weight: 700;
   transition: color .18s ease;
+}
+
+.map-btn-text { display: none; }
+
+@media (min-width: 380px) {
+  .map-btn { margin: -12px 0 -12px -10px; padding: 12px 0 12px 10px; }
+  .map-btn-text { display: inline; }
 }
 
 .empty { border: 1px dashed #c3cfc7; background: #f7faf8; }
@@ -246,19 +235,11 @@
 
 .state-tag.is-past { font-weight: 700; color: var(--text-sub); }
 
-/* Slots that are over fold to one line - name and money - on a neutral
-   ground, so the eye lands on what is left. Opening the money line still
-   shows the entries, on a row of their own. */
-.item.is-past .card { padding-block: 8px; background: #f4f5f4; border-color: var(--line); }
-.item.is-past .card-icon { width: 28px; height: 28px; border-radius: 8px; font-size: 15px; opacity: .6; }
-/* min-height matches the icon, so the closed line centres on it and an
-   opened list grows downwards with the icon staying at the top. */
-.item.is-past .card-body { display: flex; flex-wrap: wrap; align-items: center; column-gap: 10px; min-height: 28px; }
-.item.is-past .card-title { flex: 1 1 8rem; min-width: 0; font-size: 14px; color: var(--text-sub); }
-.item.is-past .card-detail,
-.item.is-past .tag,
-.item.is-past .map-btn { display: none; }
-.item.is-past .card-meta { display: contents; }
+/* Slots that are over keep their size and fade to a neutral ground, so the
+   eye lands on what is left. */
+.item.is-past .card { background: #f4f5f4; border-color: var(--line); }
+.item.is-past .card-icon { opacity: .6; }
+.item.is-past .card-title { color: var(--text-sub); }
 .item.is-past .clock { opacity: .55; }
 .item.is-past .dot { background: var(--primary); box-shadow: 0 0 0 1px var(--primary); }
 

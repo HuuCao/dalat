@@ -71,9 +71,9 @@ test('items carry ids, order, heading and map url', () => {
   assert.equal(goHome.title, 'Go Home');
   assert.equal(goHome.name, 'Go Home');
   assert.equal(goHome.detail, '');
-  assert.equal(goHome.tag, 'End trip');
-  assert.equal(goHome.tagKey, 'end-trip');
-  assert.equal(trip.days[0].items.at(-1).tagKey, 'street-food');
+  // Tags are no longer shown; a "tag" left in the data is ignored.
+  assert.equal('tag' in goHome, false);
+  assert.equal('tagKey' in goHome, false);
   assert.equal(goHome.mapUrl, null);
   assert.equal(goHome.empty, false);
 });

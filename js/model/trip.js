@@ -107,9 +107,6 @@ function buildItem(item, { id, dayId, dayLabel, order, date, timezone }) {
     title: item.title,
     ...splitTitle(item.title),
     heading: icon ? `${icon} ${item.title}` : item.title,
-    tag: item.tag ?? '',
-    // "Street food" → "street-food": picks the category colour in CSS.
-    tagKey: (item.tag ?? '').trim().toLowerCase().replace(/\s+/g, '-'),
     mapUrl: item.map ? MAPS_SEARCH_URL + encodeURIComponent(item.map) : null,
     empty: item.empty === true,
     budget: item.budget ?? null,
