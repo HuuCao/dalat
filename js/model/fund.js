@@ -1,5 +1,5 @@
 import { keyOf } from '../lib/text.js';
-import { formatShort, formatFull, formatDiff } from '../lib/money.js';
+import { formatShort, formatFull, formatDiff, formatExact } from '../lib/money.js';
 import { FUND_PAYER } from './trip.js';
 
 const EXPENSE_COLUMNS = {
@@ -118,9 +118,11 @@ export function buildLedger(trip, tables, now) {
     const splitFor = named.length === 0 ? [...members] : members.filter((name) => chosen.has(name));
 
     const settled = Boolean(payer) && unknown.length === 0;
+    const target = bucket ?? unmatched;
     const entry = {
       line: row.line,
       label: row.place,
+      bucketId: target.id,
       amount,
       payer: payer ?? row.payer,
       splitFor,
@@ -129,7 +131,6 @@ export function buildLedger(trip, tables, now) {
       ...readTime(row.time),
       settled,
     };
-    const target = bucket ?? unmatched;
     target.actual += amount;
     target.entries.push(entry);
     entries.push(entry);
@@ -175,6 +176,7 @@ export function buildLedger(trip, tables, now) {
     return {
       id: day.id,
       label: day.label,
+      title: day.title,
       budget: sum(items, 'budget'),
       actual: sum(items, 'actual') + extraBucket.actual,
       extra: extraBucket.actual,
@@ -218,8 +220,8 @@ export function buildLedger(trip, tables, now) {
         amount: Math.abs(balance),
         direction: balance > 0 ? 'refund' : 'topup',
         text: balance > 0
-          ? `→ Quỹ hoàn ${name} ${formatShort(balance)}`
-          : `→ ${name} nộp thêm vào quỹ ${formatShort(-balance)}`,
+          ? `→ Quỹ hoàn ${name} ${formatFull(balance)}`
+          : `→ ${name} nộp thêm vào quỹ ${formatFull(-balance)}`,
       }))
     : null;
 
@@ -227,35 +229,47 @@ export function buildLedger(trip, tables, now) {
 }
 
 export function describeBucket({ budget, actual }, memberCount) {
+  const view = (icon, text, diff, tone, perPerson = null) => ({ icon, text, diff, tone, perPerson });
   if (actual === 0) {
-    if (budget === null) return { icon: '💰', text: 'Chưa chi', diff: null, tone: 'muted' };
-    if (budget === 0) return { icon: '🆓', text: 'Miễn phí', diff: null, tone: 'muted' };
-    const each = formatShort(Math.round(budget / memberCount));
-    return { icon: '💰', text: `Dự kiến ${formatShort(budget)} · ${each}/người`, diff: null, tone: 'muted' };
+    if (budget === null) return view('💰', 'Chưa chi', null, 'muted');
+    if (budget === 0) return view('🆓', 'Miễn phí', null, 'muted');
+    return view('💰', `Dự kiến ${formatShort(budget)}`, null, 'muted', `Mỗi người ~${formatShort(Math.round(budget / memberCount))}`);
   }
-  if (budget === null) return { icon: '💰', text: formatShort(actual), diff: null, tone: '' };
-  if (budget === 0) return { icon: '💰', text: `${formatShort(actual)} · ngoài dự kiến`, diff: null, tone: 'over' };
+  if (budget === null) return view('💰', formatShort(actual), null, '');
+  if (budget === 0) return view('💰', `${formatShort(actual)} · ngoài dự kiến`, null, 'over');
   const diff = formatDiff(actual, budget);
-  return { icon: '💰', text: `${formatShort(actual)} / ${formatShort(budget)}`, diff: diff.text, tone: diff.tone };
+  return view('💰', `${formatShort(actual)} / ${formatShort(budget)}`, diff.text, diff.tone);
 }
 
 export function describeEntry(entry, members) {
   let payer = `${entry.payer} trả ⚠️`;
   if (entry.payer === FUND_PAYER) payer = 'Quỹ trả';
-  else if (members.includes(entry.payer)) payer = `${entry.payer} ứng`;
+  else if (members.includes(entry.payer)) payer = `${entry.payer} trả hộ`;
 
   const split = entry.splitFor.length === 0
     ? 'chia ?'
     : entry.splitFor.length === members.length
-      ? `chia ${members.length}`
+      ? `chia đều ${members.length} người`
       : `chia ${entry.splitFor.join(', ')}`;
 
+  // Colour of the row: paid by the fund, by a member, or needs fixing.
+  let kind = 'warn';
+  if (entry.settled) kind = entry.payer === FUND_PAYER ? 'fund' : 'member';
+
   return {
-    amount: formatFull(entry.amount),
+    amount: formatExact(entry.amount),
     payer,
+    kind,
     detail: [entry.note, split].filter(Boolean).join(' · '),
     meta: [entry.enteredBy ? `${entry.enteredBy} nhập` : '', entry.time].filter(Boolean).join(' · '),
   };
+}
+
+// Settlement result: what the fund owes a member, or the member owes the fund.
+export function describeBalance(balance) {
+  if (balance > 0) return { text: `Hoàn ${formatShort(balance)}`, tone: 'under' };
+  if (balance < 0) return { text: `Nộp ${formatShort(-balance)}`, tone: 'over' };
+  return { text: 'Đủ', tone: null };
 }
 
 export function progressOf(actual, budget) {

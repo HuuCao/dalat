@@ -16,20 +16,26 @@
   box-shadow: var(--shadow-md);
 }
 
+/* Title and count share the first row; the date and money lines span the
+   full width below, so the budget bar is the same length on every day
+   however long the count is. */
 .day-head {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
+  column-gap: 12px;
   margin-bottom: 18px;
   padding-bottom: 12px;
   border-bottom: 1px solid var(--line);
 }
 
-.day-title { margin: 0; font-size: 18px; color: var(--primary); letter-spacing: -.01em; }
-.day-date { color: var(--text-sub); font-size: 12.5px; margin-top: 2px; }
-.day-count { font-size: 12px; color: var(--link); font-weight: 700; }
+.day-info { display: contents; }
+.day-date,
+.day-money { grid-column: 1 / -1; }
+
+.day-title { grid-column: 1; grid-row: 1; margin: 0; font-size: 18px; color: var(--primary); letter-spacing: -.01em; }
+.day-date { color: var(--text-sub); font-size: 13px; margin-top: 2px; }
+.day-count { grid-column: 2; grid-row: 1; font-size: 12px; color: var(--link); font-weight: 700; }
 
 /* ---------- TIMELINE ---------- */
 .timeline { position: relative; padding-left: 18px; }
@@ -65,9 +71,10 @@
    end time sits beside it, smaller. */
 .time {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 10px;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .time .clock {
@@ -95,24 +102,25 @@
 }
 
 .time .period {
-  font-size: 10.5px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--text-sub);
   text-transform: uppercase;
-  letter-spacing: .07em;
+  letter-spacing: .06em;
 }
 
 /* ---------- CARD ---------- */
-/* Icon tile, then the place name in bold with what happens there below it,
-   then tag and map link. */
+/* Icon tile, then three fixed lines: place name with its map link, what
+   happens there, the money line. Name and description never wrap, so every
+   place card is the same height. */
 .card {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
+  gap: 10px;
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: 12px;
-  padding: 12px;
+  padding: 10px 12px;
   transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
 }
 
@@ -120,17 +128,32 @@
   flex: 0 0 auto;
   display: grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 11px;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
   background: var(--accent-soft);
-  font-size: 21px;
+  font-size: 18px;
   line-height: 1;
 }
 
 .card-body { flex: 1 1 auto; min-width: 0; }
 
+.card-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.card-title,
+.card-detail {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .card-title {
+  flex: 1 1 auto;
+  min-width: 0;
   margin: 0;
   font-size: 16px;
   font-weight: 700;
@@ -139,65 +162,39 @@
   color: var(--text);
 }
 
+/* Holds its line even when a place has no description. */
 .card-detail {
+  min-height: 1.4em;
   margin: 2px 0 0;
   font-size: 13px;
   line-height: 1.4;
   color: var(--text-sub);
 }
 
-.card-footer {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-top: 6px;
-}
+.card-body > .money { margin-top: 6px; }
 
-/* Category colour: a dot keyed by the tag (data-tag, set in views/day.js).
-   An unknown tag gets a neutral dot, so any new tag still works. */
-.tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--tag);
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: .07em;
-}
-
-.tag::before {
-  content: "";
-  flex: 0 0 auto;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--tag-color, #a3aea7);
-}
-
-.tag[data-tag="breakfast"],
-.tag[data-tag="lunch"],
-.tag[data-tag="dinner"],
-.tag[data-tag="street-food"] { --tag-color: #e0893a; }
-.tag[data-tag="coffee"] { --tag-color: #9b6b45; }
-.tag[data-tag="nature"] { --tag-color: #4c9a61; }
-.tag[data-tag="sunset"] { --tag-color: #e2735a; }
-.tag[data-tag="check-in"],
-.tag[data-tag="cute-spot"] { --tag-color: #4a86c5; }
-
-/* The link text stays small; padding plus an equal negative margin stretch
-   the tap target to 44px without moving anything. */
+/* Padding plus an equal negative margin stretch the tap target to 44px
+   without taking room from the place name. Phones under 380px show the pin
+   alone, so the longest names still fit on one line. */
 .map-btn {
+  flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  margin: -13px 0 -13px auto;
-  padding: 13px 0 13px 12px;
+  margin: -12px -14px;
+  padding: 12px 14px;
   color: var(--link);
   text-decoration: none;
-  font-size: 11.5px;
+  font-size: 13px;
   font-weight: 700;
   transition: color .18s ease;
+}
+
+.map-btn-text { display: none; }
+
+@media (min-width: 380px) {
+  .map-btn { margin: -12px 0 -12px -10px; padding: 12px 0 12px 10px; }
+  .map-btn-text { display: inline; }
 }
 
 .empty { border: 1px dashed #c3cfc7; background: #f7faf8; }
@@ -234,18 +231,21 @@
   box-shadow: 0 0 0 1px var(--live-strong), 0 0 0 5px rgba(var(--live-rgb), .35);
 }
 
-.now-tag {
-  font-size: 10px;
+.state-tag {
+  font-size: 12px;
   font-weight: 800;
-  letter-spacing: .08em;
+  letter-spacing: .06em;
   text-transform: uppercase;
   color: var(--live-strong);
 }
 
-/* Slots that are over fade back so the eye lands on what is left. */
-.item.is-past .card:not(.empty) { background: #f3f9f4; border-color: #c9e1d0; }
-.item.is-past .card:not(.empty) .card-title { color: #5f7466; }
+.state-tag.is-past { font-weight: 700; color: var(--text-sub); }
+
+/* Slots that are over keep their size and fade to a neutral ground, so the
+   eye lands on what is left. */
+.item.is-past .card { background: #f4f5f4; border-color: var(--line); }
 .item.is-past .card-icon { opacity: .6; }
+.item.is-past .card-title { color: var(--text-sub); }
 .item.is-past .clock { opacity: .55; }
 .item.is-past .dot { background: var(--primary); box-shadow: 0 0 0 1px var(--primary); }
 
@@ -256,7 +256,7 @@
   .dot { left: -21px; }
   .item { margin-bottom: 22px; }
   .card { padding: 14px 16px; gap: 14px; }
-  .card-icon { width: 44px; height: 44px; font-size: 23px; }
+  .card-icon { width: 44px; height: 44px; border-radius: 11px; font-size: 23px; }
   .card-title { font-size: 17px; }
   .clock-start { font-size: 17px; }
 }

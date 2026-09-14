@@ -15,8 +15,8 @@ export function renderDay(day, { fund = false } = {}) {
   },
   h('article', { class: 'day' },
     h('div', { class: 'day-head' },
-      h('div', { class: fund ? 'day-info' : null },
-        h('h2', { class: 'day-title', text: join(' ', day.icon, day.label) }),
+      h('div', { class: 'day-info' },
+        h('h2', { class: 'day-title', text: join(' ', day.icon, day.title) }),
         h('div', { class: 'day-date', text: join(' · ', day.dateText, day.rangeText, day.note) }),
         fund ? dayMoneySlot(day) : null),
       h('div', { class: 'day-count', text: day.countText })),
@@ -37,19 +37,26 @@ function renderItem(item, fund) {
     renderCard(item, fund));
 }
 
+// Every place card has the same three lines - name with its map link, the
+// description (kept even when empty), the money line - so all cards are the
+// same height (timeline.css).
 function renderCard(item, fund) {
-  const hasFooter = !item.empty && Boolean(item.tag || item.mapUrl);
   return h('div', { class: item.empty ? 'card empty' : 'card' },
     item.icon ? h('span', { class: 'card-icon', 'aria-hidden': 'true', text: item.icon }) : null,
     h('div', { class: 'card-body' },
-      h('h3', { class: 'card-title', text: item.name }),
-      item.detail ? h('p', { class: 'card-detail', text: item.detail }) : null,
-      hasFooter
-        ? h('div', { class: 'card-footer' },
-          item.tag ? h('span', { class: 'tag', dataset: { tag: item.tagKey }, text: item.tag }) : null,
-          item.mapUrl
-            ? h('a', { class: 'map-btn', href: item.mapUrl, target: '_blank', rel: 'noopener noreferrer' }, '📍 Maps')
-            : null)
-        : null,
+      h('div', { class: 'card-head' },
+        h('h3', { class: 'card-title', title: item.name, text: item.name }),
+        !item.empty && item.mapUrl
+          ? h('a', {
+            class: 'map-btn',
+            href: item.mapUrl,
+            target: '_blank',
+            rel: 'noopener noreferrer',
+            'aria-label': `Mở Google Maps: ${item.name}`,
+          },
+          h('span', { 'aria-hidden': 'true', text: '📍' }),
+          h('span', { class: 'map-btn-text', text: 'Maps' }))
+          : null),
+      h('p', { class: 'card-detail', text: item.detail }),
       fund ? moneySlot(item.id) : null));
 }

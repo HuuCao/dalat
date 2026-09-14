@@ -48,6 +48,16 @@ export function dateText(date) {
   return `${weekdayText(date)}, ${day}/${month}`;
 }
 
+// "T6", "CN": weekday for tight spots such as the day tabs.
+export function shortWeekdayText(date) {
+  return weekdayText(date).replace('Th ', 'T');
+}
+
+export function shortDateText(date) {
+  const [, month, day] = date.split('-');
+  return `${shortWeekdayText(date)} ${day}/${month}`;
+}
+
 // "16 – 18/10" within a month, "30/10 – 02/11" across two.
 export function dateRangeText(start, end) {
   const [, startMonth, startDay] = start.split('-');
@@ -65,14 +75,36 @@ function periodAt(minutes) {
   return name;
 }
 
-// The end minute is exclusive: 11:00–13:00 is still "trưa".
+const capitalize = (text) => `${text[0].toUpperCase()}${text.slice(1)}`;
+
+// The end minute is exclusive: 11:00–13:00 is still "Trưa".
 export function derivePeriod(start, end) {
   const first = periodAt(toMinutes(start));
   const last = periodAt(toMinutes(end) - 1);
-  if (first === last) return `Buổi ${first}`;
-  return `${first[0].toUpperCase()}${first.slice(1)} → ${last}`;
+  return first === last ? capitalize(first) : `${capitalize(first)} → ${last}`;
 }
 
 export function fillTemplate(text, vars) {
   return text.replace(/\{(\w+)\}/g, (match, key) => (key in vars ? String(vars[key]) : match));
+}
+
+// Time left, rounded up so "còn 1 phút" never shows once the minute is gone.
+export function durationText(ms) {
+  if (ms < 60_000) return '< 1 phút';
+  const minutes = Math.ceil(ms / 60_000);
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+  if (hours === 0) return `${rest} phút`;
+  return rest === 0 ? `${hours} giờ` : `${hours} giờ ${rest} phút`;
+}
+
+function offsetMinutes(timezone) {
+  const sign = timezone.startsWith('-') ? -1 : 1;
+  const [hours, minutes] = timezone.slice(1).split(':').map(Number);
+  return sign * (hours * 60 + minutes);
+}
+
+// The trip's calendar date at an instant, whatever the viewer's timezone.
+export function localDateOf(ms, timezone) {
+  return new Date(ms + offsetMinutes(timezone) * 60_000).toISOString().slice(0, 10);
 }

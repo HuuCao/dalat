@@ -42,6 +42,17 @@ test('each day derives its labels and counts', () => {
   ]);
 });
 
+test('days get a display title and short date; form labels keep "Day N"', () => {
+  assert.deepEqual(trip.days.map(({ title, shortDate }) => ({ title, shortDate })), [
+    { title: 'Ngày 1', shortDate: 'T6 16/10' },
+    { title: 'Ngày 2', shortDate: 'T7 17/10' },
+    { title: 'Ngày 3', shortDate: 'CN 18/10' },
+  ]);
+  assert.equal(trip.days[0].label, 'Day 1');
+  assert.equal(trip.days[0].items[1].formLabel, 'Day 1 · Hidden Land');
+  assert.equal(trip.days[0].extraLabel, 'Day 1 · Phát sinh');
+});
+
 test('items carry ids, order, heading and map url', () => {
   const [first] = trip.days[0].items;
   assert.equal(first.id, 'day-1-item-1');
@@ -50,7 +61,7 @@ test('items carry ids, order, heading and map url', () => {
   assert.equal(first.heading, '🍃 Đồi chè Cầu Đất — Săn mây, ăn sáng, cà phê');
   assert.equal(first.name, 'Đồi chè Cầu Đất');
   assert.equal(first.detail, 'Săn mây, ăn sáng, cà phê');
-  assert.equal(first.period, 'Buổi sáng');
+  assert.equal(first.period, 'Sáng');
   assert.equal(first.mapUrl, `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent('Đồi chè Cầu Đất Đà Lạt')}`);
   assert.doesNotMatch(first.mapUrl, /\s/);
 
@@ -60,9 +71,9 @@ test('items carry ids, order, heading and map url', () => {
   assert.equal(goHome.title, 'Go Home');
   assert.equal(goHome.name, 'Go Home');
   assert.equal(goHome.detail, '');
-  assert.equal(goHome.tag, 'End trip');
-  assert.equal(goHome.tagKey, 'end-trip');
-  assert.equal(trip.days[0].items.at(-1).tagKey, 'street-food');
+  // Tags are no longer shown; a "tag" left in the data is ignored.
+  assert.equal('tag' in goHome, false);
+  assert.equal('tagKey' in goHome, false);
   assert.equal(goHome.mapUrl, null);
   assert.equal(goHome.empty, false);
 });

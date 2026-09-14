@@ -1,7 +1,7 @@
 import { h } from '../lib/dom.js';
-import { formatShort, formatFull, formatBalance } from '../lib/money.js';
+import { formatShort, formatExact } from '../lib/money.js';
 import {
-  describeBucket, describeEntry, describeDay, progressOf, formUrl, placeLabelAt,
+  describeBucket, describeEntry, describeDay, describeBalance, progressOf, formUrl, placeLabelAt,
 } from '../model/fund.js';
 import { FUND_TAB } from './tabs.js';
 
@@ -27,20 +27,31 @@ export function extraSlot(day) {
 
 export function createFundView({ trip, clock }) {
   const { fund } = trip;
-  const ctx = { fund, members: fund.members };
+  const ctx = { fund, members: fund.members, places: placeIndex(trip), groups: ledgerGroups(trip) };
   let refresh = () => {};
+  // Which book the "Sổ sách" switch shows; kept across refreshes.
+  let book = 'entries';
+  let lastLedger = null;
 
   const statusText = h('span', { class: 'fund-status-text', text: '💰 Quỹ …' });
-  const statusLink = addLink(fund, null, '➕ Nhập chi');
+  // Both sit on dark green: a plain "+" takes the white text colour, where
+  // the ➕ emoji stays dark grey.
+  const statusLink = addLink(fund, null, '+ Nhập chi');
+  // Phones get a floating copy in thumb reach (css/fund.css hides it on
+  // desktop). Mounted outside <main>: an animated ancestor would break fixed.
+  const fab = addLink(fund, null, '+ Nhập chi');
+  fab?.classList.replace('fund-btn', 'fab');
   // Worked out ahead of the tap, so the pre-filled place follows the clock.
   // Runs on pointerdown and focus too (not just click), so long-press "open
   // in new tab" and middle-click — which never fire a click event — still
   // get the current place.
-  const updateStatusLinkPlace = () => {
-    statusLink.href = formUrl(fund, placeLabelAt(trip, clock()));
+  const updateLinkPlace = (event) => {
+    event.currentTarget.href = formUrl(fund, placeLabelAt(trip, clock()));
   };
-  for (const type of ['pointerdown', 'focus', 'click']) {
-    statusLink?.addEventListener(type, updateStatusLinkPlace);
+  for (const link of [statusLink, fab]) {
+    for (const type of ['pointerdown', 'focus', 'click']) {
+      link?.addEventListener(type, updateLinkPlace);
+    }
   }
   const statusRow = h('div', { class: 'fund-status' }, statusText, statusLink);
 
@@ -53,6 +64,12 @@ export function createFundView({ trip, clock }) {
   }, h('article', { class: 'fund' }, renderHead('Đang tải…', false)));
   panel.addEventListener('click', (event) => {
     if (event.target.closest('[data-action="refresh"]')) refresh();
+    const pick = event.target.closest('[data-book]');
+    if (pick && lastLedger && pick.dataset.book !== book) {
+      book = pick.dataset.book;
+      panel.querySelector('.books').replaceWith(renderBooks(lastLedger));
+      panel.querySelector(`[data-book="${book}"]`).focus();
+    }
   });
 
   const scope = () => panel.closest('main') ?? document;
@@ -92,24 +109,23 @@ export function createFundView({ trip, clock }) {
     const detailsKey = (el) => el.dataset.key ?? el.dataset.money;
     const open = new Set([...panel.querySelectorAll('details[open]')].map(detailsKey));
     const { totals } = ledger;
+    lastLedger = ledger;
 
     panel.replaceChildren(h('article', { class: 'fund' },
       renderHead(metaText(meta), meta.state !== 'unlinked', meta.error),
+      // Things to fix first, then what people ask most: what is left, who
+      // gets what back.
       ledger.warnings.length > 0 ? renderWarnings(ledger.warnings) : null,
-      renderOverview(totals),
-      renderByDay(ledger),
-      renderShared(ledger, ctx),
       ledger.unmatched.entries.length > 0
         ? section('Không khớp địa điểm',
           details('unmatched', `⚠️ ${ledger.unmatched.entries.length} khoản · ${formatShort(ledger.unmatched.actual)}`,
-            renderEntries(ledger.unmatched.entries, ctx, { withLabel: true })))
+            renderEntries(ledger.unmatched.entries, ctx, { withPlace: true })))
         : null,
+      renderOverview(totals),
       renderSettlement(ledger),
-      section('Sổ sách',
-        details('contributions', `Sổ góp quỹ · ${ledger.contributions.length} khoản · ${formatShort(totals.contributed)}`,
-          renderContributions(ledger.contributions)),
-        details('entries', `Sổ chi · ${ledger.entries.length} khoản · ${formatShort(totals.actual)}`,
-          renderEntries(ledger.entries, ctx, { withLabel: true }))),
+      renderByDay(ledger),
+      renderShared(ledger, ctx),
+      renderBooks(ledger),
       h('div', { class: 'fund-actions' },
         addLink(fund, null, '➕ Nhập chi tiêu'),
         fund.sheet ? h('a', { class: 'fund-btn is-ghost', href: fund.sheet, ...LINK }, '📄 Mở Google Sheet') : null)));
@@ -119,9 +135,30 @@ export function createFundView({ trip, clock }) {
     }
   }
 
+  // One book at a time behind a two-way switch, instead of two long lists
+  // opened one under the other.
+  function renderBooks(ledger) {
+    const { entries, contributions, totals } = ledger;
+    const pick = (key, text) => h('button', {
+      class: 'book-tab',
+      type: 'button',
+      'aria-pressed': String(book === key),
+      dataset: { book: key },
+    }, text);
+    return h('section', { class: 'fund-section books' },
+      h('h3', { class: 'fund-h', text: 'Sổ sách' }),
+      h('div', { class: 'book-tabs' },
+        pick('entries', `Sổ chi · ${entries.length} · ${formatShort(totals.actual)}`),
+        pick('contributions', `Góp quỹ · ${contributions.length} · ${formatShort(totals.contributed)}`)),
+      book === 'entries'
+        ? renderLedger(entries, ctx)
+        : renderContributions(contributions, totals.contributed));
+  }
+
   return {
     panel,
     statusRow,
+    fab,
     update,
     fail,
     onRefresh(handler) {
@@ -183,6 +220,7 @@ function fillMoney(el, bucket, ctx, { title = null, note = '' } = {}) {
   ].filter(Boolean));
   el.querySelector('.money-body').replaceChildren(...[
     note ? h('p', { class: 'money-note', text: note }) : null,
+    view.perPerson ? h('p', { class: 'money-note', text: view.perPerson }) : null,
     renderEntries(bucket.entries, ctx),
     addLink(ctx.fund, bucket.label, '➕ Nhập chi ở đây'),
   ].filter(Boolean));
@@ -205,25 +243,82 @@ function fillExtra(el, bucket, ctx) {
   ].filter(Boolean));
 }
 
-function renderEntries(entries, ctx, { withLabel = false } = {}) {
+// Short place names and their ledger group, by bucket id: the sheet's own
+// label ("Day 1 · Đồi chè Cầu Đất — Săn mây…") is too long to repeat per row.
+function placeIndex(trip) {
+  const { fund } = trip;
+  const index = new Map();
+  for (const cost of fund.shared) index.set(cost.id, { group: 'shared', name: `${cost.icon} ${cost.title}`.trim() });
+  index.set(fund.sharedExtra.id, { group: 'shared', name: '⚡ Phát sinh chung' });
+  for (const day of trip.days) {
+    for (const item of day.items) index.set(item.id, { group: day.id, name: item.name });
+    index.set(`${day.id}-extra`, { group: day.id, name: '⚡ Phát sinh' });
+  }
+  return index;
+}
+
+function ledgerGroups(trip) {
+  return [
+    { id: 'shared', title: 'Chung' },
+    ...trip.days.map((day) => ({ id: day.id, title: day.title })),
+    { id: 'unmatched', title: 'Không khớp địa điểm' },
+  ];
+}
+
+// Two lines per entry. With a place (ledger lists): place and amount, then
+// who paid, note, split and who entered it. Inside a card the place is
+// already known, so the first line is who paid and the amount.
+function renderEntry(entry, ctx, { withPlace }) {
+  const view = describeEntry(entry, ctx.members);
+  const unmatched = entry.bucketId === 'unmatched';
+  const kind = unmatched ? 'warn' : view.kind;
+  const badge = h('span', { class: 'entry-badge', text: view.payer });
+  const place = withPlace
+    ? h('span', { class: 'entry-place', text: unmatched ? entry.label : (ctx.places.get(entry.bucketId)?.name ?? entry.label) })
+    : null;
+  const sub = [
+    place ? badge : null,
+    view.detail ? h('span', { class: 'entry-detail', text: view.detail }) : null,
+    view.meta ? h('span', { class: 'entry-meta', text: view.meta }) : null,
+  ].filter(Boolean);
+
+  return h('li', { class: `entry is-${kind}` },
+    h('div', { class: 'entry-top' }, place ?? badge, h('b', { class: 'entry-amount', text: view.amount })),
+    sub.length > 0 ? h('div', { class: 'entry-sub' }, sub) : null);
+}
+
+function renderEntries(entries, ctx, { withPlace = false } = {}) {
   if (entries.length === 0) return h('p', { class: 'entries-empty', text: 'Chưa có khoản chi' });
-  return h('ul', { class: 'entries' }, entries.map((entry) => {
-    const view = describeEntry(entry, ctx.members);
-    return h('li', { class: entry.settled ? 'entry' : 'entry is-warn' },
-      withLabel ? h('div', { class: 'entry-label', text: entry.label }) : null,
-      h('div', { class: 'entry-top' }, h('b', { text: view.amount }), h('span', { text: view.payer })),
-      view.detail ? h('div', { class: 'entry-detail', text: view.detail }) : null,
-      view.meta ? h('div', { class: 'entry-meta', text: view.meta }) : null);
+  return h('ul', { class: 'entries' }, entries.map((entry) => renderEntry(entry, ctx, { withPlace })));
+}
+
+// The expense book grouped Chung → Ngày 1…N → Không khớp, each with its total.
+function renderLedger(entries, ctx) {
+  if (entries.length === 0) return h('p', { class: 'entries-empty', text: 'Chưa có khoản chi' });
+  const groupOf = (entry) => ctx.places.get(entry.bucketId)?.group ?? 'unmatched';
+  return h('div', { class: 'ledger' }, ctx.groups.map((group) => {
+    const list = entries.filter((entry) => groupOf(entry) === group.id);
+    if (list.length === 0) return null;
+    const total = list.reduce((sum, entry) => sum + entry.amount, 0);
+    return h('section', { class: group.id === 'unmatched' ? 'ledger-group is-warn' : 'ledger-group' },
+      h('h4', { class: 'ledger-h' }, h('span', { text: group.title }), h('span', { text: formatShort(total) })),
+      renderEntries(list, ctx, { withPlace: true }));
   }));
 }
 
-function renderContributions(contributions) {
+// One row per contribution: who, how much, when, note.
+function renderContributions(contributions, total) {
   if (contributions.length === 0) return h('p', { class: 'entries-empty', text: 'Chưa có khoản góp' });
-  return h('ul', { class: 'entries' }, contributions.map((line) => h('li', { class: 'entry' },
-    h('div', { class: 'entry-top' }, h('b', { text: formatFull(line.amount) }), h('span', { text: line.member })),
-    line.date || line.note
-      ? h('div', { class: 'entry-meta', text: [line.date, line.note].filter(Boolean).join(' · ') })
-      : null)));
+  return h('table', { class: 'fund-table contrib' },
+    h('tbody', {}, contributions.map((line) => h('tr', {},
+      h('th', { scope: 'row', text: line.member }),
+      h('td', { class: 'contrib-amount', text: formatExact(line.amount) }),
+      h('td', { class: 'contrib-date', text: line.date }),
+      h('td', { class: 'contrib-note', text: line.note })))),
+    h('tfoot', {}, h('tr', {},
+      h('th', { scope: 'row', text: 'Tổng' }),
+      h('td', { class: 'contrib-amount', text: formatShort(total) }),
+      h('td', { colspan: '2' }))));
 }
 
 function renderWarnings(warnings) {
@@ -233,15 +328,16 @@ function renderWarnings(warnings) {
 }
 
 function renderOverview(totals) {
-  const tile = (label, value) => h('div', { class: 'fund-tile' }, h('span', { text: label }), h('b', { text: value }));
+  const tile = (label, value, className = 'fund-tile') => h('div', { class: className }, h('span', { text: label }), h('b', { text: value }));
+  const short = totals.reserve < 0;
   return h('section', { class: 'fund-section' },
+    tile('Quỹ còn', formatShort(totals.fundLeft), 'fund-tile is-main'),
     h('div', { class: 'fund-tiles' },
       tile('Đã góp', formatShort(totals.contributed)),
       tile('Đã chi', formatShort(totals.actual)),
-      tile('Quỹ còn', formatShort(totals.fundLeft)),
-      totals.reserve >= 0
-        ? tile('Dự phòng', formatShort(totals.reserve))
-        : tile('Chưa góp đủ', `thiếu ${formatShort(-totals.reserve)}`)),
+      short
+        ? tile('Thiếu so với dự kiến', formatShort(-totals.reserve), 'fund-tile is-over')
+        : tile('Dư so với dự kiến', formatShort(totals.reserve))),
     h('div', { class: 'fund-progress' },
       h('span', { text: 'Thực chi / dự kiến' }),
       h('span', { text: `${formatShort(totals.actual)} / ${formatShort(totals.budget)}` })),
@@ -265,7 +361,7 @@ function renderByDay(ledger) {
     ['', 'Dự kiến', 'Thực chi', 'Phát sinh'],
     [
       row('Chung', [shared.budget, shared.actual, shared.extra]),
-      ledger.days.map((day) => row(day.label, [day.budget, day.actual, day.extra])),
+      ledger.days.map((day) => row(day.title, [day.budget, day.actual, day.extra])),
       unmatched.actual > 0 ? row('Không khớp', [0, unmatched.actual, 0]) : null,
     ],
     row('Tổng', [totals.budget, totals.actual, totals.extra])));
@@ -285,23 +381,23 @@ function renderShared(ledger, ctx) {
 }
 
 function renderSettlement(ledger) {
-  const balanceClass = (balance) => {
-    if (balance < 0) return 'is-over';
-    return balance > 0 ? 'is-under' : null;
-  };
-  const rows = ledger.people.map((person) => h('tr', {},
-    h('th', { scope: 'row', text: person.name }),
-    h('td', { text: formatShort(person.contributed) }),
-    h('td', { text: formatShort(person.advanced) }),
-    h('td', { text: formatShort(person.share) }),
-    h('td', { class: balanceClass(person.balance), text: formatBalance(person.balance) })));
+  const rows = ledger.people.map((person) => {
+    const result = describeBalance(person.balance);
+    return h('tr', {},
+      h('th', { scope: 'row', text: person.name }),
+      h('td', { text: formatShort(person.contributed) }),
+      h('td', { text: formatShort(person.advanced) }),
+      h('td', { text: formatShort(person.share) }),
+      h('td', { class: result.tone ? `is-${result.tone}` : 'is-even', text: result.text }));
+  });
   const foot = h('tr', {}, h('td', { colspan: '5', text: `Quỹ còn ${formatShort(ledger.totals.fundLeft)}` }));
 
   return section(ledger.done ? 'Quyết toán' : 'Quyết toán · tạm tính',
     ledger.excluded > 0
       ? h('p', { class: 'fund-warn-line', text: `⚠️ Có ${ledger.excluded} dòng cần sửa — số liệu chưa chốt` })
       : null,
-    table(['', 'Góp', 'Ứng', 'Chịu', 'Còn lại'], rows, foot, 'fund-table fund-settle'),
+    h('p', { class: 'fund-formula', text: 'Kết quả = Đã góp + Trả hộ − Phần chịu' }),
+    table(['', 'Đã góp', 'Trả hộ', 'Phần chịu', 'Kết quả'], rows, foot, 'fund-table fund-settle'),
     ledger.settlement
       ? h('div', { class: 'fund-settlement' },
         h('h4', { text: 'Chốt quỹ' }),
