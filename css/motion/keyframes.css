@@ -31,6 +31,21 @@
   to { transform: scaleY(1); }
 }
 
+/* ---------- LIVE SLOT (timeline.css) ---------- */
+/* The time chip of the slot in progress blinks brighter while a lime ring
+   swells and fades; the time itself stays solid and readable. */
+@keyframes live-chip {
+  0% { background-color: var(--live); box-shadow: 0 0 0 0 rgba(var(--live-rgb), .7); }
+  35% { background-color: #d4ea8c; }
+  70%, 100% { background-color: var(--live); box-shadow: 0 0 0 8px rgba(var(--live-rgb), 0); }
+}
+
+/* Same beat on the dot. Its outline is repeated so it never flickers. */
+@keyframes live-dot {
+  0% { box-shadow: 0 0 0 1px var(--live-strong), 0 0 0 1px rgba(var(--live-rgb), .7); }
+  70%, 100% { box-shadow: 0 0 0 1px var(--live-strong), 0 0 0 10px rgba(var(--live-rgb), 0); }
+}
+
 /* ---------- SCROLL-LINKED (scroll-timeline.css) ---------- */
 
 /* Zoom out and drift down. No edge is uncovered while

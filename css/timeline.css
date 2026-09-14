@@ -227,6 +227,13 @@
   box-shadow: 0 0 0 1px var(--live-strong), 0 0 0 5px rgba(var(--live-rgb), .35);
 }
 
+/* The slot in progress blinks on its time chip and dot. reveal.css repeats
+   the dot's animation next to its entrance pop, which would override it. */
+@media (prefers-reduced-motion: no-preference) {
+  .item.is-now .clock { animation: live-chip 1.6s ease-out infinite; }
+  .item.is-now .dot { animation: live-dot 1.6s ease-out infinite; }
+}
+
 /* Slots that are over: grey time chip and dot. Text stays ≥ 4.5:1. */
 .item.is-past .clock { background: #e4e8e5; color: #58605b; }
 .item.is-past .clock-end { color: #58605b; }
