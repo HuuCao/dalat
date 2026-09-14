@@ -4,6 +4,7 @@ import { buildLedger } from '../model/fund.js';
 const REFRESH_MS = 5 * 60_000;
 const STALE_MS = 60_000;
 const CACHE_KEY = 'fund-cache:v1';
+const FETCH_TIMEOUT_MS = 15_000;
 
 // Reads both sheets, rebuilds the ledger and hands it to the view. The last
 // good copy is kept on the phone, so a weak signal on the pass still shows
@@ -19,9 +20,9 @@ export function startFund({ trip, view, clock }) {
   let lastAttempt = 0;
 
   // Throws when a sheet lost a required column, before that copy is cached.
-  const show = (copy, state) => {
+  const show = (copy, state, error) => {
     const tables = { expenses: parseCsv(copy.expenses), contributions: parseCsv(copy.contributions) };
-    view.update(buildLedger(trip, tables, clock()), { state, fetchedAt: copy.fetchedAt });
+    view.update(buildLedger(trip, tables, clock()), { state, fetchedAt: copy.fetchedAt, error });
   };
 
   async function load() {
@@ -38,7 +39,7 @@ export function startFund({ trip, view, clock }) {
       const cached = readCache();
       try {
         if (!cached) throw error;
-        show(cached, 'stale');
+        show(cached, 'stale', error.message);
       } catch {
         view.fail(error.message);
       }
@@ -72,9 +73,18 @@ export function startFund({ trip, view, clock }) {
 async function fetchCsv(url) {
   // Skips the browser cache; Google still caches published CSV for ~5 min.
   const busted = `${url}${url.includes('?') ? '&' : '?'}_=${Date.now()}`;
-  const response = await fetch(busted, { cache: 'no-store' });
-  if (!response.ok) throw new Error(`HTTP ${response.status}`);
-  return assertCsv(await response.text());
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  try {
+    const response = await fetch(busted, { cache: 'no-store', signal: controller.signal });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return assertCsv(await response.text());
+  } catch (error) {
+    if (error.name === 'AbortError') throw new Error('Hết thời gian tải (15s)');
+    throw error;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 function readCache() {

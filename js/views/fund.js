@@ -32,10 +32,16 @@ export function createFundView({ trip, clock }) {
 
   const statusText = h('span', { class: 'fund-status-text', text: '💰 Quỹ …' });
   const statusLink = addLink(fund, null, '➕ Nhập chi');
-  // Worked out on tap, so the pre-filled place follows the clock.
-  statusLink?.addEventListener('click', () => {
+  // Worked out ahead of the tap, so the pre-filled place follows the clock.
+  // Runs on pointerdown and focus too (not just click), so long-press "open
+  // in new tab" and middle-click — which never fire a click event — still
+  // get the current place.
+  const updateStatusLinkPlace = () => {
     statusLink.href = formUrl(fund, placeLabelAt(trip, clock()));
-  });
+  };
+  for (const type of ['pointerdown', 'focus', 'click']) {
+    statusLink?.addEventListener(type, updateStatusLinkPlace);
+  }
   const statusRow = h('div', { class: 'fund-status' }, statusText, statusLink);
 
   const panel = h('section', {
@@ -44,7 +50,7 @@ export function createFundView({ trip, clock }) {
     role: 'tabpanel',
     'aria-labelledby': `tab-${FUND_TAB}`,
     dataset: { day: FUND_TAB },
-  });
+  }, h('article', { class: 'fund' }, renderHead('Đang tải…', false)));
   panel.addEventListener('click', (event) => {
     if (event.target.closest('[data-action="refresh"]')) refresh();
   });
@@ -88,7 +94,7 @@ export function createFundView({ trip, clock }) {
     const { totals } = ledger;
 
     panel.replaceChildren(h('article', { class: 'fund' },
-      renderHead(metaText(meta), meta.state !== 'unlinked'),
+      renderHead(metaText(meta), meta.state !== 'unlinked', meta.error),
       ledger.warnings.length > 0 ? renderWarnings(ledger.warnings) : null,
       renderOverview(totals),
       renderByDay(ledger),
@@ -153,14 +159,15 @@ function progressBar({ ratio, over }) {
     h('span', { style: { '--ratio': String(ratio) } }));
 }
 
-function renderHead(text, canRefresh) {
+function renderHead(text, canRefresh, error) {
   return h('header', { class: 'fund-head' },
     h('h2', { class: 'fund-title', text: '💰 Quỹ chuyến đi' }),
     h('div', { class: 'fund-meta' },
       h('span', { class: 'fund-meta-text', text }),
       canRefresh
         ? h('button', { class: 'fund-refresh', type: 'button', 'aria-label': 'Tải lại', dataset: { action: 'refresh' } }, '↻')
-        : null));
+        : null),
+    error ? h('p', { class: 'fund-meta-error', text: error }) : null);
 }
 
 // Element.replaceChildren() stringifies a bare null into a literal "null"
@@ -221,7 +228,7 @@ function renderContributions(contributions) {
 
 function renderWarnings(warnings) {
   return h('div', { class: 'fund-warn', role: 'status' },
-    h('strong', { text: `⚠️ ${warnings.length} dòng cần sửa` }),
+    h('strong', { text: `⚠️ ${warnings.length} cảnh báo cần sửa` }),
     h('ul', {}, warnings.map((text) => h('li', { text }))));
 }
 

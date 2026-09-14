@@ -59,7 +59,14 @@ async function start() {
     });
     startStatus({ trip, root: view.main, countdown: view.countdown, tabs, clock });
     // The fund never takes the schedule down with it.
-    if (view.fund) startFund({ trip, view: view.fund, clock });
+    if (view.fund) {
+      try {
+        startFund({ trip, view: view.fund, clock });
+      } catch (error) {
+        console.error(error);
+        view.fund.fail(error.message);
+      }
+    }
   } catch (error) {
     console.error(error);
     app.replaceChildren(h('main', { class: 'wrap' }, renderError(error.message)));
