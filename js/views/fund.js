@@ -1,7 +1,7 @@
 import { h } from '../lib/dom.js';
-import { formatShort, formatFull, formatBalance } from '../lib/money.js';
+import { formatShort, formatFull } from '../lib/money.js';
 import {
-  describeBucket, describeEntry, describeDay, progressOf, formUrl, placeLabelAt,
+  describeBucket, describeEntry, describeDay, describeBalance, progressOf, formUrl, placeLabelAt,
 } from '../model/fund.js';
 import { FUND_TAB } from './tabs.js';
 
@@ -103,16 +103,18 @@ export function createFundView({ trip, clock }) {
 
     panel.replaceChildren(h('article', { class: 'fund' },
       renderHead(metaText(meta), meta.state !== 'unlinked', meta.error),
+      // Things to fix first, then what people ask most: what is left, who
+      // gets what back.
       ledger.warnings.length > 0 ? renderWarnings(ledger.warnings) : null,
-      renderOverview(totals),
-      renderByDay(ledger),
-      renderShared(ledger, ctx),
       ledger.unmatched.entries.length > 0
         ? section('Không khớp địa điểm',
           details('unmatched', `⚠️ ${ledger.unmatched.entries.length} khoản · ${formatShort(ledger.unmatched.actual)}`,
             renderEntries(ledger.unmatched.entries, ctx, { withLabel: true })))
         : null,
+      renderOverview(totals),
       renderSettlement(ledger),
+      renderByDay(ledger),
+      renderShared(ledger, ctx),
       section('Sổ sách',
         details('contributions', `Sổ góp quỹ · ${ledger.contributions.length} khoản · ${formatShort(totals.contributed)}`,
           renderContributions(ledger.contributions)),
@@ -243,15 +245,16 @@ function renderWarnings(warnings) {
 }
 
 function renderOverview(totals) {
-  const tile = (label, value) => h('div', { class: 'fund-tile' }, h('span', { text: label }), h('b', { text: value }));
+  const tile = (label, value, className = 'fund-tile') => h('div', { class: className }, h('span', { text: label }), h('b', { text: value }));
+  const short = totals.reserve < 0;
   return h('section', { class: 'fund-section' },
+    tile('Quỹ còn', formatShort(totals.fundLeft), 'fund-tile is-main'),
     h('div', { class: 'fund-tiles' },
       tile('Đã góp', formatShort(totals.contributed)),
       tile('Đã chi', formatShort(totals.actual)),
-      tile('Quỹ còn', formatShort(totals.fundLeft)),
-      totals.reserve >= 0
-        ? tile('Dự phòng', formatShort(totals.reserve))
-        : tile('Chưa góp đủ', `thiếu ${formatShort(-totals.reserve)}`)),
+      short
+        ? tile('Thiếu so với dự kiến', formatShort(-totals.reserve), 'fund-tile is-over')
+        : tile('Dư so với dự kiến', formatShort(totals.reserve))),
     h('div', { class: 'fund-progress' },
       h('span', { text: 'Thực chi / dự kiến' }),
       h('span', { text: `${formatShort(totals.actual)} / ${formatShort(totals.budget)}` })),
@@ -275,7 +278,7 @@ function renderByDay(ledger) {
     ['', 'Dự kiến', 'Thực chi', 'Phát sinh'],
     [
       row('Chung', [shared.budget, shared.actual, shared.extra]),
-      ledger.days.map((day) => row(day.label, [day.budget, day.actual, day.extra])),
+      ledger.days.map((day) => row(day.title, [day.budget, day.actual, day.extra])),
       unmatched.actual > 0 ? row('Không khớp', [0, unmatched.actual, 0]) : null,
     ],
     row('Tổng', [totals.budget, totals.actual, totals.extra])));
@@ -295,23 +298,23 @@ function renderShared(ledger, ctx) {
 }
 
 function renderSettlement(ledger) {
-  const balanceClass = (balance) => {
-    if (balance < 0) return 'is-over';
-    return balance > 0 ? 'is-under' : null;
-  };
-  const rows = ledger.people.map((person) => h('tr', {},
-    h('th', { scope: 'row', text: person.name }),
-    h('td', { text: formatShort(person.contributed) }),
-    h('td', { text: formatShort(person.advanced) }),
-    h('td', { text: formatShort(person.share) }),
-    h('td', { class: balanceClass(person.balance), text: formatBalance(person.balance) })));
+  const rows = ledger.people.map((person) => {
+    const result = describeBalance(person.balance);
+    return h('tr', {},
+      h('th', { scope: 'row', text: person.name }),
+      h('td', { text: formatShort(person.contributed) }),
+      h('td', { text: formatShort(person.advanced) }),
+      h('td', { text: formatShort(person.share) }),
+      h('td', { class: result.tone ? `is-${result.tone}` : 'is-even', text: result.text }));
+  });
   const foot = h('tr', {}, h('td', { colspan: '5', text: `Quỹ còn ${formatShort(ledger.totals.fundLeft)}` }));
 
   return section(ledger.done ? 'Quyết toán' : 'Quyết toán · tạm tính',
     ledger.excluded > 0
       ? h('p', { class: 'fund-warn-line', text: `⚠️ Có ${ledger.excluded} dòng cần sửa — số liệu chưa chốt` })
       : null,
-    table(['', 'Góp', 'Ứng', 'Chịu', 'Còn lại'], rows, foot, 'fund-table fund-settle'),
+    h('p', { class: 'fund-formula', text: 'Kết quả = Đã góp + Trả hộ − Phần chịu' }),
+    table(['', 'Đã góp', 'Trả hộ', 'Phần chịu', 'Kết quả'], rows, foot, 'fund-table fund-settle'),
     ledger.settlement
       ? h('div', { class: 'fund-settlement' },
         h('h4', { text: 'Chốt quỹ' }),

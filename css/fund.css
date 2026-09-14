@@ -278,13 +278,31 @@ main.has-fab { padding-bottom: 88px; }
 
 .fund-tiles {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
 }
 
 .fund-tile { padding: 10px 12px; border-radius: 12px; background: var(--accent-soft); }
-.fund-tile span { display: block; font-size: 11px; font-weight: 600; color: var(--text-sub); }
-.fund-tile b { font-size: 18px; color: var(--primary); font-variant-numeric: tabular-nums; }
+.fund-tile span { display: block; font-size: 12px; font-weight: 600; line-height: 1.3; color: var(--text-sub); }
+.fund-tile b { font-size: 16px; color: var(--primary); font-variant-numeric: tabular-nums; }
+.fund-tile.is-over b { color: var(--money-over); }
+
+/* A label that wraps to two lines must not push its number out of line with
+   the neighbours: numbers sit at the bottom of equal-height tiles. */
+.fund-tiles .fund-tile { display: flex; flex-direction: column; justify-content: space-between; }
+
+/* What is left in the fund: the number people look for first. */
+.fund-tile.is-main {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+  padding: 12px 14px;
+}
+
+.fund-tile.is-main span { font-size: 13px; font-weight: 700; color: var(--primary); }
+.fund-tile.is-main b { font-size: 24px; }
 
 .fund-progress {
   display: flex;
@@ -315,6 +333,8 @@ main.has-fab { padding-bottom: 88px; }
 .fund-settle tfoot td { color: var(--text-sub); font-weight: 700; }
 .fund-table .is-over { color: var(--money-over); font-weight: 700; }
 .fund-table .is-under { color: var(--money-under); font-weight: 700; }
+.fund-table .is-even { color: var(--text-sub); font-weight: 700; }
+.fund-formula { margin: 0 0 6px; font-size: 12px; color: var(--text-sub); }
 
 .fund-settlement { margin-top: 12px; padding: 10px 14px; border-radius: 12px; background: var(--accent-soft); }
 .fund-settlement h4 { margin: 0 0 4px; font-size: 13px; color: var(--primary); }
@@ -361,6 +381,6 @@ main.has-fab { padding-bottom: 88px; }
   main.has-fab { padding-bottom: 48px; }
   .fund { padding: 20px; border-radius: var(--radius); }
   .fund-title { font-size: 20px; }
-  .fund-tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .fund-tile b { font-size: 18px; }
   .fund-table { font-size: 13.5px; }
 }

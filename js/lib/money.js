@@ -31,7 +31,3 @@ export function formatDiff(actual, budget) {
   if (diff < 0) return { text: `▼ ${formatShort(-diff)}`, tone: 'under' };
   return { text: '✓', tone: 'under' };
 }
-
-export function formatBalance(amount) {
-  return amount > 0 ? `+${formatShort(amount)}` : formatShort(amount);
-}

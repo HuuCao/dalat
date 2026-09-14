@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { formatShort, formatFull, formatDiff, formatBalance } from '../js/lib/money.js';
+import { formatShort, formatFull, formatDiff } from '../js/lib/money.js';
 
 test('formatShort writes thousands under a million', () => {
   assert.equal(formatShort(0), '0');
@@ -30,12 +30,9 @@ test('formatFull writes every dong', () => {
   assert.equal(formatFull(-5_000), '−5.000đ');
 });
 
-test('formatDiff and formatBalance carry the direction', () => {
+test('formatDiff carries the direction', () => {
   assert.deepEqual(formatDiff(260_000, 200_000), { text: '▲ 60k', tone: 'over' });
   assert.deepEqual(formatDiff(180_000, 200_000), { text: '▼ 20k', tone: 'under' });
   assert.deepEqual(formatDiff(440_000, 440_000), { text: '✓', tone: 'under' });
   assert.deepEqual(formatDiff(3_000_000, 1_800_000), { text: '▲ 1tr200', tone: 'over' });
-  assert.equal(formatBalance(2_695_000), '+2tr695');
-  assert.equal(formatBalance(-200_000), '−200k');
-  assert.equal(formatBalance(0), '0');
 });
