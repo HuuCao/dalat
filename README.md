@@ -96,7 +96,7 @@ Trong thời gian chuyến đi, trang tự phản ánh "bây giờ":
 - **Chỉ ô giờ đổi màu theo thời gian**, thẻ địa điểm giữ nguyên: khung đang diễn ra có ô giờ xanh chanh nhấp nháy và chấm có vòng sáng lan ra (tắt khi bật "Giảm chuyển động"); khung đã qua có ô giờ và chấm xám. Trình đọc màn hình vẫn đọc "Đang diễn ra" / "Đã qua".
 - **Tự mở đúng ngày:** mở trang trong lúc đang đi, tab tự chuyển sang ngày hiện tại và cuộn tới khung đang diễn ra.
 - **Tự chuyển khi đến giờ:** khung mới bắt đầu thì trang tự đưa thẻ đó vào giữa màn hình (mở tab ngày nếu đang ở tab khác). Nếu 30 giây gần nhất bạn vừa chạm, cuộn hay gõ phím thì trang không giành cuộn mà hiện nút `📍 Đang diễn ra: …` ở góc dưới — bấm để tới, tự ẩn khi thẻ đã trên màn hình. Mở lại trang từ nền cũng bắt kịp ngay. Bật "Giảm chuyển động" thì nhảy thẳng, không cuộn mượt.
-- **Lịch biểu cũng theo thời gian thực:** khối đang diễn ra xanh chanh nhấp nháy, khối đã qua xám, vạch giờ hiện tại ở cột hôm nay. Đang xem lịch thì trang không tự chuyển sang tab ngày khi khung mới bắt đầu.
+- **Lịch biểu cũng theo thời gian thực:** thẻ đang diễn ra nền trắng viền xanh chanh phát sáng kèm chấm nhấp nháy, thẻ đã qua xám, vạch giờ hiện tại ở cột hôm nay kèm nhãn giờ ở cột giờ. Đang xem lịch thì trang không tự chuyển sang tab ngày khi khung mới bắt đầu.
 - Giờ trong dữ liệu tính theo múi giờ chuyến đi (`+07:00`), nên xem từ máy ở múi giờ khác vẫn đúng.
 
 **Xem trước một thời điểm bất kỳ** bằng tham số `?now=` (dùng để kiểm tra, không ảnh hưởng người xem thường):
@@ -196,9 +196,9 @@ Cả chuyến đi trên một lưới, như lịch tuần: mỗi cột một ng�
 
 - **Bật:** mở tab `Tất cả` rồi bấm lại vào nó — dòng dưới chữ `Tất cả` đổi từ `☰ Danh sách` sang `📅 Lịch`; bấm lần nữa để về danh sách. Trang nhớ lựa chọn cho lần mở sau; trình duyệt chặn lưu dữ liệu thì mở lại vẫn là `Danh sách`.
 - **Khung giờ tự tính:** từ giờ tròn trước khung sớm nhất tới giờ tròn sau khung trễ nhất của cả chuyến (`07:00 – 22:00`), vạch mảnh mỗi giờ.
-- **Mỗi khung là một khối** đặt đúng giờ, cao đúng thời lượng — khoảng trống giữa các khung thấy ngay. Khối ghi giờ bắt đầu và icon + tên; tên dài xuống dòng khi khối đủ cao, hết chỗ thì `…`. Khung dưới 40 phút chỉ ghi tên. Khung trống viền nét đứt.
+- **Mỗi khung là một thẻ** bo tròn nền xanh nhạt, đặt đúng giờ, cao đúng thời lượng — khoảng trống giữa các khung thấy ngay. Thẻ ghi icon + tên đậm, ngay dưới là khung giờ `07:00–09:00`; tên dài xuống dòng khi thẻ đủ cao, hết chỗ thì `…`. Khung dưới 40 phút chỉ ghi tên. Khung trống có nền sọc chéo nhạt.
 - **Hai khung chồng giờ** trong một ngày thì chia đôi bề ngang, không đè nhau.
-- **Hàng tên ngày** (`Ngày 1 · T6 16/10`) dính ngay dưới thanh tab khi cuộn; ngày đang diễn ra có chấm xanh. Bấm tên ngày → mở tab ngày đó.
+- **Hàng ngày** (thứ nhỏ `T6`, số ngày lớn `16`) dính ngay dưới thanh tab khi cuộn, nền mờ kính; hôm nay số ngày nằm trong vòng tròn xanh chanh và cả cột được tô nhẹ. Bấm vào ngày → mở tab ngày đó.
 - **Bấm một khối** → mở tab ngày, thẻ của khung đó cuộn vào giữa màn hình và nháy viền hai lần (bật "Giảm chuyển động" thì viền hiện tĩnh).
 - **Trong chuyến:** bật lịch thì vạch giờ hiện tại tự vào giữa màn hình.
 - Điện thoại 1 phút = 1px (cả ngày ~900px), máy tính 1,2px. Nhiều ngày thì cột hẹp lại chứ không cuộn ngang.

@@ -84,13 +84,14 @@ Trả `{ dayId, top }` hoặc `null`.
 ### 5.2. Panel lịch
 
 ```
-       Ngày 1 ●   Ngày 2    Ngày 3     ← dính dưới thanh tab
-       T6 16/10   T7 17/10  CN 18/10
-07:00 ┃07:00    ┃┃07:00   ┃
-      ┃🍃 Đồi chè┃┃🥞 Bánh ┃┊07:30   ┊
-08:00 ┃  Cầu Đất┃          ┊🥖 Tự do┊
- ─────────────────────────────────────  (vạch giờ)
-10:00 ●━━━━━━━━━  ← vạch now, chỉ cột hôm nay
+        T6          T7          CN        ← dính dưới thanh tab, nền mờ kính
+       (16)         17          18        ← hôm nay: số trong vòng tròn lime
+07:00 ╭──────────╮ ╭──────────╮
+      │🍃 Đồi chè │ │🥞 Ăn sáng │ ╱╱╱╱╱╱╱╱╱╱   ← khung trống: sọc chéo
+      │  Cầu Đất  │ │07:00–07:45│ ╱ Ăn sáng ╱
+      │07:00–09:00│ ╰──────────╯ ╱╱╱╱╱╱╱╱╱╱
+      ╰──────────╯
+12:00●━━━━━━━━━━━  ← vạch now + nhãn giờ ở cột giờ, chỉ cột hôm nay (cột tô nhẹ)
 ```
 
 DOM (`views/calendar.js`):
@@ -99,42 +100,46 @@ DOM (`views/calendar.js`):
 section.panel.cal-panel#panel-calendar [role=tabpanel][aria-labelledby=tab-all][data-day=calendar]
   article.cal [style --days --span]
     div.cal-head                                   sticky
-      span.cal-corner
-      button.cal-day [data-day-id] ×N              span.cal-day-name + span.cal-day-date
+      span.cal-corner [aria-hidden]
+      button.cal-day [data-day-id] ×N              span.cal-day-week (T6) + span.cal-day-num (16)
     div.cal-body
-      div.cal-hours > span.cal-hour [style --top]  một nhãn mỗi giờ
-      div.cal-col [data-day-id] ×N                 position: relative
+      div.cal-hours [aria-hidden]
+        span.cal-hour [style --top]                một nhãn mỗi giờ
+        span.cal-now-time [hidden][style --top]    giờ hiện tại, update() điền chữ
+      div.cal-col [data-day-id][data-today?] ×N    position: relative
         button.cal-block [data-id][style --top --height --lane --lanes --lines]
-          span.cal-time + span.cal-name
+          span.cal-name > span.cal-icon + tên
+          span.cal-time                            07:00–09:00
         div.cal-now [hidden][style --top]          tạo một lần, update() chuyển nó sang cột hôm nay
 ```
 
 `.cal-hours` và `.cal-col` cao `calc(var(--span) * var(--ppm))`.
 
-- **Thẻ:** nền `--card`, viền `--line`, bo 14px, padding 12px, bóng `--shadow-md`, `margin-top: 18px` — giống `.day`. **Không** dùng `overflow: hidden`/`clip` trên `.cal` hay tổ tiên (làm hỏng sticky).
-- **Tỷ lệ:** `--ppm: 1px` (mobile) → cao 900px; ≥ 761px `--ppm: 1.2px`, padding 20px, bo `--radius`.
-- **Lưới cột:** `.cal-head` và `.cal-body` cùng `grid-template-columns: 38px repeat(var(--days), minmax(0, 1fr))`, gap 4px; ≥ 761px cột giờ 48px. Nhiều ngày thì cột hẹp lại, không cuộn ngang.
-- **Vạch giờ:** mỗi `.cal-col` nền `repeating-linear-gradient` 1px `--line` mỗi `60 × --ppm`. `.cal-body` padding trên 10px, dưới 8px để nhãn `07:00` / `22:00` không bị cắt. `.cal-hour` 11px `--text-sub`, `tabular-nums`, căn giữa theo vạch (`translateY(-50%)`).
-- **Hàng tiêu đề:** `position: sticky; top: var(--tabbar-h, 78px); z-index: 5`, nền `--card`, viền dưới `--line`. `.cal-day-name` 13px đậm `--primary`, `.cal-day-date` 11px `--text-sub`; tối thiểu 44px cao. `[data-today]` → chấm lime 6px dưới chữ như `.tab[data-today]`. `aria-label`: `Mở Ngày 1, Th 6, 16/10`.
+- **Thẻ:** nền `--card`, viền `--line`, bo 16px, padding `0 10px 12px 6px`, bóng `--shadow-md`, `margin-top: 18px`. **Không** dùng `overflow: hidden`/`clip` trên `.cal` hay tổ tiên (làm hỏng sticky).
+- **Tỷ lệ:** `--ppm: 1px` (mobile) → cao 900px; ≥ 761px `--ppm: 1.2px`, padding `0 20px 20px 12px`.
+- **Lưới cột:** `.cal-head` và `.cal-body` cùng `grid-template-columns: var(--gutter) repeat(var(--days), minmax(0, 1fr))`, **không gap** để vạch giờ liền một đường qua cả hàng; khối tự lùi 2px mỗi bên. `--gutter` 40px, ≥ 761px 52px. Nhiều ngày thì cột hẹp lại, không cuộn ngang.
+- **Vạch giờ:** mỗi `.cal-col` nền `repeating-linear-gradient` 1px `rgba(20,40,30,.07)` mỗi `60 × --ppm`. `.cal-col[data-today]` thêm nền `rgba(var(--live-rgb), .08)`. `.cal-body` padding trên 10px, dưới 8px để nhãn `07:00` / `22:00` không bị cắt. `.cal-hour` 11px 500 `--text-sub`, `tabular-nums`, căn giữa theo vạch.
+- **Hàng tiêu đề:** `position: sticky; top: var(--tabbar-h, 78px); z-index: 5`, nền trắng 94% + `backdrop-filter: blur(10px)`, viền dưới `--line`. `.cal-day`: thứ `.cal-day-week` 11px 600 `--text-sub` trên số ngày `.cal-day-num` 18px 700 `--primary` trong ô tròn 32px (≥ 761px 36px, 20px); cao tối thiểu 52px. `[data-today]`: số ngày nền `--live`, chữ `--live-ink`; thứ màu `--live-strong`. `aria-label`: `Mở Ngày 1, Th 6, 16/10`.
 
 ### 5.3. Khối
 
-- Vị trí: `position: absolute; top: calc(var(--top) * var(--ppm)); height: calc(var(--height) * var(--ppm) - 2px); left: calc(100% * var(--lane) / var(--lanes)); width: calc(100% / var(--lanes) - 2px)`.
-- Kiểu: nền `--accent-soft`, viền trái 3px `--accent`, bo 8px, padding 3px 5px 3px 6px, chữ căn trái, `font: inherit`.
-- `.cal-time`: giờ bắt đầu, 11px 600 `--text-sub`, `tabular-nums`.
-- `.cal-name`: `icon + ' ' + name`, 12px 700 `--text`, line-height 16px, `-webkit-line-clamp: var(--lines)`.
-- `--lines` (view tính theo tỷ lệ mobile): `max(1, floor((height − 22) / 16))`.
-- Khối cao `< 40` phút → class `is-short`: ẩn `.cal-time`, `--lines: 1`.
-- Khung trống (`item.empty`): viền nét đứt `#c3cfc7`, không viền trái, nền `#f7faf8`, tên `--empty-ink` 600 — giống `.card.empty`.
+- Vị trí: `position: absolute; top: calc(var(--top) * var(--ppm) + 1px); height: calc(var(--height) * var(--ppm) - 3px); left: calc(100% * var(--lane) / var(--lanes) + 2px); width: calc(100% / var(--lanes) - 4px)`.
+- Kiểu: một tông xanh — nền gradient `#eef5f1 → #e4eee8`, viền mảnh vẽ trong bằng `box-shadow: inset 0 0 0 1px rgba(var(--accent-rgb), .16)` (không chiếm chỗ chữ) + bóng rất nhẹ, bo 10px, padding 5px 7px (≥ 761px 6px 9px), không viền trái.
+- `.cal-name` đứng đầu: 12px 700 `--primary` (≥ 761px 13px/17px), line-height 16px, `-webkit-line-clamp: var(--lines)`, `overflow-wrap: break-word`. Trong đó `.cal-icon`: emoji trong đĩa trắng 16px, inline để tên dài xuống dòng bên dưới.
+- `.cal-time` ngay dưới tên: `07:00–09:00`, 11px 500 `--text-sub`, `tabular-nums`, một dòng, cắt `…` nếu hẹp.
+- `--lines` (view tính theo tỷ lệ mobile): `max(1, floor((height − 27) / 16))` — 3px lùi + 10px padding + 1px khoảng cách + 13px dòng giờ.
+- Khối cao `< 40` phút → class `is-short`: ẩn `.cal-time`, `--lines: 1`, tên căn giữa dọc.
+- Khung trống (`item.empty`): nền sọc chéo `repeating-linear-gradient(135deg, rgba(accent, .09) 0 5px, transparent 5px 10px)` trên `#fbfcfb`, viền mảnh trong, không bóng; tên `--empty-ink` 600; icon không có đĩa.
 - `aria-label`: `Ngày 1, 07:00 – 09:00, Đồi chè Cầu Đất`; thêm `, đang diễn ra` / `, đã qua` theo trạng thái.
-- Hover (chỉ `@media (hover: hover)`): bóng `--shadow-md` (khối chỉ có viền trái nên không đổi màu viền). `:focus-visible`: viền 2px `--primary`, offset 2px.
+- Hover (chỉ `@media (hover: hover)`): nhấc 1px, viền trong đậm hơn, bóng `--shadow-md`. `:focus-visible`: viền 2px `--primary`, offset 2px, `z-index: 4`.
 
 ### 5.4. Trạng thái thời gian thực
 
-- `.cal-block.is-now`: nền `--live`, chữ `--live-ink`, viền trái `--live-strong`; `prefers-reduced-motion: no-preference` → `animation: live-chip 1.6s ease-out infinite` (keyframe sẵn có).
-- `.cal-block.is-past`: nền `#e4e8e5`, chữ `#58605b`, viền trái `#a3aba6` — cùng màu ô giờ `.item.is-past`.
-- `.cal-now`: vạch 2px `--live-strong` ngang cả cột, chấm 8px `--live` ở mép trái; `top: calc(var(--top) * var(--ppm))`; `pointer-events: none`; `z-index` trên khối.
-- `.cal-day[data-today]`: chấm lime.
+- `.cal-block.is-now`: nền trắng, vòng `inset 0 0 0 2px var(--live)` + quầng `0 4px 14px rgba(var(--live-rgb), .35)`, giờ màu `--live-strong` đậm, chấm lime 7px góc trên phải (`::after`) nhấp nháy `live-dot` khi không giảm chuyển động; `z-index: 3` — nằm trên vạch now để vạch không đè chữ.
+- `.cal-block.is-past`: nền phẳng `#eef1ef`, chữ `#58605b` (≥ 4.5:1), icon xám mờ.
+- `.cal-now`: vạch 2px `--live-strong` ngang cột hôm nay, chấm 8px `--live` ở mép trái, `z-index: 2`, `pointer-events: none`.
+- `.cal-now-time`: nhãn giờ hiện tại (`12:00`) trong cột giờ ngang vạch now — nền `--live-strong`, chữ trắng 11px 700, bo tròn.
+- `.cal-day[data-today]` + `.cal-col[data-today]`: số ngày trong đĩa lime, cột tô lime nhạt.
 
 ## 6. Tương tác
 

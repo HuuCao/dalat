@@ -1,14 +1,17 @@
 import { h } from '../lib/dom.js';
+import { shortWeekdayText } from '../lib/time.js';
 import { ALL_TAB, CALENDAR_PANEL } from './tabs.js';
 
 // Line budget of a block, in px at 1px per minute (the phone scale): the
-// start time takes TIME_ROOM, each name line NAME_LINE. Shorter blocks than
-// SHORT_BLOCK minutes drop the start time.
+// inset, padding and time line take TIME_ROOM, each name line NAME_LINE.
+// Blocks shorter than SHORT_BLOCK minutes show the name alone.
 const SHORT_BLOCK = 40;
-const TIME_ROOM = 22;
+const TIME_ROOM = 27;
 const NAME_LINE = 16;
 
 const STATE_TEXT = { now: ', đang diễn ra', past: ', đã qua' };
+
+const clockText = (minute) => `${String(Math.floor(minute / 60)).padStart(2, '0')}:${String(minute % 60).padStart(2, '0')}`;
 
 // The whole trip as a week grid inside "Tất cả". Built once; update() only
 // flips classes and moves the now line.
@@ -16,11 +19,14 @@ export function createCalendar(model) {
   const heads = new Map();
   const columns = new Map();
   const blocks = new Map();
+  // The current time: a line across today's column and the time in the gutter.
   const nowLine = h('div', { class: 'cal-now', 'aria-hidden': 'true', hidden: true });
+  const nowTime = h('span', { class: 'cal-now-time', hidden: true });
   let todayId = null;
 
+  // Weekday above a large day number; "Ngày N" is already on the tab bar.
   const head = h('div', { class: 'cal-head' },
-    h('span', { class: 'cal-corner' }),
+    h('span', { class: 'cal-corner', 'aria-hidden': 'true' }),
     model.days.map((day) => {
       const button = h('button', {
         class: 'cal-day',
@@ -28,15 +34,16 @@ export function createCalendar(model) {
         'aria-label': `Mở ${day.title}, ${day.dateText}`,
         dataset: { dayId: day.id },
       },
-      h('span', { class: 'cal-day-name', text: day.title }),
-      h('span', { class: 'cal-day-date', text: day.shortDate }));
+      h('span', { class: 'cal-day-week', text: shortWeekdayText(day.date) }),
+      h('span', { class: 'cal-day-num', text: String(Number(day.date.slice(8))) }));
       heads.set(day.id, button);
       return button;
     }));
 
   const body = h('div', { class: 'cal-body' },
     h('div', { class: 'cal-hours', 'aria-hidden': 'true' },
-      model.hours.map((hour) => h('span', { class: 'cal-hour', style: { '--top': String(hour.top) }, text: hour.text }))),
+      model.hours.map((hour) => h('span', { class: 'cal-hour', style: { '--top': String(hour.top) }, text: hour.text })),
+      nowTime),
     model.days.map((day) => {
       const column = h('div', { class: 'cal-col', dataset: { dayId: day.id } },
         day.blocks.map((block) => {
@@ -69,17 +76,24 @@ export function createCalendar(model) {
       block.el.setAttribute('aria-label', block.label + (STATE_TEXT[state] ?? ''));
     }
 
+    // Today's heading and column are marked together.
     if (nextTodayId !== todayId) {
-      heads.get(todayId)?.removeAttribute('data-today');
-      heads.get(nextTodayId)?.setAttribute('data-today', '');
+      for (const marked of [heads, columns]) {
+        marked.get(todayId)?.removeAttribute('data-today');
+        marked.get(nextTodayId)?.setAttribute('data-today', '');
+      }
       todayId = nextTodayId;
     }
 
     const column = mark ? columns.get(mark.dayId) : null;
     nowLine.hidden = !column;
+    nowTime.hidden = !column;
     if (column) {
       if (nowLine.parentElement !== column) column.append(nowLine);
-      nowLine.style.setProperty('--top', String(mark.top));
+      const top = String(mark.top);
+      nowLine.style.setProperty('--top', top);
+      nowTime.style.setProperty('--top', top);
+      nowTime.textContent = clockText(model.startMinute + mark.top);
     }
   }
 
@@ -93,6 +107,8 @@ export function createCalendar(model) {
   return { panel, update, scrollToNow };
 }
 
+// Name first (icon in a small disc), time range underneath: the grid already
+// places the block, the range says exactly when.
 function renderBlock(block, day) {
   const { item } = block;
   const short = block.height < SHORT_BLOCK;
@@ -112,6 +128,8 @@ function renderBlock(block, day) {
       '--lines': String(lines),
     },
   },
-  h('span', { class: 'cal-time', text: item.startText }),
-  h('span', { class: 'cal-name', text: item.icon ? `${item.icon} ${item.name}` : item.name }));
+  h('span', { class: 'cal-name' },
+    item.icon ? h('span', { class: 'cal-icon', text: item.icon }) : null,
+    item.name),
+  h('span', { class: 'cal-time', text: `${item.startText}–${item.endText}` }));
 }
