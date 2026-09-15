@@ -27,7 +27,8 @@ export function renderDay(day, { fund = false } = {}) {
 }
 
 function renderItem(item, fund) {
-  return h('div', { class: 'item', dataset: { id: item.id }, style: { '--i': String(item.order) } },
+  // Focusable from script only: the calendar lands keyboard users here.
+  return h('div', { class: 'item', tabindex: '-1', dataset: { id: item.id }, style: { '--i': String(item.order) } },
     h('span', { class: 'dot' }),
     h('div', { class: 'time' },
       h('span', { class: 'clock' },

@@ -249,6 +249,18 @@
   white-space: nowrap;
 }
 
+/* ---------- PICKED ON THE CALENDAR ---------- */
+/* The card rings twice (controllers/status.js); the ring stands in for the
+   focus outline the slot gets at the same moment, and keyboard focus keeps
+   the static ring once the rings end. */
+.item:focus { outline: none; }
+.item.is-flash .card { box-shadow: 0 0 0 3px rgba(var(--accent-rgb), .45); }
+.item:focus-visible .card { box-shadow: 0 0 0 3px rgba(var(--accent-rgb), .45); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .item.is-flash .card { box-shadow: none; animation: flash .6s ease-out 2; }
+}
+
 /* ---------- NOW HINT ---------- */
 /* Offered bottom-left while the viewer is busy, clear of the floating
    expense button on the right (and centred on it vertically); centred on

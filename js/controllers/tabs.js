@@ -1,16 +1,47 @@
-import { ALL_TAB, FUND_TAB } from '../views/tabs.js';
+import { ALL_TAB, FUND_TAB, CALENDAR_PANEL, LIST_VIEW, CALENDAR_VIEW, VIEW_TEXT } from '../views/tabs.js';
 
 const ARROW_STEPS = { ArrowLeft: -1, ArrowRight: 1 };
 const GAP_BELOW_TABBAR = 12;
+const VIEW_KEY = 'dalat:schedule-view';
 
-// onChange(shownPanels) runs after every tab the user picks, so the shown
-// days can play their entrance again.
-export function createTabs(tablist, panels, { onChange = () => {} } = {}) {
+// Which panels a tab shows. "Tất cả" lists every day or shows the calendar
+// alone; the fund panel only shows on its own tab.
+export function panelShown(key, tab, view) {
+  if (tab !== ALL_TAB) return key === tab;
+  if (view === CALENDAR_VIEW) return key === CALENDAR_PANEL;
+  return key !== FUND_TAB && key !== CALENDAR_PANEL;
+}
+
+// Storage may be missing or throw (private mode, blocked site data).
+export function readView(storage) {
+  try {
+    return storage?.getItem(VIEW_KEY) === CALENDAR_VIEW ? CALENDAR_VIEW : LIST_VIEW;
+  } catch {
+    return LIST_VIEW;
+  }
+}
+
+function saveView(storage, view) {
+  try {
+    storage?.setItem(VIEW_KEY, view);
+  } catch {
+    // Not remembered; the view still switches for this visit.
+  }
+}
+
+// onChange(shownPanels) runs after every tab or view the user picks, so the
+// shown days can play their entrance again.
+export function createTabs(tablist, panels, { onChange = () => {}, storage = null } = {}) {
   const tabs = [...tablist.querySelectorAll('[role="tab"]')];
   const tabbar = tablist.closest('.tabbar');
+  const allTab = tabs.find((tab) => tab.dataset.tab === ALL_TAB);
+  const viewIcon = allTab?.querySelector('.tab-view-icon');
+  const viewWord = allTab?.querySelector('.tab-view-word');
+  let view = readView(storage);
 
   function select(id, { focus = false, user = false } = {}) {
     const active = tabs.find((tab) => tab.dataset.tab === id) ?? tabs[0];
+    const activeId = active.dataset.tab;
 
     for (const tab of tabs) {
       const selected = tab === active;
@@ -18,10 +49,13 @@ export function createTabs(tablist, panels, { onChange = () => {} } = {}) {
       tab.tabIndex = selected ? 0 : -1;
     }
     for (const panel of panels) {
-      // "Tất cả" means every day; the fund panel only shows on its own tab.
-      panel.hidden = active.dataset.tab === ALL_TAB
-        ? panel.dataset.day === FUND_TAB
-        : panel.dataset.day !== active.dataset.tab;
+      panel.hidden = !panelShown(panel.dataset.day, activeId, view);
+    }
+    // "Tất cả" names its view on the second line.
+    if (viewIcon && viewWord) {
+      viewIcon.textContent = VIEW_TEXT[view].icon;
+      viewWord.textContent = VIEW_TEXT[view].word;
+      allTab.setAttribute('aria-label', VIEW_TEXT[view].label);
     }
 
     if (focus) active.focus();
@@ -34,6 +68,13 @@ export function createTabs(tablist, panels, { onChange = () => {} } = {}) {
     onChange(shown);
   }
 
+  function setView(next) {
+    if (next === view) return;
+    view = next;
+    saveView(storage, view);
+    select(ALL_TAB, { user: true });
+  }
+
   // Scrolled past the start of the chosen day? Jump back so it begins right
   // under the sticky tab bar and its entrance plays on screen.
   function bringIntoView(panel) {
@@ -42,9 +83,16 @@ export function createTabs(tablist, panels, { onChange = () => {} } = {}) {
     if (window.scrollY > top) window.scrollTo({ top, behavior: 'instant' });
   }
 
+  // Tapping "Tất cả" while it is already open switches between the list and
+  // the calendar; any other tap just opens the tab.
   tablist.addEventListener('click', (event) => {
     const tab = event.target.closest('[role="tab"]');
-    if (tab) select(tab.dataset.tab, { user: true });
+    if (!tab) return;
+    if (tab === allTab && tab.getAttribute('aria-selected') === 'true') {
+      setView(view === CALENDAR_VIEW ? LIST_VIEW : CALENDAR_VIEW);
+    } else {
+      select(tab.dataset.tab, { user: true });
+    }
   });
 
   tablist.addEventListener('keydown', (event) => {
@@ -76,5 +124,5 @@ export function createTabs(tablist, panels, { onChange = () => {} } = {}) {
   }
 
   select(ALL_TAB);
-  return { select, markToday };
+  return { select, markToday, view: () => view };
 }

@@ -27,9 +27,16 @@
 
 .money[open] > .money-sum::after { content: "▴"; }
 
-/* Shared costs in the fund tab: one full-width row each. */
-.fund-section > .money { border-top: 1px dashed var(--line); }
-.fund-section > .money > .money-sum { min-height: 44px; padding: 0; margin: 0; }
+/* Shared costs in the fund tab: one soft card each. */
+.fund-section > .money {
+  padding: 0 12px;
+  border-radius: 12px;
+  background: #f6f9f7;
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.fund-section > .money + .money { margin-top: 8px; }
+.fund-section > .money > .money-sum { min-height: 48px; padding: 0; margin: 0; }
 
 .money-title { flex: 1 1 auto; min-width: 0; }
 .money-title + .money-text { font-weight: 600; }
@@ -41,6 +48,7 @@
 .money.is-under .money-diff { color: var(--money-under); }
 
 .money-body { padding: 6px 0 4px; }
+.fund-section > .money > .money-body { padding-bottom: 12px; }
 .money-note { margin: 0 0 6px; font-size: 12px; color: var(--text-sub); }
 
 /* ---------- ENTRIES ---------- */
@@ -108,36 +116,7 @@
 .entries-empty { margin: 4px 0; font-size: 13px; color: var(--text-sub); }
 
 /* ---------- BOOKS (fund tab) ---------- */
-.book-tabs {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 4px;
-  margin-bottom: 12px;
-  padding: 4px;
-  border-radius: 12px;
-  background: var(--accent-soft);
-}
-
-.book-tab {
-  min-height: 44px;
-  padding: 4px 8px;
-  border: 0;
-  border-radius: 9px;
-  background: transparent;
-  color: var(--text-sub);
-  font: inherit;
-  font-size: 13px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.book-tab[aria-pressed="true"] { background: var(--card); color: var(--primary); box-shadow: var(--shadow-sm); }
-.book-tab:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.books-switch { margin-bottom: 12px; }
 
 .ledger-group + .ledger-group { margin-top: 16px; }
 
@@ -146,24 +125,49 @@
   justify-content: space-between;
   gap: 10px;
   margin: 0 0 8px;
-  padding-bottom: 4px;
+  padding-bottom: 6px;
   border-bottom: 1px solid var(--line);
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: .06em;
-  text-transform: uppercase;
+  font-size: 13px;
+  font-weight: 700;
   color: var(--primary);
   font-variant-numeric: tabular-nums;
 }
 
 .ledger-group.is-warn .ledger-h { color: var(--pay-warn); }
 
-/* Contributions: one row each; a long note trims instead of widening the
-   table (max-width: 0 lets the cell shrink below its text). */
-.contrib th[scope="row"] { font-weight: 700; }
-.contrib .contrib-amount { font-weight: 800; }
-.contrib .contrib-date { color: var(--text-sub); }
-.contrib .contrib-note { width: 100%; max-width: 0; overflow: hidden; text-overflow: ellipsis; text-align: left; color: var(--text-sub); }
+/* Contributions: one row per payment — the member's initial, name, when and
+   the note (trimmed if long), and the amount on the right; the total closes
+   the list. */
+.contrib-list { margin: 0; padding: 0; list-style: none; }
+
+.contrib {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 10px;
+  padding: 10px 0;
+}
+
+.contrib + .contrib { border-top: 1px solid var(--line); }
+.contrib .fund-avatar { width: 32px; height: 32px; font-size: 13px; }
+.contrib-info { display: flex; flex-direction: column; min-width: 0; }
+.contrib-name { font-size: 14px; color: var(--text); }
+.contrib-meta { overflow: hidden; font-size: 12px; color: var(--text-sub); text-overflow: ellipsis; white-space: nowrap; }
+.contrib-amount { font-size: 15px; font-weight: 800; color: var(--primary); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+.contrib-total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0;
+  padding-top: 10px;
+  border-top: 2px solid var(--line);
+  font-size: 13px;
+  color: var(--text-sub);
+}
+
+.contrib-total b { font-size: 15px; color: var(--text); font-variant-numeric: tabular-nums; }
 
 /* ---------- BUTTONS ---------- */
 .fund-btn {
@@ -173,7 +177,7 @@
   min-height: 44px;
   padding: 0 14px;
   border: 0;
-  border-radius: 10px;
+  border-radius: 12px;
   background: var(--accent-soft);
   color: var(--primary);
   font: inherit;
@@ -314,7 +318,7 @@ main.has-fab { padding-bottom: 88px; }
   padding: 16px;
   background: var(--card);
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: 16px;
   box-shadow: var(--shadow-md);
 }
 
@@ -323,36 +327,65 @@ main.has-fab { padding-bottom: 88px; }
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 4px 12px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--line);
+  gap: 6px 12px;
 }
 
-.fund-title { margin: 0; font-size: 18px; color: var(--primary); letter-spacing: -.01em; }
-.fund-meta { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--text-sub); }
+.fund-title { margin: 0; font-size: 19px; color: var(--primary); letter-spacing: -.01em; }
+
+/* Last update in a quiet pill, the refresh button inside it. The button's
+   negative margin keeps a 44px tap target in a 36px pill. */
+.fund-meta {
+  display: flex;
+  align-items: center;
+  min-height: 36px;
+  padding-left: 12px;
+  border-radius: 99px;
+  background: var(--accent-soft);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-sub);
+  font-variant-numeric: tabular-nums;
+}
+
+.fund-meta.is-static { padding-right: 12px; }
 .fund-meta-error { flex: 1 0 100%; margin: 0; font-size: 12px; color: #7a3b2e; }
 
 .fund-refresh {
   min-width: 44px;
   min-height: 44px;
+  margin: -4px 0;
   border: 0;
-  border-radius: 10px;
+  border-radius: 99px;
   background: transparent;
   color: var(--link);
   font: inherit;
-  font-size: 18px;
+  font-size: 17px;
   cursor: pointer;
 }
 
-.fund-section { margin-top: 18px; }
+.fund-section { margin-top: 24px; }
+.fund-overview { margin-top: 14px; }
 
+/* Sections are set apart by a full-width band in the page colour, like
+   grouped settings on a phone: negative margins take the band past the
+   card's padding to its edges, and the padding puts the content back. */
+.fund-section + .fund-section {
+  margin: 20px -16px 0;
+  padding: 20px 16px 0;
+  border-top: 8px solid var(--bg);
+}
+
+@media (min-width: 761px) {
+  .fund-section + .fund-section { margin: 24px -22px 0; padding: 24px 22px 0; }
+}
+
+/* Section titles: sentence case with an icon, like the rest of the page. */
 .fund-h {
-  margin: 0 0 8px;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: .07em;
-  text-transform: uppercase;
-  color: var(--text-sub);
+  margin: 0 0 10px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -.005em;
+  color: var(--primary);
 }
 
 .fund-warn {
@@ -368,67 +401,263 @@ main.has-fab { padding-bottom: 88px; }
 .fund-warn ul { margin: 6px 0 0; padding-left: 18px; }
 .fund-warn-line { margin: 0 0 8px; font-size: 12.5px; color: #7a3b2e; }
 
-.fund-tiles {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
+/* Overview: what is left leads in large type, with how much of the plan is
+   spent right under it; three small stats follow. */
+.fund-hero {
+  padding: 16px;
+  border-radius: 16px;
+  background: linear-gradient(160deg, #f2f8f4 0%, #e2ede7 100%);
+  box-shadow: inset 0 0 0 1px rgba(var(--accent-rgb), .14);
 }
 
-.fund-tile { padding: 10px 12px; border-radius: 12px; background: var(--accent-soft); }
-.fund-tile span { display: block; font-size: 12px; font-weight: 600; line-height: 1.3; color: var(--text-sub); }
-.fund-tile b { font-size: 16px; color: var(--primary); font-variant-numeric: tabular-nums; }
-.fund-tile.is-over b { color: var(--money-over); }
+.fund-hero-label { display: block; font-size: 13px; font-weight: 600; color: var(--text-sub); }
 
-/* A label that wraps to two lines must not push its number out of line with
-   the neighbours: numbers sit at the bottom of equal-height tiles. */
-.fund-tiles .fund-tile { display: flex; flex-direction: column; justify-content: space-between; }
-
-/* What is left in the fund: the number people look for first. */
-.fund-tile.is-main {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 8px;
-  padding: 12px 14px;
+.fund-hero-value {
+  display: block;
+  margin-top: 2px;
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -.02em;
+  color: var(--primary);
+  font-variant-numeric: tabular-nums;
 }
 
-.fund-tile.is-main span { font-size: 13px; font-weight: 700; color: var(--primary); }
-.fund-tile.is-main b { font-size: 24px; }
+.fund-hero-progress { margin-top: 14px; }
+.fund-hero .bar { height: 8px; margin-top: 0; background: rgba(255, 255, 255, .9); }
 
-.fund-progress {
+.fund-hero-caption {
   display: flex;
   justify-content: space-between;
   gap: 8px;
-  margin-top: 12px;
+  margin-top: 6px;
   font-size: 12px;
   color: var(--text-sub);
   font-variant-numeric: tabular-nums;
 }
 
-.fund-table-wrap { overflow-x: auto; }
+.fund-hero-caption b { color: var(--primary); }
+.fund-hero-caption b.is-over { color: var(--money-over); }
 
-.fund-table {
+.fund-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* Three equal cards: the label on top, the amount under it, centred in the
+   card's height. Proportional figures - equal-width digits look loose at
+   this size. */
+.fund-stat {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 12px;
+  border-radius: 14px;
+  background: var(--card);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.fund-stat-label {
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--text-sub);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fund-stat-value { font-size: 18px; font-weight: 800; line-height: 1.2; letter-spacing: -.01em; color: var(--primary); }
+.fund-stat.is-over .fund-stat-value { color: var(--money-over); }
+
+/* Clean tables (settlement, by day): column labels once, one line per row,
+   hairlines only. A table scrolls in its own box if a very long amount ever
+   overflows a phone. Tight gaps on the narrowest phones so five columns fit
+   360px. */
+.fund-grid-wrap { overflow-x: auto; }
+
+.fund-grid {
   width: 100%;
   border-collapse: collapse;
-  font-size: 12.5px;
   font-variant-numeric: tabular-nums;
 }
 
-.fund-table th,
-.fund-table td { padding: 6px 4px; text-align: right; white-space: nowrap; }
-.fund-table th[scope="row"],
-.fund-table thead th:first-child { text-align: left; }
-.fund-table thead th { font-size: 11px; font-weight: 700; color: var(--text-sub); border-bottom: 1px solid var(--line); }
-.fund-table tbody tr + tr { border-top: 1px solid var(--line); }
-.fund-table tfoot { border-top: 2px solid var(--line); font-weight: 800; }
-.fund-settle tfoot td { color: var(--text-sub); font-weight: 700; }
-.fund-table .is-over { color: var(--money-over); font-weight: 700; }
-.fund-table .is-under { color: var(--money-under); font-weight: 700; }
-.fund-table .is-even { color: var(--text-sub); font-weight: 700; }
-.fund-formula { margin: 0 0 6px; font-size: 12px; color: var(--text-sub); }
+.fund-grid th,
+.fund-grid td { padding: 10px 0 10px 6px; text-align: right; white-space: nowrap; }
+.fund-grid th:first-child { padding-left: 0; text-align: left; }
 
-.fund-settlement { margin-top: 12px; padding: 10px 14px; border-radius: 12px; background: var(--accent-soft); }
+.fund-grid thead th {
+  padding-top: 0;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--line);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-sub);
+}
+
+.fund-grid tbody tr + tr { border-top: 1px solid var(--line); }
+
+/* Settlement: parts carry no sign; their colour says how the formula counts
+   them (added green, taken off orange, 0 muted), and the "Hoàn/Nộp" column
+   is coloured text (refund green, owed orange). */
+.settle-person { display: flex; align-items: center; gap: 6px; }
+
+/* A member's initial in a disc (settlement, contributions). The colour
+   class comes from the member's place in the member list (views/fund.js),
+   so a person keeps one colour across the tab. */
+.fund-avatar {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--pay-fund-bg);
+  color: var(--pay-fund);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.fund-avatar.is-c1 { background: var(--pay-member-bg); color: var(--pay-member); }
+.fund-avatar.is-c2 { background: #e6eef8; color: #2f5f8f; }
+.fund-avatar.is-c3 { background: #f3e8f1; color: #8a3f76; }
+
+.settle-name { font-size: 14px; font-weight: 700; color: var(--text); }
+
+.settle-amount { font-size: 13px; font-weight: 700; color: var(--money-under); }
+.settle-amount.is-minus { color: var(--money-over); }
+.settle-amount.is-zero { font-weight: 500; color: var(--money-muted); }
+
+.settle-result { font-size: 13px; font-weight: 800; }
+.settle-result.is-under { color: var(--money-under); }
+.settle-result.is-over { color: var(--money-over); }
+.settle-result.is-even { color: var(--text-sub); }
+
+/* By-day chart: horizontal bars on one shared scale. The pale track is the
+   plan; the fill is what is spent (green) with its extra part as an amber
+   tail, set off by a 2px surface gap. The pair passes the dataviz palette
+   checks with protan ΔE 7.6, legal because the gap, legend and direct
+   labels carry identity too. */
+.fund { --chart-spent: #1e7d4c; --chart-extra: #c07a1e; --chart-plan: #dfeae4; }
+
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin: -2px 0 10px;
+  font-size: 12px;
+  color: var(--text-sub);
+}
+
+.chart-legend > span { display: inline-flex; align-items: center; gap: 6px; }
+
+.chart-key { flex: none; display: inline-block; width: 10px; height: 10px; border-radius: 3px; background: var(--chart-plan); }
+.chart-key.is-spent { background: var(--chart-spent); }
+.chart-key.is-extra { background: var(--chart-extra); }
+.chart-key.is-none { background: transparent; }
+
+.chart-wrap { position: relative; }
+.chart { margin: 0; padding: 0; list-style: none; }
+.chart-row + .chart-row { margin-top: 8px; }
+
+.chart-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.chart-name { font-size: 14px; font-weight: 700; color: var(--text); }
+.chart-row.is-warn .chart-name { color: var(--pay-warn); }
+.chart-value { color: var(--text-sub); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.chart-value b { color: var(--text); }
+
+/* A 24px hit area around a 10px bar; data ends rounded, baseline square. */
+.chart-bar { position: relative; height: 24px; }
+.chart-bar:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: 4px; }
+
+.chart-track,
+.chart-spent,
+.chart-extra {
+  position: absolute;
+  top: 7px;
+  left: 0;
+  width: var(--w);
+  height: 10px;
+  border-radius: 0 4px 4px 0;
+}
+
+.chart-track { background: var(--chart-plan); }
+.chart-spent { min-width: 4px; background: var(--chart-spent); }
+.chart-bar.has-extra .chart-spent { border-radius: 0; }
+
+/* The inset shadow paints the 2px surface gap at the join. */
+.chart-extra {
+  left: var(--x);
+  min-width: 6px;
+  background: var(--chart-extra);
+  box-shadow: inset 2px 0 0 var(--card);
+}
+
+/* One tooltip above the bar: values lead, labels follow, line keys. */
+.chart-tip {
+  position: absolute;
+  z-index: 6;
+  min-width: 132px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--card);
+  box-shadow: 0 0 0 1px var(--line), var(--shadow-md);
+  font-size: 12px;
+  color: var(--text-sub);
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+  transform: translate(-50%, calc(-100% - 6px));
+}
+
+.chart-tip-title { margin-bottom: 4px; font-weight: 700; color: var(--text); }
+.chart-tip-line { display: flex; align-items: center; gap: 6px; line-height: 1.5; }
+.chart-tip-line b { font-size: 13px; color: var(--text); }
+.chart-tip .chart-key { width: 10px; height: 2px; border-radius: 1px; }
+
+.chart-total {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 12px 0 4px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+  color: var(--text-sub);
+  font-variant-numeric: tabular-nums;
+}
+
+.chart-total > span:first-child { font-weight: 700; color: var(--text); }
+.chart-total b { color: var(--text); }
+
+@media (min-width: 380px) {
+  .fund-grid th,
+  .fund-grid td { padding-left: 8px; }
+  .settle-person { gap: 8px; }
+}
+
+.fund-formula {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 2px 12px;
+  margin: 8px 2px 0;
+  font-size: 12px;
+  color: var(--text-sub);
+  font-variant-numeric: tabular-nums;
+}
+
+.fund-settlement { margin-top: 12px; padding: 12px 14px; border-radius: 14px; background: var(--accent-soft); }
 .fund-settlement h4 { margin: 0 0 4px; font-size: 13px; color: var(--primary); }
 .fund-settlement ul { margin: 0; padding: 0; list-style: none; font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .fund-settlement p { margin: 0; font-size: 13px; }
@@ -457,7 +686,14 @@ main.has-fab { padding-bottom: 88px; }
 
 .fund-details[open] > summary::after { content: "▴"; }
 
-.fund-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+.fund-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.fund-actions > .fund-btn:only-child { grid-column: 1 / -1; }
 .fund .load-error { margin-top: 14px; }
 .fund .load-error .fund-btn { margin-top: 10px; }
 
@@ -471,8 +707,13 @@ main.has-fab { padding-bottom: 88px; }
   }
   .fab { display: none; }
   main.has-fab { padding-bottom: 48px; }
-  .fund { padding: 20px; border-radius: var(--radius); }
+  .fund { padding: 22px; border-radius: var(--radius); }
   .fund-title { font-size: 20px; }
-  .fund-tile b { font-size: 18px; }
-  .fund-table { font-size: 13.5px; }
+  .fund-hero { padding: 20px; }
+  .fund-hero-value { font-size: 36px; }
+  .fund-stat-value { font-size: 19px; }
+  .fund-grid th,
+  .fund-grid td { padding-left: 16px; }
+  .settle-amount,
+  .settle-result { font-size: 14px; }
 }

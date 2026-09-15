@@ -21,6 +21,7 @@ Toàn bộ nội dung nằm trong một file dữ liệu `data/trip.json`. Trang
   - [Dữ liệu và xử lý lỗi](#8-dữ-liệu-và-xử-lý-lỗi)
   - [Truy cập và an toàn](#9-truy-cập-và-an-toàn)
   - [Quỹ chung & chi phí](#10-quỹ-chung--chi-phí)
+  - [Lịch biểu](#11-lịch-biểu)
 - [Hỗ trợ trình duyệt](#hỗ-trợ-trình-duyệt)
 - [Chạy local](#chạy-local)
 - [Kiểm thử](#kiểm-thử)
@@ -50,6 +51,7 @@ Toàn bộ nội dung nằm trong một file dữ liệu `data/trip.json`. Trang
 - Chọn tab hiện đúng ngày đó, `Tất cả` hiện toàn bộ; mỗi lần đổi tab, ngày vừa mở mờ dần vào và các khung giờ bay vào lại. Đang cuộn sâu thì ngày được chọn tự đưa lên ngay dưới thanh tab.
 - Điều khiển bằng bàn phím: `←` `→` chuyển tab, `Home` / `End` về tab đầu / cuối.
 - Nhiều ngày không đủ chỗ thì hàng tab vuốt ngang được, tab vừa chọn tự cuộn vào tầm nhìn.
+- Tab `Tất cả` ghi chế độ đang xem ở dòng dưới (`☰ Danh sách` / `📅 Lịch`, điện thoại chỉ hiện icon); đang ở `Tất cả` mà bấm lại thì đổi chế độ — xem [Lịch biểu](#11-lịch-biểu).
 
 ### 3. Lịch trình từng ngày
 
@@ -83,7 +85,7 @@ Panel tối màu nổi đè lên mép dưới banner, nằm trên thanh tab — 
 
 - Điểm tiếp theo ở ngày khác thì ghi thêm thứ: `Tiếp theo T7 07:00 · 🥞 Ăn sáng — Bánh căn`.
 - Hàng `💰 Quỹ còn` dính liền dưới panel thành một khối.
-- Đếm ngược cập nhật mỗi giây; các trạng thái còn lại cập nhật mỗi 15 giây.
+- Đếm ngược cập nhật mỗi giây; các trạng thái còn lại cập nhật mỗi 15 giây, và ngay đúng giây một khung giờ bắt đầu hoặc kết thúc (không chờ tới lượt 15 giây kế tiếp).
 - Tiến độ chỉ đếm địa điểm thật, không đếm khung trống.
 - Có hiệu ứng vệt sáng quét chậm qua panel.
 
@@ -94,6 +96,7 @@ Trong thời gian chuyến đi, trang tự phản ánh "bây giờ":
 - **Chỉ ô giờ đổi màu theo thời gian**, thẻ địa điểm giữ nguyên: khung đang diễn ra có ô giờ xanh chanh nhấp nháy và chấm có vòng sáng lan ra (tắt khi bật "Giảm chuyển động"); khung đã qua có ô giờ và chấm xám. Trình đọc màn hình vẫn đọc "Đang diễn ra" / "Đã qua".
 - **Tự mở đúng ngày:** mở trang trong lúc đang đi, tab tự chuyển sang ngày hiện tại và cuộn tới khung đang diễn ra.
 - **Tự chuyển khi đến giờ:** khung mới bắt đầu thì trang tự đưa thẻ đó vào giữa màn hình (mở tab ngày nếu đang ở tab khác). Nếu 30 giây gần nhất bạn vừa chạm, cuộn hay gõ phím thì trang không giành cuộn mà hiện nút `📍 Đang diễn ra: …` ở góc dưới — bấm để tới, tự ẩn khi thẻ đã trên màn hình. Mở lại trang từ nền cũng bắt kịp ngay. Bật "Giảm chuyển động" thì nhảy thẳng, không cuộn mượt.
+- **Lịch biểu cũng theo thời gian thực:** thẻ đang diễn ra nền trắng viền xanh chanh phát sáng kèm chấm nhấp nháy, thẻ đã qua xám, vạch giờ hiện tại ở cột hôm nay kèm nhãn giờ ở cột giờ. Đang xem lịch thì trang không tự chuyển sang tab ngày khi khung mới bắt đầu.
 - Giờ trong dữ liệu tính theo múi giờ chuyến đi (`+07:00`), nên xem từ máy ở múi giờ khác vẫn đúng.
 
 **Xem trước một thời điểm bất kỳ** bằng tham số `?now=` (dùng để kiểm tra, không ảnh hưởng người xem thường):
@@ -178,7 +181,7 @@ Nhóm đóng quỹ chung; mọi khoản chi được ghi qua Google Form, trang 
 - **Từng khung giờ:** dòng `💰` so dự kiến với thực chi — `💰 260k / 200k ▲ 60k` (vượt, cam đỏ), `▼ 20k` / `✓` (xanh), `💰 Dự kiến 200k` (chưa chi; mở ra thấy `Mỗi người ~50k`), `🆓 Miễn phí`. Bấm để xem từng khoản: viền và nhãn màu theo người trả (xanh `Quỹ trả`, cam `Hữu trả hộ`, đỏ dòng cần sửa), số tiền, ghi chú, chia cho ai, ai nhập, lúc nào — kèm nút `➕ Nhập chi ở đây` mở Form **đã chọn sẵn địa điểm**.
 - **Từng ngày:** `💰 1tr660 / 3tr120 · phát sinh 120k` và thanh tiến độ; cuối ngày có khối `⚡ Phát sinh ngoài plan` với nút `➕ Nhập phát sinh`.
 - **Dính liền panel trạng thái:** `💰 Quỹ còn 8tr080`; nút `+ Nhập chi` trên máy tính, nút nổi trên điện thoại — chọn sẵn khung đang diễn ra, giữa hai khung thì chọn khung vừa kết thúc.
-- **Tab `💰 Quỹ`:** cảnh báo và khoản không khớp địa điểm (nếu có); quỹ còn (ô lớn) · đã góp · đã chi · dư/thiếu so với dự kiến; quyết toán; bảng theo ngày; chi phí chung (vé xe, khách sạn, xe máy, phát sinh chung); sổ sách với nút chuyển `Sổ chi` / `Góp quỹ` — sổ chi nhóm theo Chung → Ngày 1…N → Không khớp, mỗi nhóm có tổng, mỗi khoản ghi tên địa điểm gọn và số tiền; góp quỹ mỗi khoản một hàng kèm dòng tổng; nút mở Form và Sheet. Tab `Tất cả` không gồm tab này.
+- **Tab `💰 Quỹ`:** các mục ngăn nhau bằng một dải xám tràn hết bề ngang thẻ; cảnh báo và khoản không khớp địa điểm (nếu có); thẻ tổng quan — `Quỹ còn` chữ lớn, thanh tiến độ `Đã chi … / dự kiến … · 4%`, ba thẻ đều nhau `Đã góp` · `Đã chi` · `Dư dự kiến` (hoặc `Thiếu dự kiến` màu cam) — nhãn nhỏ trên, số đậm dưới; 🧮 quyết toán dạng bảng gọn — cột `Góp · Trả hộ · Chịu · Hoàn/Nộp`, mỗi người một dòng: chữ cái đầu trong vòng tròn và tên, số không dấu nhưng tô màu theo công thức (góp và trả hộ xanh, chịu cam, 0 mờ); cột `Hoàn/Nộp` chỉ ghi số tiền — màu xanh là được hoàn, màu cam là phải nộp thêm, `0` màu mờ là đủ; 📅 theo ngày dạng biểu đồ thanh ngang chung một thang đo — nền nhạt là dự kiến, phần xanh là đã chi, đoạn cam là phát sinh (tách bằng khe trắng 2px); mỗi thanh ghi `đã chi / dự kiến`, rê chuột, chạm hoặc Tab tới thanh hiện thêm còn/vượt; dòng Tổng bằng chữ; 🧾 chi phí chung dạng thẻ (vé xe, khách sạn, xe máy, phát sinh chung); sổ sách với nút chuyển `Sổ chi` / `Góp quỹ` — sổ chi nhóm theo Chung → Ngày 1…N → Không khớp, mỗi nhóm có tổng, mỗi khoản ghi tên địa điểm gọn và số tiền; góp quỹ mỗi lần góp một dòng — chữ cái đầu trong vòng tròn (mỗi người một màu, giống ở quyết toán), tên, ngày · ghi chú, số tiền căn phải — cuối là `Tổng · N lần góp`; nút mở Form và Sheet. Tab `Tất cả` không gồm tab này.
 - **Quyết toán:** `Kết quả = Đã góp + Trả hộ − Phần chịu`, ghi bằng chữ: `Hoàn 2tr695`, `Nộp 845k`, `Đủ`; tổng các kết quả luôn bằng số quỹ còn. Trong chuyến ghi `tạm tính`; khi chuyến đi kết thúc hiện `Chốt quỹ` ghi đủ từng đồng — `→ Quỹ hoàn Hữu 2.695.000đ`, `→ Khanh nộp thêm vào quỹ 845.000đ` — mỗi người chỉ một giao dịch với quỹ.
 - **Cách viết tiền:** dưới 1 triệu `640k`, `33,3k`; từ 1 triệu `11tr760`, `12tr`; từng khoản trong sổ viết gọn khi tròn nghìn (`2tr200`, `320k`), lẻ đồng thì ghi đủ (`1.234.567đ`); chốt quỹ luôn ghi đủ đồng.
 - **Chia lẻ đúng từng đồng:** 100.000đ chia 3 = 33.334 + 33.333 + 33.333.
@@ -186,6 +189,19 @@ Nhóm đóng quỹ chung; mọi khoản chi được ghi qua Google Form, trang 
 - **Tự cập nhật:** tải lại mỗi 5 phút khi trang đang mở, ngay khi mở lại trang, hoặc bấm `↻` — mục nào đang mở vẫn giữ nguyên. Google cần khoảng 5 phút sau khi gửi Form mới công bố số mới.
 - **Mất sóng:** dùng bản lưu gần nhất trên máy — `Dữ liệu lúc 14:05 · chưa tải được bản mới`. Lỗi phần quỹ không bao giờ làm hỏng lịch trình.
 - **Chưa kết nối Sheet:** trang vẫn hiện toàn bộ dự kiến, tab Quỹ ghi `Chưa kết nối Google Sheet`.
+
+### 11. Lịch biểu
+
+Cả chuyến đi trên một lưới, như lịch tuần: mỗi cột một ngày, trục dọc là giờ.
+
+- **Bật:** mở tab `Tất cả` rồi bấm lại vào nó — dòng dưới chữ `Tất cả` đổi từ `☰ Danh sách` sang `📅 Lịch`; bấm lần nữa để về danh sách. Trang nhớ lựa chọn cho lần mở sau; trình duyệt chặn lưu dữ liệu thì mở lại vẫn là `Danh sách`.
+- **Khung giờ tự tính:** từ giờ tròn trước khung sớm nhất tới giờ tròn sau khung trễ nhất của cả chuyến (`07:00 – 22:00`), vạch mảnh mỗi giờ.
+- **Mỗi khung là một thẻ** bo tròn nền xanh nhạt, đặt đúng giờ, cao đúng thời lượng — khoảng trống giữa các khung thấy ngay. Thẻ ghi icon + tên đậm, ngay dưới là khung giờ `07:00–09:00`; tên dài xuống dòng khi thẻ đủ cao, hết chỗ thì `…`. Khung dưới 40 phút chỉ ghi tên. Khung trống có nền sọc chéo nhạt.
+- **Hai khung chồng giờ** trong một ngày thì chia đôi bề ngang, không đè nhau.
+- **Hàng ngày** (thứ nhỏ `T6`, số ngày lớn `16`) dính ngay dưới thanh tab khi cuộn, nền mờ kính; hôm nay số ngày nằm trong vòng tròn xanh chanh và cả cột được tô nhẹ. Bấm vào ngày → mở tab ngày đó.
+- **Bấm một khối** → mở tab ngày, thẻ của khung đó cuộn vào giữa màn hình và nháy viền hai lần (bật "Giảm chuyển động" thì viền hiện tĩnh).
+- **Trong chuyến:** bật lịch thì vạch giờ hiện tại tự vào giữa màn hình.
+- Điện thoại 1 phút = 1px (cả ngày ~900px), máy tính 1,2px. Nhiều ngày thì cột hẹp lại chứ không cuộn ngang.
 
 ---
 
@@ -224,7 +240,9 @@ Cần Node ≥ 18, không phải cài package nào. Unit test phủ phần logic
 
 | File | Kiểm tra |
 |---|---|
-| `tests/time.test.js` | Định dạng giờ/ngày, thứ trong tuần, suy ra buổi cho mọi khung giờ, điền `{days}`/`{nights}`, thứ ngắn `T6 16/10`, thời lượng `1 giờ 20 phút`, ngày theo múi giờ chuyến đi |
+| `tests/time.test.js` | Định dạng giờ/ngày, thứ trong tuần, suy ra buổi cho mọi khung giờ, điền `{days}`/`{nights}`, thứ ngắn `T6 16/10`, thời lượng `1 giờ 20 phút`, ngày và phút theo múi giờ chuyến đi |
+| `tests/calendar.test.js` | Khung giờ lịch làm tròn tới giờ, vị trí và chiều cao khối, chia làn khi chồng giờ, vạch giờ hiện tại (ngoài ngày / ngoài giờ) |
+| `tests/tabs.test.js` | Tab nào hiện panel nào ở chế độ Danh sách / Lịch, đọc lựa chọn đã nhớ khi bộ nhớ trình duyệt thiếu hoặc lỗi |
 | `tests/trip.test.js` | Số ngày/đêm/điểm/khung trống, `srcset`, link Maps, sắp xếp, thông báo lỗi dữ liệu, budget, cấu hình quỹ, nhãn Form |
 | `tests/status.test.js` | Trạng thái trước / trong / giữa / sau chuyến đi, biên đầu–cuối khung giờ, ô đếm ngược, thời gian còn lại, điểm tiếp theo (cả sang ngày khác), link Maps |
 | `tests/motion.test.js` | Parallax dự phòng khớp CSS, giới hạn giá trị, ảnh hero không bao giờ hở mép |
@@ -234,7 +252,7 @@ Cần Node ≥ 18, không phải cài package nào. Unit test phủ phần logic
 | `tests/money.test.js` | `1tr660`, `12tr`, `33,3k`, `260.000đ`, ▲ ▼ ✓, khoản tròn nghìn viết gọn / lẻ đồng ghi đủ |
 | `tests/fund.test.js` | Tìm cột theo tên, đọc số tiền, chia lẻ, tổng khung/ngày/chung/chuyến, quyết toán, chữ Hoàn / Nộp / Đủ, dòng lỗi, link Form điền sẵn |
 
-Phần giao diện được kiểm tra trên Chrome headless (iPhone và máy tính): chọn đúng ảnh, không cuộn ngang, trạng thái thời gian thực, cả hai lớp animation, giảm chuyển động, dữ liệu lỗi, thêm ngày mới.
+Phần giao diện được kiểm tra trên Chrome headless (iPhone và máy tính): chọn đúng ảnh, không cuộn ngang, trạng thái thời gian thực, cả hai lớp animation, giảm chuyển động, lịch biểu (vị trí khối, trạng thái theo giờ, bấm khối mở thẻ, nhớ chế độ xem), dữ liệu lỗi, thêm ngày mới.
 
 ## Sửa lịch trình
 
@@ -329,7 +347,7 @@ assets/icons/           favicon (SVG + PNG 32px), apple-touch-icon 180px, icon 1
 css/
   tokens.css            màu, bo góc, bóng, easing
   base.css              nền tảng, footer, thanh tiến trình, thông báo lỗi
-  hero.css · tabs.css · timeline.css · countdown.css · fund.css
+  hero.css · tabs.css · timeline.css · calendar.css · countdown.css · fund.css
   motion/
     keyframes.css       toàn bộ keyframes
     load.css            animation lúc mở trang
@@ -338,9 +356,9 @@ css/
 js/
   main.js               tải dữ liệu → dựng trang → khởi động
   lib/                  giờ, đồng hồ, animation, tạo DOM, đọc CSV, định dạng tiền, so tên
-  model/                dữ liệu → model, trạng thái chuyến đi, sổ quỹ (thuần, có test)
-  views/                hero, tabs, ngày, panel trạng thái, quỹ, footer, lỗi
-  controllers/          tabs, đồng hồ thời gian thực, reveal, parallax dự phòng, tải sổ quỹ
+  model/                dữ liệu → model, trạng thái chuyến đi, lưới lịch biểu, sổ quỹ (thuần, có test)
+  views/                hero, tabs, ngày, lịch biểu, panel trạng thái, quỹ, footer, lỗi
+  controllers/          tabs, đồng hồ thời gian thực, bấm lịch biểu, reveal, parallax dự phòng, tải sổ quỹ
 scripts/form-options.js in danh sách địa điểm cho Google Form
 tests/                  node --test
 docs/                   spec và plan
@@ -359,6 +377,7 @@ GitHub Pages phục vụ nhánh `main`, thư mục gốc. Push lên `main` là t
 - [Thiết kế quỹ chung & chi phí](docs/specs/2026-09-14-fund-ledger-design.md) — dữ liệu, cách tính, giao diện, xử lý lỗi.
 - [Kế hoạch triển khai quỹ](docs/plans/2026-09-14-fund-ledger.md).
 - [Thiết kế tinh gọn giao diện](docs/specs/2026-09-14-ui-polish-design.md) · [Kế hoạch](docs/plans/2026-09-14-ui-polish.md).
+- [Thiết kế lịch biểu](docs/specs/2026-09-15-calendar-view-design.md) · [Kế hoạch](docs/plans/2026-09-15-calendar-view.md).
 
 ## Nguồn ảnh
 
