@@ -48,13 +48,21 @@ export function parseTime(text) {
   return isTime(time) ? time : null;
 }
 
+// Plain digits, or 1–3 leading digits followed by one or more 3-digit groups
+// separated by ".", "," or a space (Sheets' thousands separators); either can
+// carry a 1–2 digit decimal tail after a final "." or ",".
+const BUDGET_AMOUNT = /^(\d+|\d{1,3}(?:[.,\s]\d{3})+)([.,](\d{1,2}))?$/;
+const CURRENCY_MARK = /\s*(đ|₫|vnd)$/i;
+
 // undefined: no budget. null: something unreadable was typed.
 export function parseBudget(text) {
   const value = text.trim();
   if (value === '') return undefined;
-  const digits = value.replace(/\D/g, '');
-  if (!/^[\d.,\s]+(đ|vnd)?$/i.test(value) || digits === '') return null;
-  return Number(digits);
+  const amount = value.replace(CURRENCY_MARK, '');
+  const match = BUDGET_AMOUNT.exec(amount);
+  if (!match) return null;
+  if (match[3] && /[1-9]/.test(match[3])) return null; // non-zero decimal tail
+  return Number(match[1].replace(/\D/g, ''));
 }
 
 export function parseFlag(text) {

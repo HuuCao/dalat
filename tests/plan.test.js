@@ -36,6 +36,20 @@ test('budgets: blank is none, 0 is free, separators are fine, words are invalid'
   assert.equal(parseBudget('hai trăm'), null);
   assert.equal(parseBudget('-5'), null);
   assert.equal(parseBudget('.'), null);
+  assert.equal(parseBudget('280.000,00'), 280000);
+  assert.equal(parseBudget('280,000.00'), 280000);
+  assert.equal(parseBudget('280000,0'), 280000);
+  assert.equal(parseBudget('1.080.000'), 1080000);
+  assert.equal(parseBudget('280 000'), 280000);
+  assert.equal(parseBudget('1.500'), 1500);
+  assert.equal(parseBudget('280.000 ₫'), 280000);
+  assert.equal(parseBudget('280000đ'), 280000);
+  assert.equal(parseBudget('1.5'), null);
+  assert.equal(parseBudget('1,50'), null);
+  assert.equal(parseBudget('280.000,50'), null);
+  assert.equal(parseBudget(',,12'), null);
+  assert.equal(parseBudget('1 2 3'), null);
+  assert.equal(parseBudget('12.34.567'), null);
 });
 
 test('the empty flag reads a checkbox, x or có', () => {

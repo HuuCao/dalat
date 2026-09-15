@@ -271,7 +271,7 @@ Sửa trong Google Sheet quỹ, trên điện thoại cũng được — không 
 | `Icon` | không | Emoji |
 | `Tag` | không | |
 | `Maps` | không | Từ khóa tìm trên Google Maps; có thì hiện link `📍 Maps` |
-| `Dự kiến` | không | VND, `280000` hoặc `280.000`. Trống = không có dự kiến, `0` = `Miễn phí` |
+| `Dự kiến` | không | VND, `280000` hoặc `280.000`. Trống = không có dự kiến, `0` = `Miễn phí` Định dạng ô Tự động hoặc Số đều được (`280.000,00`, `280.000 ₫`); số lẻ như `1,5` bị báo lỗi. |
 | `Trống` | không | Checkbox (hoặc `x`) = khung trống, không tính là điểm |
 
 **Tab `Ngay`** — không bắt buộc có dòng: `Ngày` · `Icon` · `Ghi chú` cho từng ngày. Ngày chỉ có ở tab này (chưa có khung giờ) hiện `Chưa có lịch`.
