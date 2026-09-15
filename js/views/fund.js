@@ -334,8 +334,7 @@ function renderOverview(totals) {
   const short = totals.reserve < 0;
   const progress = progressOf(totals.actual, totals.budget);
   const percent = totals.budget > 0 ? Math.round((totals.actual / totals.budget) * 100) : null;
-  const stat = (icon, label, value, tone) => h('div', { class: tone ? `fund-stat is-${tone}` : 'fund-stat' },
-    h('span', { class: 'fund-stat-icon', 'aria-hidden': 'true', text: icon }),
+  const stat = (label, value, tone) => h('div', { class: tone ? `fund-stat is-${tone}` : 'fund-stat' },
     h('span', { class: 'fund-stat-label', text: label }),
     h('b', { class: 'fund-stat-value', text: value }));
 
@@ -349,11 +348,11 @@ function renderOverview(totals) {
           h('span', { text: `Đã chi ${formatShort(totals.actual)} / dự kiến ${formatShort(totals.budget)}` }),
           percent === null ? null : h('b', { class: progress.over ? 'is-over' : null, text: `${percent}%` })))),
     h('div', { class: 'fund-stats' },
-      stat('📥', 'Đã góp', formatShort(totals.contributed)),
-      stat('💸', 'Đã chi', formatShort(totals.actual)),
+      stat('Đã góp', formatShort(totals.contributed)),
+      stat('Đã chi', formatShort(totals.actual)),
       short
-        ? stat('⚠️', 'Thiếu dự kiến', formatShort(-totals.reserve), 'over')
-        : stat('✅', 'Dư dự kiến', formatShort(totals.reserve))));
+        ? stat('Thiếu dự kiến', formatShort(-totals.reserve), 'over')
+        : stat('Dư dự kiến', formatShort(totals.reserve))));
 }
 
 const leftOf = ({ budget, actual }) => ({ label: budget >= actual ? 'Còn' : 'Vượt', amount: Math.abs(budget - actual) });
