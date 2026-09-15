@@ -431,25 +431,23 @@ main.has-fab { padding-bottom: 88px; }
 .fund-stat-value { font-size: 17px; font-weight: 800; color: var(--primary); font-variant-numeric: tabular-nums; }
 .fund-stat.is-over .fund-stat-value { color: var(--money-over); }
 
-/* Settlement: a clean table — column labels once, one line per person,
-   hairlines only. Parts carry no sign; their colour says how the formula
-   counts them (added green, taken off orange, 0 muted), and the "Hoàn/Nộp"
-   column is coloured text (refund green, owed orange). The table scrolls in its own box if a very long
-   amount ever overflows a phone. */
-.settle-wrap { overflow-x: auto; }
+/* Clean tables (settlement, by day): column labels once, one line per row,
+   hairlines only. A table scrolls in its own box if a very long amount ever
+   overflows a phone. Tight gaps on the narrowest phones so five columns fit
+   360px. */
+.fund-grid-wrap { overflow-x: auto; }
 
-.settle {
+.fund-grid {
   width: 100%;
   border-collapse: collapse;
   font-variant-numeric: tabular-nums;
 }
 
-/* Tight gaps on the narrowest phones so all five columns fit 360px. */
-.settle th,
-.settle td { padding: 10px 0 10px 6px; text-align: right; white-space: nowrap; }
-.settle th:first-child { padding-left: 0; text-align: left; }
+.fund-grid th,
+.fund-grid td { padding: 10px 0 10px 6px; text-align: right; white-space: nowrap; }
+.fund-grid th:first-child { padding-left: 0; text-align: left; }
 
-.settle thead th {
+.fund-grid thead th {
   padding-top: 0;
   padding-bottom: 6px;
   border-bottom: 1px solid var(--line);
@@ -458,15 +456,12 @@ main.has-fab { padding-bottom: 88px; }
   color: var(--text-sub);
 }
 
-.settle tbody tr + tr { border-top: 1px solid var(--line); }
+.fund-grid tbody tr + tr { border-top: 1px solid var(--line); }
 
+/* Settlement: parts carry no sign; their colour says how the formula counts
+   them (added green, taken off orange, 0 muted), and the "Hoàn/Nộp" column
+   is coloured text (refund green, owed orange). */
 .settle-person { display: flex; align-items: center; gap: 6px; }
-
-@media (min-width: 380px) {
-  .settle th,
-  .settle td { padding-left: 8px; }
-  .settle-person { gap: 8px; }
-}
 
 .settle-avatar {
   flex: none;
@@ -496,6 +491,26 @@ main.has-fab { padding-bottom: 88px; }
 .settle-result.is-over { color: var(--money-over); }
 .settle-result.is-even { color: var(--text-sub); }
 
+/* By day: the plan, what is spent, the extra part of it, and what is left
+   (green) or overspent (orange); 0 muted; the total row in bold. */
+.budget th[scope="row"] { font-size: 14px; font-weight: 700; color: var(--text); }
+.budget td { font-size: 13px; font-weight: 600; color: var(--text); }
+.budget .budget-spent { font-weight: 700; color: var(--primary); }
+.budget .budget-extra { font-weight: 700; color: var(--pay-member); }
+.budget .budget-left { font-weight: 800; color: var(--money-under); }
+.budget .budget-left.is-over { color: var(--money-over); }
+.budget .is-zero { font-weight: 500; color: var(--money-muted); }
+.budget tr.is-warn th { color: var(--pay-warn); }
+.budget tfoot tr { border-top: 2px solid var(--line); }
+.budget tfoot th[scope="row"],
+.budget tfoot td:not(.is-zero) { font-weight: 800; }
+
+@media (min-width: 380px) {
+  .fund-grid th,
+  .fund-grid td { padding-left: 8px; }
+  .settle-person { gap: 8px; }
+}
+
 .fund-formula {
   display: flex;
   flex-wrap: wrap;
@@ -511,42 +526,6 @@ main.has-fab { padding-bottom: 88px; }
 .fund-settlement h4 { margin: 0 0 4px; font-size: 13px; color: var(--primary); }
 .fund-settlement ul { margin: 0; padding: 0; list-style: none; font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .fund-settlement p { margin: 0; font-size: 13px; }
-
-/* By day: spent against the plan with its own bar; extra spending as a
-   badge. A group with nothing spent yet shows the plan alone. */
-.budget-list { margin: 0; padding: 0; list-style: none; }
-.budget-row { padding: 10px 0; }
-.budget-row + .budget-row { border-top: 1px solid var(--line); }
-
-.budget-top {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 10px;
-  font-size: 13px;
-  font-variant-numeric: tabular-nums;
-}
-
-.budget-name { font-size: 14px; color: var(--text); }
-.budget-amount { font-weight: 700; color: var(--primary); white-space: nowrap; }
-.budget-amount.is-muted { font-weight: 600; color: var(--money-muted); }
-.budget-amount.is-over { color: var(--money-over); }
-.budget-row .bar { height: 6px; margin-top: 6px; }
-
-.budget-extra {
-  display: inline-block;
-  margin-top: 6px;
-  padding: 1px 8px;
-  border-radius: 99px;
-  background: var(--pay-member-bg);
-  color: var(--pay-member);
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.budget-row.is-warn .budget-name { color: var(--pay-warn); }
-.budget-row.is-total { margin-top: 2px; border-top: 2px solid var(--line); }
-.budget-row.is-total .budget-name { font-weight: 800; }
 
 /* Plain tables: the contributions book. */
 .fund-table {
@@ -612,9 +591,10 @@ main.has-fab { padding-bottom: 88px; }
   .fund-hero { padding: 20px; }
   .fund-hero-value { font-size: 36px; }
   .fund-stat-value { font-size: 19px; }
-  .settle th,
-  .settle td { padding-left: 16px; }
+  .fund-grid th,
+  .fund-grid td { padding-left: 16px; }
   .settle-amount,
-  .settle-result { font-size: 14px; }
+  .settle-result,
+  .budget td { font-size: 14px; }
   .fund-table { font-size: 13.5px; }
 }

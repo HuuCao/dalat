@@ -356,31 +356,39 @@ function renderOverview(totals) {
         : stat('✅', 'Dư dự kiến', formatShort(totals.reserve))));
 }
 
-// Spent against the plan for the shared costs, each day and the total.
+// The plan against what is spent for the shared costs, each day and in
+// total, as a table like the settlement. Extra spending is part of what is
+// spent; "Còn/Vượt" is what is left (green) or overspent (orange).
 function renderByDay(ledger) {
   const { shared, unmatched, totals } = ledger;
+  const money = (amount, className) => h('td', {
+    class: amount === 0 ? `${className} is-zero` : className,
+    text: formatShort(amount),
+  });
   const row = (label, { budget, actual, extra }, kind = null) => {
-    const progress = progressOf(actual, budget);
-    let amount = `${formatShort(actual)} / ${formatShort(budget)}`;
-    if (budget === 0) amount = formatShort(actual);
-    else if (actual === 0) amount = `Dự kiến ${formatShort(budget)}`;
-    let amountClass = 'budget-amount';
-    if (progress.over) amountClass += ' is-over';
-    else if (actual === 0) amountClass += ' is-muted';
+    const left = budget - actual;
+    let leftClass = 'budget-left';
+    if (left < 0) leftClass += ' is-over';
+    else if (left === 0) leftClass += ' is-zero';
 
-    return h('li', { class: kind ? `budget-row is-${kind}` : 'budget-row' },
-      h('div', { class: 'budget-top' },
-        h('b', { class: 'budget-name', text: label }),
-        h('span', { class: amountClass, text: amount })),
-      progressBar(progress),
-      extra > 0 ? h('span', { class: 'budget-extra', text: `⚡ Phát sinh ${formatShort(extra)}` }) : null);
+    return h('tr', kind ? { class: `is-${kind}` } : {},
+      h('th', { scope: 'row', text: label }),
+      money(budget, 'budget-plan'),
+      money(actual, 'budget-spent'),
+      money(extra, 'budget-extra'),
+      h('td', { class: leftClass, text: formatShort(Math.abs(left)) }));
   };
 
-  return section('📅 Theo ngày', h('ul', { class: 'budget-list' },
-    row('Chung', shared),
-    ledger.days.map((day) => row(day.title, day)),
-    unmatched.actual > 0 ? row('Không khớp', { budget: 0, actual: unmatched.actual, extra: 0 }, 'warn') : null,
-    row('Tổng', totals, 'total')));
+  return section('📅 Theo ngày', h('div', { class: 'fund-grid-wrap' },
+    h('table', { class: 'fund-grid budget' },
+      h('thead', {}, h('tr', {},
+        h('th', { scope: 'col', 'aria-label': 'Nhóm' }),
+        ['Dự kiến', 'Đã chi', 'Phát sinh', 'Còn/Vượt'].map((text) => h('th', { scope: 'col', text })))),
+      h('tbody', {},
+        row('Chung', shared),
+        ledger.days.map((day) => row(day.title, day)),
+        unmatched.actual > 0 ? row('Không khớp', { budget: 0, actual: unmatched.actual, extra: 0 }, 'warn') : null),
+      h('tfoot', {}, row('Tổng', totals)))));
 }
 
 function renderShared(ledger, ctx) {
@@ -433,8 +441,8 @@ function renderSettlement(ledger) {
     ledger.excluded > 0
       ? h('p', { class: 'fund-warn-line', text: `⚠️ Có ${ledger.excluded} dòng cần sửa — số liệu chưa chốt` })
       : null,
-    h('div', { class: 'settle-wrap' },
-      h('table', { class: 'settle' },
+    h('div', { class: 'fund-grid-wrap' },
+      h('table', { class: 'fund-grid settle' },
         h('thead', {}, h('tr', {},
           h('th', { scope: 'col', 'aria-label': 'Thành viên' }),
           ['Góp', 'Trả hộ', 'Chịu', 'Hoàn/Nộp'].map((text) => h('th', { scope: 'col', text })))),
