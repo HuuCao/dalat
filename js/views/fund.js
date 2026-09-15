@@ -332,7 +332,7 @@ function renderContributions(contributions, total, ctx) {
 }
 
 function renderWarnings(warnings) {
-  return h('div', { class: 'fund-warn', role: 'status' },
+  return h('div', { class: 'warn-box', role: 'status' },
     h('strong', { text: `⚠️ ${warnings.length} cảnh báo cần sửa` }),
     h('ul', {}, warnings.map((text) => h('li', { text }))));
 }
