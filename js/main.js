@@ -1,9 +1,11 @@
 import { buildTrip } from './model/trip.js';
+import { buildCalendar } from './model/calendar.js';
 import { createClock } from './lib/clock.js';
 import { h } from './lib/dom.js';
 import { renderHero } from './views/hero.js';
 import { renderTabs } from './views/tabs.js';
 import { renderDay } from './views/day.js';
+import { createCalendar } from './views/calendar.js';
 import { createCountdown } from './views/countdown.js';
 import { createNowHint } from './views/now-hint.js';
 import { createFundView } from './views/fund.js';
@@ -23,6 +25,16 @@ async function loadTrip() {
   return buildTrip(await response.json());
 }
 
+// Reading localStorage throws where site data is blocked; the list/calendar
+// choice is then just not remembered.
+function safeStorage() {
+  try {
+    return window.localStorage;
+  } catch {
+    return null;
+  }
+}
+
 function mount(app, trip, clock) {
   const hero = renderHero(trip.hero);
   const countdown = createCountdown();
@@ -31,14 +43,17 @@ function mount(app, trip, clock) {
   // day tabs; the tabs stay right above the content they switch.
   const status = h('div', { class: fund ? 'status wrap has-fund' : 'status wrap' }, countdown.element, fund?.statusRow);
   const tabbar = renderTabs(trip.days, { fund: Boolean(fund) });
-  const panels = [...trip.days.map((day) => renderDay(day, { fund: Boolean(fund) })), fund?.panel].filter(Boolean);
-  const main = h('main', { class: fund?.fab ? 'wrap has-fab' : 'wrap' }, panels, renderFooter(trip.footer));
+  const calModel = buildCalendar(trip);
+  const calendar = createCalendar(calModel);
+  const panels = [...trip.days.map((day) => renderDay(day, { fund: Boolean(fund) })), calendar.panel, fund?.panel].filter(Boolean);
+  // The list/calendar switch leads the content it switches.
+  const main = h('main', { class: fund?.fab ? 'wrap has-fab' : 'wrap' }, calendar.switcher, panels, renderFooter(trip.footer));
   // Fixed-position pieces live outside <main>: an animated ancestor would
   // break position: fixed.
   const hint = createNowHint();
 
   app.replaceChildren(...[hero, status, tabbar, main, fund?.fab, hint.element].filter(Boolean));
-  return { hero, tabbar, countdown, panels, main, fund, hint };
+  return { hero, tabbar, countdown, panels, main, fund, hint, calendar, calModel };
 }
 
 async function start() {
@@ -59,7 +74,12 @@ async function start() {
     });
 
     const tabs = createTabs(view.tabbar.querySelector('[role="tablist"]'), view.panels, {
-      onChange: (shown) => shown.forEach((panel) => reveal.replay(panel)),
+      onChange: (shown) => {
+        shown.forEach((panel) => reveal.replay(panel));
+        if (shown.includes(view.calendar.panel)) view.calendar.scrollToNow();
+      },
+      switcher: view.calendar.switcher,
+      storage: safeStorage(),
     });
     startStatus({ trip, root: view.main, countdown: view.countdown, tabs, clock, hint: view.hint });
     // The fund never takes the schedule down with it.

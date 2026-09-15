@@ -1,0 +1,213 @@
+/* ---------- VIEW SWITCH ---------- */
+/* Leads <main> on "Tất cả" (controllers/tabs.js hides it on other tabs). */
+.view-switch { max-width: 280px; margin: 18px auto 0; }
+
+/* ---------- CALENDAR ---------- */
+/* Minutes become pixels through --ppm. Nothing on .cal or above it may clip
+   overflow: the day row would stop sticking under the tab bar. */
+.cal {
+  --ppm: 1px;
+  --gutter: 38px;
+  margin-top: 18px;
+  padding: 0 12px 12px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: var(--shadow-md);
+}
+
+/* Heading row and grid share one column template, so days line up. Many
+   days narrow the columns instead of scrolling sideways. */
+.cal-head,
+.cal-body {
+  display: grid;
+  grid-template-columns: var(--gutter) repeat(var(--days), minmax(0, 1fr));
+  column-gap: 4px;
+}
+
+/* --tabbar-h is measured by controllers/calendar.js. */
+.cal-head {
+  position: sticky;
+  top: var(--tabbar-h, 78px);
+  z-index: 5;
+  margin: 0 -12px;
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--line);
+  border-radius: 14px 14px 0 0;
+  background: var(--card);
+}
+
+.cal-day {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 44px;
+  padding: 4px 2px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  font: inherit;
+  line-height: 1.25;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cal-day-name,
+.cal-day-date {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cal-day-name { font-size: 13px; font-weight: 700; color: var(--primary); }
+.cal-day-date { font-size: 11px; font-weight: 500; color: var(--text-sub); }
+
+/* Today: the same lime dot as the day tab. */
+.cal-day[data-today]::after {
+  content: "";
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  margin-left: -3px;
+  border-radius: 50%;
+  background: var(--live);
+}
+
+.cal-day:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+/* Room above and below so the first and last hour labels are not cut. */
+.cal-body { padding: 10px 0 8px; }
+
+.cal-hours,
+.cal-col {
+  position: relative;
+  height: calc(var(--span) * var(--ppm));
+}
+
+.cal-hour {
+  position: absolute;
+  top: calc(var(--top) * var(--ppm));
+  right: 4px;
+  transform: translateY(-50%);
+  font-size: 11px;
+  line-height: 1;
+  color: var(--text-sub);
+  font-variant-numeric: tabular-nums;
+}
+
+/* A hairline every hour, level with the hour labels; the border closes the
+   last hour. */
+.cal-col {
+  border-bottom: 1px solid var(--line);
+  background: repeating-linear-gradient(to bottom, var(--line) 0 1px, transparent 1px calc(60 * var(--ppm)));
+}
+
+/* ---------- BLOCKS ---------- */
+.cal-block {
+  position: absolute;
+  top: calc(var(--top) * var(--ppm));
+  left: calc(100% * var(--lane) / var(--lanes));
+  width: calc(100% / var(--lanes) - 2px);
+  height: calc(var(--height) * var(--ppm) - 2px);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 1px;
+  min-width: 0;
+  overflow: hidden;
+  padding: 3px 5px 3px 6px;
+  border: 0;
+  border-left: 3px solid var(--accent);
+  border-radius: 8px;
+  background: var(--accent-soft);
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: box-shadow .18s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cal-time {
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 14px;
+  color: var(--text-sub);
+  font-variant-numeric: tabular-nums;
+}
+
+/* As many name lines as the block has room for (--lines, views/calendar.js). */
+.cal-name {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: var(--lines);
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 16px;
+  overflow-wrap: anywhere;
+}
+
+.cal-block.is-short .cal-time { display: none; }
+
+/* Open slots: dashed like the empty card. */
+.cal-block.is-empty { border: 1px dashed #c3cfc7; background: #f7faf8; }
+.cal-block.is-empty .cal-name { color: var(--empty-ink); font-weight: 600; }
+
+.cal-block:focus-visible { z-index: 3; outline: 2px solid var(--primary); outline-offset: 2px; }
+
+@media (hover: hover) {
+  .cal-block:hover { box-shadow: var(--shadow-md); }
+  .cal-day:hover { background: var(--accent-soft); }
+}
+
+/* ---------- LIVE AND PAST ---------- */
+/* Same colours as the time chip in the list (timeline.css). */
+.cal-block.is-now { background: var(--live); border-left-color: var(--live-strong); }
+.cal-block.is-now .cal-time,
+.cal-block.is-now .cal-name { color: var(--live-ink); }
+
+.cal-block.is-past { background: #e4e8e5; border-left-color: #a3aba6; }
+.cal-block.is-past .cal-time,
+.cal-block.is-past .cal-name { color: #58605b; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .cal-block.is-now { animation: live-chip 1.6s ease-out infinite; }
+}
+
+/* The current time, in today's column only. */
+.cal-now {
+  position: absolute;
+  top: calc(var(--top) * var(--ppm));
+  left: 0;
+  right: 0;
+  z-index: 2;
+  height: 2px;
+  margin-top: -1px;
+  background: var(--live-strong);
+  pointer-events: none;
+}
+
+.cal-now::before {
+  content: "";
+  position: absolute;
+  top: -3px;
+  left: -4px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--live);
+  box-shadow: 0 0 0 1px var(--live-strong);
+}
+
+@media (min-width: 761px) {
+  .cal { --ppm: 1.2px; --gutter: 48px; padding: 0 20px 20px; border-radius: var(--radius); }
+  .cal-head { margin: 0 -20px; padding: 8px 20px; border-radius: var(--radius) var(--radius) 0 0; }
+  .cal-name { font-size: 13px; line-height: 17px; }
+}
