@@ -38,7 +38,6 @@ const ledgerOf = (expenses = EXPENSES, contributions = CONTRIBUTIONS, now = DURI
 const withRows = (...rows) => ledgerOf([EXPENSES, ...rows].join('\n'));
 const balanceSum = (ledger) => ledger.people.reduce((sum, person) => sum + person.balance, 0);
 
-
 test('shares split whole dong and always add up', () => {
   assert.deepEqual(splitShares(100000, 3), [33334, 33333, 33333]);
   assert.deepEqual(splitShares(100001, 4), [25001, 25000, 25000, 25000]);
