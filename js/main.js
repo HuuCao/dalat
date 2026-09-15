@@ -81,7 +81,10 @@ async function start() {
       switcher: view.calendar.switcher,
       storage: safeStorage(),
     });
-    startStatus({ trip, root: view.main, countdown: view.countdown, tabs, clock, hint: view.hint });
+    startStatus({
+      trip, root: view.main, countdown: view.countdown, tabs, clock, hint: view.hint,
+      calendar: view.calendar, calModel: view.calModel,
+    });
     // The fund never takes the schedule down with it.
     if (view.fund) {
       try {

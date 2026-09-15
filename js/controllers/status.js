@@ -1,6 +1,7 @@
 import { h } from '../lib/dom.js';
 import { getStatus, describeStatus, followAction } from '../model/status.js';
 import { localDateOf } from '../lib/time.js';
+import { nowMark } from '../model/calendar.js';
 
 const FAST_TICK_MS = 1000; // the seconds tile is on screen
 const SLOW_TICK_MS = 15_000;
@@ -9,7 +10,7 @@ const SCROLL_DELAY_MS = 400; // let the opened panel lay out first
 // viewer is busy.
 const INPUT_EVENTS = ['pointerdown', 'touchstart', 'wheel', 'keydown'];
 
-export function startStatus({ trip, root, countdown, tabs, clock, hint }) {
+export function startStatus({ trip, root, countdown, tabs, clock, hint, calendar, calModel }) {
   const elements = new Map([...root.querySelectorAll('.item[data-id]')].map((el) => [el.dataset.id, el]));
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   let firstTick = true;
@@ -39,7 +40,9 @@ export function startStatus({ trip, root, countdown, tabs, clock, hint }) {
     const now = clock();
     const status = getStatus(trip, now);
     const today = localDateOf(now, trip.timezone);
-    tabs.markToday(trip.days.find((day) => day.date === today)?.id ?? null);
+    const todayId = trip.days.find((day) => day.date === today)?.id ?? null;
+    const nextId = status.current?.id ?? null;
+    tabs.markToday(todayId);
 
     for (const [id, el] of elements) {
       const live = status.current?.id === id;
@@ -48,13 +51,16 @@ export function startStatus({ trip, root, countdown, tabs, clock, hint }) {
       el.classList.toggle('is-past', past);
       setStateTag(el, live ? 'now' : past ? 'past' : null);
     }
+    calendar.update({ currentId: nextId, pastIds: status.pastIds, todayId, mark: nowMark(calModel, now, trip.timezone) });
     countdown.update(describeStatus(trip, status), status.phase);
 
-    // When a slot starts: follow it, or offer it if the viewer is busy.
-    const nextId = status.current?.id ?? null;
+    // When a slot starts: follow it, or offer it if the viewer is busy. The
+    // calendar lights the new slot up itself, so a viewer on it stays put.
     if (firstTick) {
       firstTick = false;
       jumpToLive(status);
+    } else if (!calendar.panel.hidden) {
+      dismiss();
     } else {
       const action = followAction({ previousId: currentId, currentId: nextId, idleMs: Date.now() - lastInput });
       if (action === 'move') moveTo(status.current);
