@@ -47,8 +47,7 @@ function mount(app, trip, clock) {
   const calModel = buildCalendar(trip);
   const calendar = createCalendar(calModel);
   const panels = [...trip.days.map((day) => renderDay(day, { fund: Boolean(fund) })), calendar.panel, fund?.panel].filter(Boolean);
-  // The list/calendar switch leads the content it switches.
-  const main = h('main', { class: fund?.fab ? 'wrap has-fab' : 'wrap' }, calendar.switcher, panels, renderFooter(trip.footer));
+  const main = h('main', { class: fund?.fab ? 'wrap has-fab' : 'wrap' }, panels, renderFooter(trip.footer));
   // Fixed-position pieces live outside <main>: an animated ancestor would
   // break position: fixed.
   const hint = createNowHint();
@@ -79,7 +78,6 @@ async function start() {
         shown.forEach((panel) => reveal.replay(panel));
         if (shown.includes(view.calendar.panel)) view.calendar.scrollToNow();
       },
-      switcher: view.calendar.switcher,
       storage: safeStorage(),
     });
     const status = startStatus({

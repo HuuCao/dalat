@@ -69,16 +69,17 @@ Trả `{ dayId, top }` hoặc `null`.
 
 ## 5. Giao diện
 
-### 5.1. Công tắc `Danh sách | 📅 Lịch`
+### 5.1. Chế độ xem trong tab `Tất cả`
 
 ```
-            ( Danh sách | 📅 Lịch )
+[ Tất cả     ][ Ngày 1  ][ Ngày 2  ][ Ngày 3  ][ 💰 Quỹ ]
+[ ☰ Danh sách][ T6 16/10 ][ T7 17/10 ][ CN 18/10 ]
 ```
 
-- Con đầu tiên của `<main>`, trước các panel. Chỉ hiện khi tab `Tất cả` được chọn.
-- DOM: `div.switch.view-switch[role=group][aria-label="Cách xem"]` > hai `button.switch-btn[data-view][aria-pressed]`, `data-view` là `list` / `calendar`.
-- Style dùng chung: chuyển `.book-tabs` / `.book-tab` từ `css/fund.css` sang `css/base.css` thành `.switch` / `.switch-btn` (giữ nguyên giao diện; cột dùng `grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr)` thay `repeat(2, …)`). `views/fund.js` đổi class thành `switch books-switch`; `margin-bottom: 12px` ở lại `fund.css` dưới `.books-switch`.
-- `.view-switch`: viên nhỏ sát phải — `width: max-content; margin: 10px 0 -8px auto`, bo tròn, cao 32px (nút 26px, chữ 12px), nhãn `☰ Danh sách` / `📅 Lịch`. Vùng chạm vẫn 44px nhờ `::before` giãn mỗi nút 9px trên dưới.
+- Không có hàng công tắc riêng. Tab `Tất cả` có dòng thứ hai `span.tab-date.tab-view` > `span.tab-view-icon` + `span.tab-view-word` ghi chế độ đang xem: `☰ Danh sách` / `📅 Lịch` (`VIEW_TEXT` trong `views/tabs.js`). Dưới 761px chỉ hiện icon (chữ không vừa ô tab 52–58px), từ 761px hiện cả icon và chữ; `aria-label` `Tất cả, dạng danh sách. Bấm lần nữa để xem lịch` / `Tất cả, dạng lịch. Bấm lần nữa để xem danh sách`.
+- Bấm `Tất cả` khi đang ở tab khác → mở `Tất cả` với chế độ đã nhớ. Bấm `Tất cả` khi nó đang mở (chuột, chạm, Enter/Space) → đổi chế độ. Phím mũi tên chỉ chọn tab, không đổi chế độ.
+
+- Style dùng chung (vẫn giữ cho tab Quỹ): chuyển `.book-tabs` / `.book-tab` từ `css/fund.css` sang `css/base.css` thành `.switch` / `.switch-btn` (giữ nguyên giao diện; cột dùng `grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr)` thay `repeat(2, …)`). `views/fund.js` đổi class thành `switch books-switch`; `margin-bottom: 12px` ở lại `fund.css` dưới `.books-switch`.
 
 ### 5.2. Panel lịch
 
@@ -210,7 +211,7 @@ const calendar = createCalendar(calModel);
 | `js/views/tabs.js` | `CALENDAR_PANEL`; `aria-controls` của `Tất cả` |
 | `js/views/day.js` | `.item` thêm `tabindex="-1"` |
 | `js/views/fund.js` | class `switch books-switch` / `switch-btn` |
-| `js/controllers/tabs.js` | `panelShown`, `readView`, `setView`, `view()`, ẩn/hiện công tắc |
+| `js/controllers/tabs.js` | `panelShown`, `readView`, `setView`, `view()`, bấm lại `Tất cả` để đổi chế độ, dòng chữ chế độ |
 | `js/controllers/status.js` | gọi `calendar.update`; bỏ qua follow khi đang xem lịch; trả `show`; `flash` + focus |
 | `js/main.js` | dựng và nối lịch |
 | `css/calendar.css` | **mới** — công tắc xem, panel, khối, trạng thái, vạch now |
@@ -257,7 +258,7 @@ Chrome headless qua CDP, 360 / 390 / 430 / 1440px, bật và tắt `prefers-redu
 5. Bấm khối → tab đúng ngày, thẻ giữa màn hình, nháy, được focus. Quay `Tất cả` → vẫn Lịch. Tải lại → vẫn Lịch. `localStorage` bị chặn → Danh sách, không lỗi console.
 6. Đang ở Lịch, để yên 30 giây, khung mới bắt đầu → không bị chuyển tab, không hiện nút `📍 Đang diễn ra`.
 7. Bật Lịch lúc `?now=2026-10-16T17:00` → vạch now vào giữa màn hình.
-8. Bàn phím: Tab tới công tắc và khối, Enter hoạt động; `←` `→` trên thanh tab không đổi.
+8. Bàn phím: Enter trên tab `Tất cả` đang mở đổi chế độ; Tab tới khối, Enter hoạt động; `←` `→` trên thanh tab chỉ chọn tab, không đổi chế độ.
 9. Giảm chuyển động → khối lime không nhấp nháy; thẻ nhảy tới có viền tĩnh.
 10. Thêm ngày 4 và 7 ngày vào data → cột hẹp lại, không cuộn ngang, icon vẫn thấy.
 11. Tab Quỹ: công tắc `Sổ chi | Góp quỹ` giống hệt trước.

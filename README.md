@@ -51,7 +51,7 @@ Toàn bộ nội dung nằm trong một file dữ liệu `data/trip.json`. Trang
 - Chọn tab hiện đúng ngày đó, `Tất cả` hiện toàn bộ; mỗi lần đổi tab, ngày vừa mở mờ dần vào và các khung giờ bay vào lại. Đang cuộn sâu thì ngày được chọn tự đưa lên ngay dưới thanh tab.
 - Điều khiển bằng bàn phím: `←` `→` chuyển tab, `Home` / `End` về tab đầu / cuối.
 - Nhiều ngày không đủ chỗ thì hàng tab vuốt ngang được, tab vừa chọn tự cuộn vào tầm nhìn.
-- Tab `Tất cả` có công tắc `Danh sách | 📅 Lịch` ngay trên nội dung — xem [Lịch biểu](#11-lịch-biểu).
+- Tab `Tất cả` ghi chế độ đang xem ở dòng dưới (`☰ Danh sách` / `📅 Lịch`, điện thoại chỉ hiện icon); đang ở `Tất cả` mà bấm lại thì đổi chế độ — xem [Lịch biểu](#11-lịch-biểu).
 
 ### 3. Lịch trình từng ngày
 
@@ -194,7 +194,7 @@ Nhóm đóng quỹ chung; mọi khoản chi được ghi qua Google Form, trang 
 
 Cả chuyến đi trên một lưới, như lịch tuần: mỗi cột một ngày, trục dọc là giờ.
 
-- **Bật:** tab `Tất cả` → công tắc `📅 Lịch`. Trang nhớ lựa chọn cho lần mở sau; trình duyệt chặn lưu dữ liệu thì mở lại vẫn là `Danh sách`.
+- **Bật:** mở tab `Tất cả` rồi bấm lại vào nó — dòng dưới chữ `Tất cả` đổi từ `☰ Danh sách` sang `📅 Lịch`; bấm lần nữa để về danh sách. Trang nhớ lựa chọn cho lần mở sau; trình duyệt chặn lưu dữ liệu thì mở lại vẫn là `Danh sách`.
 - **Khung giờ tự tính:** từ giờ tròn trước khung sớm nhất tới giờ tròn sau khung trễ nhất của cả chuyến (`07:00 – 22:00`), vạch mảnh mỗi giờ.
 - **Mỗi khung là một khối** đặt đúng giờ, cao đúng thời lượng — khoảng trống giữa các khung thấy ngay. Khối ghi giờ bắt đầu và icon + tên; tên dài xuống dòng khi khối đủ cao, hết chỗ thì `…`. Khung dưới 40 phút chỉ ghi tên. Khung trống viền nét đứt.
 - **Hai khung chồng giờ** trong một ngày thì chia đôi bề ngang, không đè nhau.

@@ -65,6 +65,14 @@
 
 .tab-date { font-size: 11px; font-weight: 500; opacity: .85; }
 
+/* "Tất cả" names its view on that line: the icon alone on phones, where the
+   word does not fit, icon and word from 761px. The tab's label reads it out. */
+.tab-view-word { display: none; margin-left: 3px; }
+
+@media (min-width: 761px) {
+  .tab-view-word { display: inline; }
+}
+
 /* Today: a lime dot under the label. */
 .tab[data-today]::after {
   content: "";

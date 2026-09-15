@@ -1,32 +1,6 @@
-/* ---------- VIEW SWITCH ---------- */
-/* Leads <main> on "Tất cả" (controllers/tabs.js hides it on other tabs). A
-   small pill on the right: the days below matter more than the switch. The
-   negative bottom margin pulls the first panel up under it. */
-.view-switch {
-  width: max-content;
-  margin: 10px 0 -8px auto;
-  padding: 3px;
-  border-radius: 99px;
-}
-
-/* 32px to see, 44px to tap: ::before stretches each button 9px up and down.
-   Overflow stays visible so the stretch is not clipped. */
-.view-switch .switch-btn {
-  position: relative;
-  min-height: 26px;
-  padding: 0 10px;
-  overflow: visible;
-  border-radius: 99px;
-  font-size: 12px;
-}
-
-.view-switch .switch-btn::before {
-  content: "";
-  position: absolute;
-  inset: -9px 0;
-}
-
 /* ---------- CALENDAR ---------- */
+/* Shown instead of the day list when "Tất cả" is tapped again (the tab's
+   second line names the view, controllers/tabs.js). */
 /* Minutes become pixels through --ppm. Nothing on .cal or above it may clip
    overflow: the day row would stop sticking under the tab bar. */
 .cal {

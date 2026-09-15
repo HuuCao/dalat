@@ -41,7 +41,7 @@ main { padding-bottom: 48px; }
   pointer-events: none;
 }
 
-/* Options side by side, one pressed: the fund's books, list or calendar. */
+/* Options side by side, one pressed: the fund's books. */
 .switch {
   display: grid;
   grid-auto-flow: column;

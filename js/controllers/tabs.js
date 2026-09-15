@@ -1,4 +1,4 @@
-import { ALL_TAB, FUND_TAB, CALENDAR_PANEL, LIST_VIEW, CALENDAR_VIEW } from '../views/tabs.js';
+import { ALL_TAB, FUND_TAB, CALENDAR_PANEL, LIST_VIEW, CALENDAR_VIEW, VIEW_TEXT } from '../views/tabs.js';
 
 const ARROW_STEPS = { ArrowLeft: -1, ArrowRight: 1 };
 const GAP_BELOW_TABBAR = 12;
@@ -25,16 +25,18 @@ function saveView(storage, view) {
   try {
     storage?.setItem(VIEW_KEY, view);
   } catch {
-    // Not remembered; the switch still works for this visit.
+    // Not remembered; the view still switches for this visit.
   }
 }
 
 // onChange(shownPanels) runs after every tab or view the user picks, so the
 // shown days can play their entrance again.
-export function createTabs(tablist, panels, { onChange = () => {}, switcher = null, storage = null } = {}) {
+export function createTabs(tablist, panels, { onChange = () => {}, storage = null } = {}) {
   const tabs = [...tablist.querySelectorAll('[role="tab"]')];
   const tabbar = tablist.closest('.tabbar');
-  const viewButtons = switcher ? [...switcher.querySelectorAll('[data-view]')] : [];
+  const allTab = tabs.find((tab) => tab.dataset.tab === ALL_TAB);
+  const viewIcon = allTab?.querySelector('.tab-view-icon');
+  const viewWord = allTab?.querySelector('.tab-view-word');
   let view = readView(storage);
 
   function select(id, { focus = false, user = false } = {}) {
@@ -49,10 +51,11 @@ export function createTabs(tablist, panels, { onChange = () => {}, switcher = nu
     for (const panel of panels) {
       panel.hidden = !panelShown(panel.dataset.day, activeId, view);
     }
-    // The list/calendar switch belongs to "Tất cả" only.
-    if (switcher) switcher.hidden = activeId !== ALL_TAB;
-    for (const button of viewButtons) {
-      button.setAttribute('aria-pressed', String(button.dataset.view === view));
+    // "Tất cả" names its view on the second line.
+    if (viewIcon && viewWord) {
+      viewIcon.textContent = VIEW_TEXT[view].icon;
+      viewWord.textContent = VIEW_TEXT[view].word;
+      allTab.setAttribute('aria-label', VIEW_TEXT[view].label);
     }
 
     if (focus) active.focus();
@@ -72,11 +75,6 @@ export function createTabs(tablist, panels, { onChange = () => {}, switcher = nu
     select(ALL_TAB, { user: true });
   }
 
-  switcher?.addEventListener('click', (event) => {
-    const button = event.target.closest('[data-view]');
-    if (button) setView(button.dataset.view);
-  });
-
   // Scrolled past the start of the chosen day? Jump back so it begins right
   // under the sticky tab bar and its entrance plays on screen.
   function bringIntoView(panel) {
@@ -85,9 +83,16 @@ export function createTabs(tablist, panels, { onChange = () => {}, switcher = nu
     if (window.scrollY > top) window.scrollTo({ top, behavior: 'instant' });
   }
 
+  // Tapping "Tất cả" while it is already open switches between the list and
+  // the calendar; any other tap just opens the tab.
   tablist.addEventListener('click', (event) => {
     const tab = event.target.closest('[role="tab"]');
-    if (tab) select(tab.dataset.tab, { user: true });
+    if (!tab) return;
+    if (tab === allTab && tab.getAttribute('aria-selected') === 'true') {
+      setView(view === CALENDAR_VIEW ? LIST_VIEW : CALENDAR_VIEW);
+    } else {
+      select(tab.dataset.tab, { user: true });
+    }
   });
 
   tablist.addEventListener('keydown', (event) => {

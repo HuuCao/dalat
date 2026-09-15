@@ -1,5 +1,5 @@
 import { h } from '../lib/dom.js';
-import { ALL_TAB, CALENDAR_PANEL, LIST_VIEW, CALENDAR_VIEW } from './tabs.js';
+import { ALL_TAB, CALENDAR_PANEL } from './tabs.js';
 
 // Line budget of a block, in px at 1px per minute (the phone scale): the
 // start time takes TIME_ROOM, each name line NAME_LINE. Shorter blocks than
@@ -13,10 +13,6 @@ const STATE_TEXT = { now: ', đang diễn ra', past: ', đã qua' };
 // The whole trip as a week grid inside "Tất cả". Built once; update() only
 // flips classes and moves the now line.
 export function createCalendar(model) {
-  const switcher = h('div', { class: 'switch view-switch', role: 'group', 'aria-label': 'Cách xem' },
-    viewButton(LIST_VIEW, '☰ Danh sách'),
-    viewButton(CALENDAR_VIEW, '📅 Lịch'));
-
   const heads = new Map();
   const columns = new Map();
   const blocks = new Map();
@@ -94,11 +90,7 @@ export function createCalendar(model) {
     nowLine.scrollIntoView({ block: 'center', behavior: reduce ? 'instant' : 'smooth' });
   }
 
-  return { panel, switcher, update, scrollToNow };
-}
-
-function viewButton(view, text) {
-  return h('button', { class: 'switch-btn', type: 'button', 'aria-pressed': 'false', dataset: { view } }, text);
+  return { panel, update, scrollToNow };
 }
 
 function renderBlock(block, day) {
