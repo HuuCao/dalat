@@ -11,7 +11,7 @@ const FLASH_MS = 1200; // two .6s rings (timeline.css)
 // viewer is busy.
 const INPUT_EVENTS = ['pointerdown', 'touchstart', 'wheel', 'keydown'];
 
-export function startStatus({ trip, root, countdown, tabs, clock, hint, calendar, calModel }) {
+export function startStatus({ trip, root, countdown, tabs, clock, hint, calendar, calModel, reveal }) {
   const elements = new Map([...root.querySelectorAll('.item[data-id]')].map((el) => [el.dataset.id, el]));
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   let firstTick = true;
@@ -101,6 +101,9 @@ export function startStatus({ trip, root, countdown, tabs, clock, hint, calendar
   function flashItem(el) {
     root.querySelector('.item.is-flash')?.classList.remove('is-flash');
     clearTimeout(flashTimer);
+    // A slot picked on the calendar may never have scrolled into view: settle
+    // its entrance now so the first ring does not play while it is invisible.
+    if (!el.classList.contains('in')) reveal.settle(el);
     void el.offsetWidth; // restart the rings when the same slot is picked again
     el.classList.add('is-flash');
     el.focus({ preventScroll: true });

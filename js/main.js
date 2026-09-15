@@ -84,7 +84,7 @@ async function start() {
     });
     const status = startStatus({
       trip, root: view.main, countdown: view.countdown, tabs, clock, hint: view.hint,
-      calendar: view.calendar, calModel: view.calModel,
+      calendar: view.calendar, calModel: view.calModel, reveal,
     });
     startCalendar({ view: view.calendar, tabs, show: status.show, tabbar: view.tabbar });
     // The fund never takes the schedule down with it.

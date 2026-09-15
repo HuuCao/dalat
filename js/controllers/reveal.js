@@ -12,7 +12,7 @@ export function startReveal(root) {
 
   if (!('IntersectionObserver' in window)) {
     for (const el of targets) el.classList.add('in');
-    return { replay() {} };
+    return { replay() {}, settle() {} };
   }
 
   // Entries arriving in the same callback cascade; one arriving alone while
@@ -42,6 +42,12 @@ export function startReveal(root) {
       const els = [...scope.querySelectorAll(TARGETS)];
       for (const el of els) el.classList.remove('in');
       watch(els);
+    },
+    // A slot picked on the calendar must be visible for its flash; see
+    // controllers/status.js. Drop it out of observation without the entrance.
+    settle(el) {
+      observer.unobserve(el);
+      el.classList.remove('reveal');
     },
   };
 }

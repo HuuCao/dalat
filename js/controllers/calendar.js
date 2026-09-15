@@ -9,7 +9,7 @@ export function startCalendar({ view, tabs, show, tabbar }) {
       return;
     }
     const day = event.target.closest('.cal-day');
-    if (day) tabs.select(day.dataset.dayId, { user: true });
+    if (day) tabs.select(day.dataset.dayId, { user: true, focus: true });
   });
 
   const measure = () => view.panel.style.setProperty('--tabbar-h', `${tabbar.offsetHeight}px`);

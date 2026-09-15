@@ -12,6 +12,7 @@ test('"Tất cả" lists the days or shows the calendar alone; other tabs show t
   assert.deepEqual(shownKeys('day-2', LIST_VIEW), ['day-2']);
   assert.deepEqual(shownKeys('day-2', CALENDAR_VIEW), ['day-2']);
   assert.deepEqual(shownKeys(FUND_TAB, CALENDAR_VIEW), [FUND_TAB]);
+  assert.deepEqual(shownKeys(FUND_TAB, LIST_VIEW), [FUND_TAB]);
 });
 
 const storageWith = (value) => ({ getItem: (key) => (key === 'dalat:schedule-view' ? value : null) });

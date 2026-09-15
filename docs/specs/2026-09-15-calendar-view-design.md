@@ -113,13 +113,13 @@ section.panel.cal-panel#panel-calendar [role=tabpanel][aria-labelledby=tab-all][
 - **Thẻ:** nền `--card`, viền `--line`, bo 14px, padding 12px, bóng `--shadow-md`, `margin-top: 18px` — giống `.day`. **Không** dùng `overflow: hidden`/`clip` trên `.cal` hay tổ tiên (làm hỏng sticky).
 - **Tỷ lệ:** `--ppm: 1px` (mobile) → cao 900px; ≥ 761px `--ppm: 1.2px`, padding 20px, bo `--radius`.
 - **Lưới cột:** `.cal-head` và `.cal-body` cùng `grid-template-columns: 38px repeat(var(--days), minmax(0, 1fr))`, gap 4px; ≥ 761px cột giờ 48px. Nhiều ngày thì cột hẹp lại, không cuộn ngang.
-- **Vạch giờ:** mỗi `.cal-col` nền `repeating-linear-gradient` 1px `--line` mỗi `60 × --ppm`. `.cal-body` padding trên/dưới 8px để nhãn `07:00` / `22:00` không bị cắt. `.cal-hour` 11px `--text-sub`, `tabular-nums`, căn giữa theo vạch (`translateY(-50%)`).
+- **Vạch giờ:** mỗi `.cal-col` nền `repeating-linear-gradient` 1px `--line` mỗi `60 × --ppm`. `.cal-body` padding trên 10px, dưới 8px để nhãn `07:00` / `22:00` không bị cắt. `.cal-hour` 11px `--text-sub`, `tabular-nums`, căn giữa theo vạch (`translateY(-50%)`).
 - **Hàng tiêu đề:** `position: sticky; top: var(--tabbar-h, 78px); z-index: 5`, nền `--card`, viền dưới `--line`. `.cal-day-name` 13px đậm `--primary`, `.cal-day-date` 11px `--text-sub`; tối thiểu 44px cao. `[data-today]` → chấm lime 6px dưới chữ như `.tab[data-today]`. `aria-label`: `Mở Ngày 1, Th 6, 16/10`.
 
 ### 5.3. Khối
 
 - Vị trí: `position: absolute; top: calc(var(--top) * var(--ppm)); height: calc(var(--height) * var(--ppm) - 2px); left: calc(100% * var(--lane) / var(--lanes)); width: calc(100% / var(--lanes) - 2px)`.
-- Kiểu: nền `--accent-soft`, viền trái 3px `--accent`, bo 8px, padding 3px 6px, chữ căn trái, `font: inherit`.
+- Kiểu: nền `--accent-soft`, viền trái 3px `--accent`, bo 8px, padding 3px 5px 3px 6px, chữ căn trái, `font: inherit`.
 - `.cal-time`: giờ bắt đầu, 11px 600 `--text-sub`, `tabular-nums`.
 - `.cal-name`: `icon + ' ' + name`, 12px 700 `--text`, line-height 16px, `-webkit-line-clamp: var(--lines)`.
 - `--lines` (view tính theo tỷ lệ mobile): `max(1, floor((height − 22) / 16))`.
@@ -183,6 +183,7 @@ Vạch now đang hiện → `scrollIntoView({ block: 'center', behavior })`, `be
    - `prefers-reduced-motion: no-preference` → `.item.is-flash .card { animation: flash .6s ease-out 2 }`.
    - Giảm chuyển động → `.item.is-flash .card { box-shadow: 0 0 0 3px rgba(var(--accent-rgb), .45) }`.
    - `keyframes.css`: `@keyframes flash { 0% { box-shadow: 0 0 0 0 rgba(var(--accent-rgb), .6) } 100% { box-shadow: 0 0 0 8px rgba(var(--accent-rgb), 0) } }`.
+- Thẻ chưa hiện (còn `.reveal`, chưa `.in`) → `reveal.settle(el)` bỏ hiệu ứng vào cho thẻ đó trước khi nháy, để vòng nháy đầu không chạy khi thẻ còn ẩn.
 
 ## 7. Nối vào trang (`main.js`)
 
@@ -195,7 +196,8 @@ const calendar = createCalendar(calModel);
 - `startReveal` không đổi: `TARGETS` là `.day-head, .item`, khối lịch không bị ẩn.
 - `startStatus` tìm `.item[data-id]`, không gặp `.cal-block[data-id]`.
 - `createTabs(…, { onChange, switcher: calendar.switcher, storage: safeStorage() })`, với `safeStorage()` trả `window.localStorage` hoặc `null` nếu truy cập ném lỗi.
-- `startCalendar({ view: calendar, tabs, show: status.show })`.
+- `startCalendar({ view: calendar, tabs, show: status.show, tabbar })`.
+- `startStatus({ …, calendar, calModel, reveal })`.
 
 ## 8. File
 
