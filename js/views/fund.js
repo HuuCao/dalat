@@ -398,27 +398,36 @@ function renderShared(ledger, ctx) {
 
 const initialOf = (name) => Array.from(name.trim())[0]?.toLocaleUpperCase('vi') ?? '?';
 
-// One part of a result, signed the way the formula adds it up.
-function settleAmount(amount, sign) {
-  const kind = amount === 0 ? 'zero' : sign === '+' ? 'plus' : 'minus';
-  const value = amount === 0 ? '0' : `${sign === '+' ? '+' : '−'}${formatShort(amount)}`;
-  return h('td', { class: `settle-amount is-${kind}`, text: value });
+// One part of a result, coloured by how the formula counts it: added
+// (green), taken off (orange) or nothing (muted).
+function settleAmount(amount, counts) {
+  const kind = amount === 0 ? 'zero' : counts;
+  return h('td', { class: `settle-amount is-${kind}`, text: amount === 0 ? '0' : formatShort(amount) });
+}
+
+// Under the "Hoàn" column a refund is the bare amount; someone who owes the
+// fund keeps the word "Nộp", so an orange amount is never read as a refund.
+function settleResult(balance) {
+  const { tone } = describeBalance(balance);
+  if (balance > 0) return { text: formatShort(balance), tone };
+  if (balance < 0) return { text: `Nộp ${formatShort(-balance)}`, tone };
+  return { text: '0', tone: 'even' };
 }
 
 // A clean table: column labels once, one line per person — initial and
-// name, the three signed parts, and the result in colour.
+// name, the three parts, and what they get back, in colour.
 function renderSettlement(ledger) {
   const rows = ledger.people.map((person) => {
-    const result = describeBalance(person.balance);
+    const result = settleResult(person.balance);
     return h('tr', {},
       h('th', { scope: 'row' },
         h('span', { class: 'settle-person' },
           h('span', { class: 'settle-avatar', 'aria-hidden': 'true', text: initialOf(person.name) }),
           h('span', { class: 'settle-name', text: person.name }))),
-      settleAmount(person.contributed, '+'),
-      settleAmount(person.advanced, '+'),
-      settleAmount(person.share, '−'),
-      h('td', { class: `settle-result is-${result.tone ?? 'even'}`, text: result.text }));
+      settleAmount(person.contributed, 'plus'),
+      settleAmount(person.advanced, 'plus'),
+      settleAmount(person.share, 'minus'),
+      h('td', { class: `settle-result is-${result.tone}`, text: result.text }));
   });
 
   return section(ledger.done ? '🧮 Quyết toán' : '🧮 Quyết toán · tạm tính',
@@ -429,10 +438,10 @@ function renderSettlement(ledger) {
       h('table', { class: 'settle' },
         h('thead', {}, h('tr', {},
           h('th', { scope: 'col', 'aria-label': 'Thành viên' }),
-          ['Góp', 'Trả hộ', 'Chịu', 'Kết quả'].map((text) => h('th', { scope: 'col', text })))),
+          ['Góp', 'Trả hộ', 'Chịu', 'Hoàn'].map((text) => h('th', { scope: 'col', text })))),
         h('tbody', {}, rows))),
     h('p', { class: 'fund-formula' },
-      h('span', { text: 'Kết quả = Đã góp + Trả hộ − Phần chịu' }),
+      h('span', { text: 'Hoàn = Đã góp + Trả hộ − Phần chịu' }),
       h('span', { text: `Tổng = Quỹ còn ${formatShort(ledger.totals.fundLeft)}` })),
     ledger.settlement
       ? h('div', { class: 'fund-settlement' },

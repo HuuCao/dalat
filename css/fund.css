@@ -432,9 +432,10 @@ main.has-fab { padding-bottom: 88px; }
 .fund-stat.is-over .fund-stat-value { color: var(--money-over); }
 
 /* Settlement: a clean table — column labels once, one line per person,
-   hairlines only. Parts are signed the way the formula adds them up
-   (+ green, − orange, 0 muted); the result is coloured text. The table
-   scrolls in its own box if a very long amount ever overflows a phone. */
+   hairlines only. Parts carry no sign; their colour says how the formula
+   counts them (added green, taken off orange, 0 muted), and the "Hoàn"
+   column is coloured text. The table scrolls in its own box if a very long
+   amount ever overflows a phone. */
 .settle-wrap { overflow-x: auto; }
 
 .settle {
