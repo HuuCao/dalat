@@ -399,32 +399,38 @@ function renderShared(ledger, ctx) {
 const initialOf = (name) => Array.from(name.trim())[0]?.toLocaleUpperCase('vi') ?? '?';
 
 // One part of a result, signed the way the formula adds it up.
-function personPart(label, amount, sign) {
+function settleAmount(amount, sign) {
   const kind = amount === 0 ? 'zero' : sign === '+' ? 'plus' : 'minus';
   const value = amount === 0 ? '0' : `${sign === '+' ? '+' : '−'}${formatShort(amount)}`;
-  return h('div', { class: `person-part is-${kind}` }, h('dt', { text: label }), h('dd', { text: value }));
+  return h('td', { class: `settle-amount is-${kind}`, text: value });
 }
 
-// One row per person: initial, name and the result as a coloured pill, then
-// the three parts it is made of in labelled columns that line up across rows.
+// A clean table: column labels once, one line per person — initial and
+// name, the three signed parts, and the result in colour.
 function renderSettlement(ledger) {
-  const people = ledger.people.map((person) => {
+  const rows = ledger.people.map((person) => {
     const result = describeBalance(person.balance);
-    return h('li', { class: 'person' },
-      h('span', { class: 'person-avatar', 'aria-hidden': 'true', text: initialOf(person.name) }),
-      h('b', { class: 'person-name', text: person.name }),
-      h('span', { class: `person-result is-${result.tone ?? 'even'}`, text: result.text }),
-      h('dl', { class: 'person-parts' },
-        personPart('Góp', person.contributed, '+'),
-        personPart('Trả hộ', person.advanced, '+'),
-        personPart('Chịu', person.share, '−')));
+    return h('tr', {},
+      h('th', { scope: 'row' },
+        h('span', { class: 'settle-person' },
+          h('span', { class: 'settle-avatar', 'aria-hidden': 'true', text: initialOf(person.name) }),
+          h('span', { class: 'settle-name', text: person.name }))),
+      settleAmount(person.contributed, '+'),
+      settleAmount(person.advanced, '+'),
+      settleAmount(person.share, '−'),
+      h('td', { class: `settle-result is-${result.tone ?? 'even'}`, text: result.text }));
   });
 
   return section(ledger.done ? '🧮 Quyết toán' : '🧮 Quyết toán · tạm tính',
     ledger.excluded > 0
       ? h('p', { class: 'fund-warn-line', text: `⚠️ Có ${ledger.excluded} dòng cần sửa — số liệu chưa chốt` })
       : null,
-    h('ul', { class: 'people' }, people),
+    h('div', { class: 'settle-wrap' },
+      h('table', { class: 'settle' },
+        h('thead', {}, h('tr', {},
+          h('th', { scope: 'col', 'aria-label': 'Thành viên' }),
+          ['Góp', 'Trả hộ', 'Chịu', 'Kết quả'].map((text) => h('th', { scope: 'col', text })))),
+        h('tbody', {}, rows))),
     h('p', { class: 'fund-formula' },
       h('span', { text: 'Kết quả = Đã góp + Trả hộ − Phần chịu' }),
       h('span', { text: `Tổng = Quỹ còn ${formatShort(ledger.totals.fundLeft)}` })),
