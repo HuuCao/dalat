@@ -433,8 +433,8 @@ main.has-fab { padding-bottom: 88px; }
 
 /* Settlement: a clean table — column labels once, one line per person,
    hairlines only. Parts carry no sign; their colour says how the formula
-   counts them (added green, taken off orange, 0 muted), and the "Hoàn"
-   column is coloured text. The table scrolls in its own box if a very long
+   counts them (added green, taken off orange, 0 muted), and the "Hoàn/Nộp"
+   column is coloured text (refund green, owed orange). The table scrolls in its own box if a very long
    amount ever overflows a phone. */
 .settle-wrap { overflow-x: auto; }
 

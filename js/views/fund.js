@@ -405,13 +405,12 @@ function settleAmount(amount, counts) {
   return h('td', { class: `settle-amount is-${kind}`, text: amount === 0 ? '0' : formatShort(amount) });
 }
 
-// Under the "Hoàn" column a refund is the bare amount; someone who owes the
-// fund keeps the word "Nộp", so an orange amount is never read as a refund.
+// Under the "Hoàn/Nộp" column the amount is bare; its colour says which:
+// green is a refund, orange is owed to the fund, a muted 0 is even.
 function settleResult(balance) {
   const { tone } = describeBalance(balance);
-  if (balance > 0) return { text: formatShort(balance), tone };
-  if (balance < 0) return { text: `Nộp ${formatShort(-balance)}`, tone };
-  return { text: '0', tone: 'even' };
+  if (balance === 0) return { text: '0', tone: 'even' };
+  return { text: formatShort(Math.abs(balance)), tone };
 }
 
 // A clean table: column labels once, one line per person — initial and
@@ -438,10 +437,10 @@ function renderSettlement(ledger) {
       h('table', { class: 'settle' },
         h('thead', {}, h('tr', {},
           h('th', { scope: 'col', 'aria-label': 'Thành viên' }),
-          ['Góp', 'Trả hộ', 'Chịu', 'Hoàn'].map((text) => h('th', { scope: 'col', text })))),
+          ['Góp', 'Trả hộ', 'Chịu', 'Hoàn/Nộp'].map((text) => h('th', { scope: 'col', text })))),
         h('tbody', {}, rows))),
     h('p', { class: 'fund-formula' },
-      h('span', { text: 'Hoàn = Đã góp + Trả hộ − Phần chịu' }),
+      h('span', { text: 'Hoàn/Nộp = Đã góp + Trả hộ − Phần chịu' }),
       h('span', { text: `Tổng = Quỹ còn ${formatShort(ledger.totals.fundLeft)}` })),
     ledger.settlement
       ? h('div', { class: 'fund-settlement' },
