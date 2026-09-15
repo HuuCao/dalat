@@ -491,25 +491,11 @@ main.has-fab { padding-bottom: 88px; }
 .settle-result.is-over { color: var(--money-over); }
 .settle-result.is-even { color: var(--text-sub); }
 
-/* By day: the plan, what is spent, the extra part of it, and what is left
-   (green) or overspent (orange); 0 muted; the total row in bold. */
-.budget th[scope="row"] { font-size: 14px; font-weight: 700; color: var(--text); }
-.budget td { font-size: 13px; font-weight: 600; color: var(--text); }
-.budget .budget-spent { font-weight: 700; color: var(--primary); }
-.budget .budget-extra { font-weight: 700; color: var(--pay-member); }
-.budget .budget-left { font-weight: 800; color: var(--money-under); }
-.budget .budget-left.is-over { color: var(--money-over); }
-.budget .is-zero { font-weight: 500; color: var(--money-muted); }
-.budget tr.is-warn th { color: var(--pay-warn); }
-.budget tfoot tr { border-top: 2px solid var(--line); }
-.budget tfoot th[scope="row"],
-.budget tfoot td:not(.is-zero) { font-weight: 800; }
-
 /* By-day chart: horizontal bars on one shared scale. The pale track is the
    plan; the fill is what is spent (green) with its extra part as an amber
    tail, set off by a 2px surface gap. The pair passes the dataviz palette
-   checks with protan ΔE 7.6, legal because the gap, legend, direct labels
-   and table view carry identity too. */
+   checks with protan ΔE 7.6, legal because the gap, legend and direct
+   labels carry identity too. */
 .fund { --chart-spent: #1e7d4c; --chart-extra: #c07a1e; --chart-plan: #dfeae4; }
 
 .chart-legend {
@@ -697,7 +683,6 @@ main.has-fab { padding-bottom: 88px; }
   .fund-grid th,
   .fund-grid td { padding-left: 16px; }
   .settle-amount,
-  .settle-result,
-  .budget td { font-size: 14px; }
+  .settle-result { font-size: 14px; }
   .fund-table { font-size: 13.5px; }
 }

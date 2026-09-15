@@ -358,41 +358,11 @@ function renderOverview(totals) {
 
 const leftOf = ({ budget, actual }) => ({ label: budget >= actual ? 'Còn' : 'Vượt', amount: Math.abs(budget - actual) });
 
-// The numbers behind the by-day chart, as a clean table. Extra spending is
-// part of what is spent; "Còn/Vượt" is what is left (green) or overspent
-// (orange).
-function renderBudgetTable(groups, totals) {
-  const money = (amount, className) => h('td', {
-    class: amount === 0 ? `${className} is-zero` : className,
-    text: formatShort(amount),
-  });
-  const row = (group, kind = null) => {
-    const left = group.budget - group.actual;
-    let leftClass = 'budget-left';
-    if (left < 0) leftClass += ' is-over';
-    else if (left === 0) leftClass += ' is-zero';
-
-    return h('tr', kind ? { class: `is-${kind}` } : {},
-      h('th', { scope: 'row', text: group.label }),
-      money(group.budget, 'budget-plan'),
-      money(group.actual, 'budget-spent'),
-      money(group.extra, 'budget-extra'),
-      h('td', { class: leftClass, text: formatShort(Math.abs(left)) }));
-  };
-
-  return h('div', { class: 'fund-grid-wrap' },
-    h('table', { class: 'fund-grid budget' },
-      h('thead', {}, h('tr', {},
-        h('th', { scope: 'col', 'aria-label': 'Nhóm' }),
-        ['Dự kiến', 'Đã chi', 'Phát sinh', 'Còn/Vượt'].map((text) => h('th', { scope: 'col', text })))),
-      h('tbody', {}, groups.map((group) => row(group, group.warn ? 'warn' : null))),
-      h('tfoot', {}, row({ label: 'Tổng', ...totals }))));
-}
-
 // Spent against the plan per group as horizontal bars on one shared scale:
 // the pale track is the plan, the green fill what is spent and its amber
-// tail the extra part of it. The total is a line of text (its bar would
-// dwarf the groups); the numbers stay one tap away in a folded table.
+// tail the extra part of it. Each bar is labelled with spent / plan; the
+// tooltip and the bar's label add the extra and what is left. The total is
+// a line of text (its bar would dwarf the groups).
 function renderByDay(ledger) {
   const { shared, unmatched, totals } = ledger;
   const pick = (label, { budget, actual, extra }, warn = false) => ({ label, budget, actual, extra, warn });
@@ -497,8 +467,7 @@ function renderByDay(ledger) {
       h('span', { text: 'Tổng' }),
       h('span', {},
         h('b', { text: formatShort(totals.actual) }),
-        ` / ${formatShort(totals.budget)} · ${totalLeft.label.toLowerCase()} ${formatShort(totalLeft.amount)}`)),
-    details('by-day-table', 'Xem bảng số liệu', renderBudgetTable(groups, totals)));
+        ` / ${formatShort(totals.budget)} · ${totalLeft.label.toLowerCase()} ${formatShort(totalLeft.amount)}`)));
 }
 
 function renderShared(ledger, ctx) {
