@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { buildTrip } from '../js/model/trip.js';
 import { parseDate, parseTime, parseBudget, parseFlag, readPlan, mergePlan, planLinks } from '../js/model/plan.js';
-import { sheetsOf, messySheets } from './helpers/sheets.js';
+import { sheetsOf, messySheets, csvOf } from './helpers/sheets.js';
 
 const fixture = JSON.parse(readFileSync(new URL('./fixtures/trip.json', import.meta.url), 'utf8'));
 
@@ -94,6 +94,15 @@ test('bad rows are dropped with the sheet line; a bad budget keeps the row', () 
   assert.deepEqual(plan.days[3], { date: '2026-10-19', items: [], icon: '🧳', note: 'Ngày thêm' });
   assert.equal(plan.days[0].icon, '🌿');
   assert.equal(plan.shared.length, 3);
+});
+
+test('an unreadable Dự kiến on ChiChung keeps the row without a budget', () => {
+  const sheets = sheetsOf(fixture);
+  const add = (csv, rows) => [csv, csvOf(rows)].join('\n');
+  const plan = readPlan({ ...sheets, shared: add(sheets.shared, [['Nón', '', 'hai trăm', '']]) });
+  assert.deepEqual(plan.warnings, ['ChiChung dòng 5 · Dự kiến "hai trăm" không hợp lệ']);
+  assert.equal(plan.shared.length, 4);
+  assert.deepEqual(plan.shared.at(-1), { title: 'Nón' });
 });
 
 test('a tab without a required column throws', () => {
