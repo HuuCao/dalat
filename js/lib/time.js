@@ -108,3 +108,10 @@ function offsetMinutes(timezone) {
 export function localDateOf(ms, timezone) {
   return new Date(ms + offsetMinutes(timezone) * 60_000).toISOString().slice(0, 10);
 }
+
+// Minutes since the trip's midnight at an instant, whatever the viewer's
+// timezone.
+export function localMinuteOf(ms, timezone) {
+  const shifted = new Date(ms + offsetMinutes(timezone) * 60_000);
+  return shifted.getUTCHours() * 60 + shifted.getUTCMinutes();
+}

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
   isTime, isDate, isTimezone, toMinutes, toDate,
   weekdayText, dateText, dateRangeText, derivePeriod, fillTemplate,
-  shortWeekdayText, shortDateText, durationText, localDateOf,
+  shortWeekdayText, shortDateText, durationText, localDateOf, localMinuteOf,
 } from '../js/lib/time.js';
 
 test('dateRangeText shortens a shared month', () => {
@@ -95,4 +95,11 @@ test('localDateOf reads the calendar date in the trip timezone', () => {
   assert.equal(localDateOf(Date.parse('2026-10-16T16:59:00Z'), '+07:00'), '2026-10-16');
   assert.equal(localDateOf(Date.parse('2026-10-16T17:00:00Z'), '+07:00'), '2026-10-17');
   assert.equal(localDateOf(Date.parse('2026-10-17T03:00:00Z'), '-03:30'), '2026-10-16');
+});
+
+test('localMinuteOf counts minutes from midnight in the trip timezone', () => {
+  assert.equal(localMinuteOf(Date.parse('2026-10-16T12:00:00+07:00'), '+07:00'), 720);
+  assert.equal(localMinuteOf(Date.parse('2026-10-16T05:00:00Z'), '+07:00'), 720);
+  assert.equal(localMinuteOf(Date.parse('2026-10-16T17:30:00Z'), '+07:00'), 30);
+  assert.equal(localMinuteOf(Date.parse('2026-10-17T03:00:00Z'), '-03:30'), 1410);
 });
