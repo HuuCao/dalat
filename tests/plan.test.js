@@ -1,7 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { parseDate, parseTime, parseBudget, parseFlag, readPlan } from '../js/model/plan.js';
+import { buildTrip } from '../js/model/trip.js';
+import { parseDate, parseTime, parseBudget, parseFlag, readPlan, mergePlan, planLinks } from '../js/model/plan.js';
 import { sheetsOf, messySheets } from './helpers/sheets.js';
 
 const fixture = JSON.parse(readFileSync(new URL('./fixtures/trip.json', import.meta.url), 'utf8'));
@@ -86,4 +87,47 @@ test('a tab without a required column throws', () => {
   assert.throws(() => readPlan({ ...sheets, items: 'Ngày,Bắt đầu,Tên\n16/10/2026,07:00,X' }), /LichTrinh: thiếu cột "Kết thúc"/);
   assert.throws(() => readPlan({ ...sheets, days: 'Icon\n🌿' }), /Ngay: thiếu cột "Ngày"/);
   assert.throws(() => readPlan({ ...sheets, shared: '' }), /ChiChung: thiếu cột "Tên"/);
+});
+
+const LINKS = {
+  items: 'https://docs.google.com/spreadsheets/d/e/X/pub?gid=101&single=true&output=csv',
+  days: 'https://docs.google.com/spreadsheets/d/e/X/pub?gid=102&single=true&output=csv',
+  shared: 'https://docs.google.com/spreadsheets/d/e/X/pub?gid=103&single=true&output=csv',
+};
+
+test('planLinks reads the three published tab links', () => {
+  assert.equal(planLinks({}), null);
+  assert.deepEqual(planLinks({ plan: LINKS }), LINKS);
+  assert.throws(() => planLinks({ plan: 'x' }), /plan: phải là object/);
+  assert.throws(() => planLinks({ plan: { ...LINKS, days: 'https://evil.example/x.csv' } }), /plan\.days: phải là link https:\/\/docs\.google\.com\//);
+  assert.throws(() => planLinks({ plan: { items: LINKS.items } }), /plan\.days: phải là link/);
+});
+
+test('mergePlan swaps in the sheet days and shared costs', () => {
+  const plan = { days: [{ date: '2026-10-20', items: [] }], shared: [{ title: 'Vé' }] };
+  const merged = mergePlan(fixture, plan);
+  assert.equal(merged.days, plan.days);
+  assert.equal(merged.fund.shared, plan.shared);
+  assert.deepEqual(merged.fund.members, fixture.fund.members);
+  assert.equal(merged.hero, fixture.hero);
+  assert.equal(fixture.fund.shared.length, 3, 'trip.json is not mutated');
+  const { fund, ...withoutFund } = fixture;
+  assert.equal('fund' in mergePlan(withoutFund, plan), false);
+});
+
+test('round trip: the fixture through the sheets builds the same trip', () => {
+  const { days, ...config } = fixture;
+  const { shared, ...fundConfig } = fixture.fund;
+  const json = { ...config, fund: fundConfig, plan: LINKS };
+  assert.deepEqual(buildTrip(mergePlan(json, readPlan(sheetsOf(fixture)))), buildTrip(fixture));
+});
+
+test('messy sheets still build, from the kept rows only', () => {
+  const trip = buildTrip(mergePlan(fixture, readPlan(messySheets(fixture))));
+  assert.equal(trip.dayCount, 4);
+  assert.equal(trip.days[1].items[0].title, 'Dậy sớm');
+  assert.equal(trip.days[1].items[0].budget, null);
+  assert.equal(trip.days[3].countText, 'Chưa có lịch');
+  assert.ok(trip.fund.labels.includes('Day 4 · Phát sinh'));
+  assert.equal(trip.fund.labels.filter((label) => label === 'Day 1 · Hidden Land').length, 1);
 });

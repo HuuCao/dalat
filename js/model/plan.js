@@ -138,3 +138,27 @@ export function readPlan({ items, days, shared }) {
     warnings,
   };
 }
+
+const DOCS_URL = 'https://docs.google.com/';
+const TABS = ['items', 'days', 'shared'];
+
+// The published CSV links of the three tabs, or null when trip.json keeps
+// its own days. Checked before anything is fetched.
+export function planLinks(json) {
+  const { plan } = json;
+  if (plan == null) return null;
+  if (typeof plan !== 'object') throw new Error('plan: phải là object');
+  for (const tab of TABS) {
+    if (typeof plan[tab] !== 'string' || !plan[tab].startsWith(DOCS_URL)) {
+      throw new Error(`plan.${tab}: phải là link ${DOCS_URL}`);
+    }
+  }
+  return { items: plan.items, days: plan.days, shared: plan.shared };
+}
+
+// trip.json with the sheet's days and shared costs in place of its own.
+export function mergePlan(json, plan) {
+  const merged = { ...json, days: plan.days };
+  if (json.fund != null) merged.fund = { ...json.fund, shared: plan.shared };
+  return merged;
+}
