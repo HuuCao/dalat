@@ -356,39 +356,149 @@ function renderOverview(totals) {
         : stat('✅', 'Dư dự kiến', formatShort(totals.reserve))));
 }
 
-// The plan against what is spent for the shared costs, each day and in
-// total, as a table like the settlement. Extra spending is part of what is
-// spent; "Còn/Vượt" is what is left (green) or overspent (orange).
-function renderByDay(ledger) {
-  const { shared, unmatched, totals } = ledger;
+const leftOf = ({ budget, actual }) => ({ label: budget >= actual ? 'Còn' : 'Vượt', amount: Math.abs(budget - actual) });
+
+// The numbers behind the by-day chart, as a clean table. Extra spending is
+// part of what is spent; "Còn/Vượt" is what is left (green) or overspent
+// (orange).
+function renderBudgetTable(groups, totals) {
   const money = (amount, className) => h('td', {
     class: amount === 0 ? `${className} is-zero` : className,
     text: formatShort(amount),
   });
-  const row = (label, { budget, actual, extra }, kind = null) => {
-    const left = budget - actual;
+  const row = (group, kind = null) => {
+    const left = group.budget - group.actual;
     let leftClass = 'budget-left';
     if (left < 0) leftClass += ' is-over';
     else if (left === 0) leftClass += ' is-zero';
 
     return h('tr', kind ? { class: `is-${kind}` } : {},
-      h('th', { scope: 'row', text: label }),
-      money(budget, 'budget-plan'),
-      money(actual, 'budget-spent'),
-      money(extra, 'budget-extra'),
+      h('th', { scope: 'row', text: group.label }),
+      money(group.budget, 'budget-plan'),
+      money(group.actual, 'budget-spent'),
+      money(group.extra, 'budget-extra'),
       h('td', { class: leftClass, text: formatShort(Math.abs(left)) }));
   };
 
-  return section('📅 Theo ngày', h('div', { class: 'fund-grid-wrap' },
+  return h('div', { class: 'fund-grid-wrap' },
     h('table', { class: 'fund-grid budget' },
       h('thead', {}, h('tr', {},
         h('th', { scope: 'col', 'aria-label': 'Nhóm' }),
         ['Dự kiến', 'Đã chi', 'Phát sinh', 'Còn/Vượt'].map((text) => h('th', { scope: 'col', text })))),
-      h('tbody', {},
-        row('Chung', shared),
-        ledger.days.map((day) => row(day.title, day)),
-        unmatched.actual > 0 ? row('Không khớp', { budget: 0, actual: unmatched.actual, extra: 0 }, 'warn') : null),
-      h('tfoot', {}, row('Tổng', totals)))));
+      h('tbody', {}, groups.map((group) => row(group, group.warn ? 'warn' : null))),
+      h('tfoot', {}, row({ label: 'Tổng', ...totals }))));
+}
+
+// Spent against the plan per group as horizontal bars on one shared scale:
+// the pale track is the plan, the green fill what is spent and its amber
+// tail the extra part of it. The total is a line of text (its bar would
+// dwarf the groups); the numbers stay one tap away in a folded table.
+function renderByDay(ledger) {
+  const { shared, unmatched, totals } = ledger;
+  const pick = (label, { budget, actual, extra }, warn = false) => ({ label, budget, actual, extra, warn });
+  const groups = [
+    pick('Chung', shared),
+    ...ledger.days.map((day) => pick(day.title, day)),
+    ...(unmatched.actual > 0 ? [pick('Không khớp', { budget: 0, actual: unmatched.actual, extra: 0 }, true)] : []),
+  ];
+  const scale = Math.max(1, ...groups.map((group) => Math.max(group.budget, group.actual)));
+  const width = (amount) => `${(amount / scale) * 100}%`;
+  const byBar = new Map();
+
+  const rows = groups.map((group) => {
+    const planned = group.actual - group.extra;
+    const left = leftOf(group);
+    const bar = h('div', {
+      class: group.extra > 0 ? 'chart-bar has-extra' : 'chart-bar',
+      role: 'img',
+      tabindex: '0',
+      'aria-label': `${group.label}: đã chi ${formatShort(group.actual)} trên dự kiến ${formatShort(group.budget)}`
+        + `${group.extra > 0 ? `, phát sinh ${formatShort(group.extra)}` : ''}, ${left.label.toLowerCase()} ${formatShort(left.amount)}`,
+    },
+    group.budget > 0 ? h('span', { class: 'chart-track', style: { '--w': width(group.budget) } }) : null,
+    planned > 0 ? h('span', { class: 'chart-spent', style: { '--w': width(planned) } }) : null,
+    group.extra > 0 ? h('span', { class: 'chart-extra', style: { '--x': width(planned), '--w': width(group.extra) } }) : null);
+    byBar.set(bar, group);
+
+    return h('li', { class: group.warn ? 'chart-row is-warn' : 'chart-row' },
+      h('div', { class: 'chart-label' },
+        h('span', { class: 'chart-name', text: group.label }),
+        h('span', { class: 'chart-value' },
+          h('b', { text: formatShort(group.actual) }),
+          ` / ${formatShort(group.budget)}`)),
+      bar);
+  });
+
+  // One tooltip for the chart: values lead, labels follow. It enhances only —
+  // every value is also in the labels and the table.
+  const tip = h('div', { class: 'chart-tip', role: 'tooltip', hidden: true });
+  const chart = h('div', { class: 'chart-wrap' }, h('ul', { class: 'chart' }, rows), tip);
+  let hideTimer = 0;
+  const tipLine = (key, label, amount) => h('div', { class: 'chart-tip-line' },
+    h('span', { class: `chart-key is-${key}`, 'aria-hidden': 'true' }),
+    h('b', { text: formatShort(amount) }),
+    h('span', { text: label }));
+
+  function showTip(bar, clientX) {
+    const group = byBar.get(bar);
+    const left = leftOf(group);
+    clearTimeout(hideTimer);
+    tip.replaceChildren(...[
+      h('div', { class: 'chart-tip-title', text: group.label }),
+      tipLine('spent', 'đã chi', group.actual),
+      group.extra > 0 ? tipLine('extra', 'phát sinh', group.extra) : null,
+      tipLine('plan', 'dự kiến', group.budget),
+      tipLine('none', left.label.toLowerCase(), left.amount),
+    ].filter(Boolean));
+    tip.hidden = false;
+    const box = chart.getBoundingClientRect();
+    const barBox = bar.getBoundingClientRect();
+    const half = tip.offsetWidth / 2;
+    const x = Math.min(Math.max(clientX - box.left, half), box.width - half);
+    tip.style.left = `${x}px`;
+    tip.style.top = `${barBox.top - box.top}px`;
+  }
+
+  const hideTip = () => {
+    tip.hidden = true;
+  };
+
+  chart.addEventListener('pointermove', (event) => {
+    const bar = event.target.closest('.chart-bar');
+    if (bar) showTip(bar, event.clientX);
+    else if (event.pointerType === 'mouse') hideTip();
+  });
+  chart.addEventListener('pointerleave', (event) => {
+    if (event.pointerType === 'mouse') hideTip();
+  });
+  // A tap shows the numbers for a moment; there is no hover on touch.
+  chart.addEventListener('pointerdown', (event) => {
+    const bar = event.target.closest('.chart-bar');
+    if (!bar) return hideTip();
+    showTip(bar, event.clientX);
+    if (event.pointerType !== 'mouse') hideTimer = setTimeout(hideTip, 2500);
+  });
+  chart.addEventListener('focusin', (event) => {
+    const bar = event.target.closest('.chart-bar');
+    if (!bar) return;
+    const box = bar.getBoundingClientRect();
+    showTip(bar, box.left + box.width / 2);
+  });
+  chart.addEventListener('focusout', hideTip);
+
+  const totalLeft = leftOf(totals);
+  return section('📅 Theo ngày',
+    h('div', { class: 'chart-legend', 'aria-hidden': 'true' },
+      h('span', {}, h('span', { class: 'chart-key is-spent' }), 'Đã chi'),
+      h('span', {}, h('span', { class: 'chart-key is-extra' }), 'Phát sinh'),
+      h('span', {}, h('span', { class: 'chart-key is-plan' }), 'Dự kiến')),
+    chart,
+    h('p', { class: 'chart-total' },
+      h('span', { text: 'Tổng' }),
+      h('span', {},
+        h('b', { text: formatShort(totals.actual) }),
+        ` / ${formatShort(totals.budget)} · ${totalLeft.label.toLowerCase()} ${formatShort(totalLeft.amount)}`)),
+    details('by-day-table', 'Xem bảng số liệu', renderBudgetTable(groups, totals)));
 }
 
 function renderShared(ledger, ctx) {

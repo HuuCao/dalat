@@ -505,6 +505,109 @@ main.has-fab { padding-bottom: 88px; }
 .budget tfoot th[scope="row"],
 .budget tfoot td:not(.is-zero) { font-weight: 800; }
 
+/* By-day chart: horizontal bars on one shared scale. The pale track is the
+   plan; the fill is what is spent (green) with its extra part as an amber
+   tail, set off by a 2px surface gap. The pair passes the dataviz palette
+   checks with protan ΔE 7.6, legal because the gap, legend, direct labels
+   and table view carry identity too. */
+.fund { --chart-spent: #1e7d4c; --chart-extra: #c07a1e; --chart-plan: #dfeae4; }
+
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin: -2px 0 10px;
+  font-size: 12px;
+  color: var(--text-sub);
+}
+
+.chart-legend > span { display: inline-flex; align-items: center; gap: 6px; }
+
+.chart-key { flex: none; display: inline-block; width: 10px; height: 10px; border-radius: 3px; background: var(--chart-plan); }
+.chart-key.is-spent { background: var(--chart-spent); }
+.chart-key.is-extra { background: var(--chart-extra); }
+.chart-key.is-none { background: transparent; }
+
+.chart-wrap { position: relative; }
+.chart { margin: 0; padding: 0; list-style: none; }
+.chart-row + .chart-row { margin-top: 8px; }
+
+.chart-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.chart-name { font-size: 14px; font-weight: 700; color: var(--text); }
+.chart-row.is-warn .chart-name { color: var(--pay-warn); }
+.chart-value { color: var(--text-sub); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.chart-value b { color: var(--text); }
+
+/* A 24px hit area around a 10px bar; data ends rounded, baseline square. */
+.chart-bar { position: relative; height: 24px; }
+.chart-bar:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: 4px; }
+
+.chart-track,
+.chart-spent,
+.chart-extra {
+  position: absolute;
+  top: 7px;
+  left: 0;
+  width: var(--w);
+  height: 10px;
+  border-radius: 0 4px 4px 0;
+}
+
+.chart-track { background: var(--chart-plan); }
+.chart-spent { min-width: 4px; background: var(--chart-spent); }
+.chart-bar.has-extra .chart-spent { border-radius: 0; }
+
+/* The inset shadow paints the 2px surface gap at the join. */
+.chart-extra {
+  left: var(--x);
+  min-width: 6px;
+  background: var(--chart-extra);
+  box-shadow: inset 2px 0 0 var(--card);
+}
+
+/* One tooltip above the bar: values lead, labels follow, line keys. */
+.chart-tip {
+  position: absolute;
+  z-index: 6;
+  min-width: 132px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--card);
+  box-shadow: 0 0 0 1px var(--line), var(--shadow-md);
+  font-size: 12px;
+  color: var(--text-sub);
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+  transform: translate(-50%, calc(-100% - 6px));
+}
+
+.chart-tip-title { margin-bottom: 4px; font-weight: 700; color: var(--text); }
+.chart-tip-line { display: flex; align-items: center; gap: 6px; line-height: 1.5; }
+.chart-tip-line b { font-size: 13px; color: var(--text); }
+.chart-tip .chart-key { width: 10px; height: 2px; border-radius: 1px; }
+
+.chart-total {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 12px 0 4px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+  color: var(--text-sub);
+  font-variant-numeric: tabular-nums;
+}
+
+.chart-total > span:first-child { font-weight: 700; color: var(--text); }
+.chart-total b { color: var(--text); }
+
 @media (min-width: 380px) {
   .fund-grid th,
   .fund-grid td { padding-left: 8px; }
