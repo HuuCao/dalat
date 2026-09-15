@@ -3,6 +3,7 @@ import { formatShort, formatExact } from '../lib/money.js';
 import {
   describeBucket, describeEntry, describeDay, describeBalance, progressOf, formUrl, placeLabelAt,
 } from '../model/fund.js';
+import { clockText } from '../lib/time.js';
 import { FUND_TAB } from './tabs.js';
 
 const LINK = { target: '_blank', rel: 'noopener noreferrer' };
@@ -168,8 +169,6 @@ export function createFundView({ trip, clock }) {
 }
 
 // ---------- Pieces ----------
-
-const clockText = (ms) => new Date(ms).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
 
 function metaText(meta) {
   if (meta.state === 'unlinked') return 'Chưa kết nối Google Sheet';

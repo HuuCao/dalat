@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { buildTrip, countText } from '../js/model/trip.js';
 
-const raw = JSON.parse(readFileSync(new URL('../data/trip.json', import.meta.url), 'utf8'));
+const raw = JSON.parse(readFileSync(new URL('./fixtures/trip.json', import.meta.url), 'utf8'));
 const trip = buildTrip(raw);
 
 const minimalTrip = (days, hero = { title: 'Test' }) => ({ timezone: '+07:00', hero, days });

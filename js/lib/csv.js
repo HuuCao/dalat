@@ -47,3 +47,23 @@ export function assertCsv(text) {
   if (text.replace(/^\uFEFF/, '').trimStart().startsWith('<')) throw new Error('Sheet chưa publish dạng CSV');
   return text;
 }
+
+const FETCH_TIMEOUT_MS = 15_000;
+
+// A published sheet as text. Skips the browser cache; Google still caches
+// published CSV for ~5 min.
+export async function fetchCsv(url) {
+  const busted = `${url}${url.includes('?') ? '&' : '?'}_=${Date.now()}`;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  try {
+    const response = await fetch(busted, { cache: 'no-store', signal: controller.signal });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return assertCsv(await response.text());
+  } catch (error) {
+    if (error.name === 'AbortError') throw new Error('Hết thời gian tải (15s)');
+    throw error;
+  } finally {
+    clearTimeout(timer);
+  }
+}

@@ -1,4 +1,5 @@
 import { keyOf } from '../lib/text.js';
+import { readTable, parseAmount } from '../lib/table.js';
 import { formatShort, formatFull, formatDiff, formatExact } from '../lib/money.js';
 import { FUND_PAYER } from './trip.js';
 
@@ -25,31 +26,6 @@ const TIMESTAMP = /^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2}):(\d{2}))?/;
 const sum = (list, key) => list.reduce((total, entry) => total + (entry[key] ?? 0), 0);
 const newestFirst = (a, b) => b.sortKey - a.sortKey || b.line - a.line;
 const pad = (value) => value.padStart(2, '0');
-
-// Columns are found by name, so the form's questions can be reordered. Line
-// numbers match the sheet (header is line 1); blank rows are skipped.
-export function readTable(rows, tableName, columns) {
-  const header = (rows[0] ?? []).map(keyOf);
-  const positions = Object.entries(columns).map(([key, { names, required }]) => {
-    const at = header.findIndex((cell) => names.some((name) => keyOf(name) === cell));
-    if (at === -1 && required) throw new Error(`${tableName}: thiếu cột "${names[0]}"`);
-    return [key, at];
-  });
-
-  return rows.slice(1)
-    .map((cells, index) => ({ line: index + 2, cells }))
-    .filter(({ cells }) => cells.some((cell) => cell.trim() !== ''))
-    .map(({ line, cells }) => Object.fromEntries([
-      ['line', line],
-      ...positions.map(([key, at]) => [key, at === -1 ? '' : (cells[at] ?? '').trim()]),
-    ]));
-}
-
-export function parseAmount(text) {
-  const digits = String(text ?? '').replace(/\D/g, '');
-  const amount = Number(digits);
-  return digits && amount > 0 ? amount : null;
-}
 
 // Whole dong only: the leftover dong go one each to the first people, so the
 // parts always add back up to the amount.

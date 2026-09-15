@@ -1,10 +1,9 @@
-import { parseCsv, assertCsv } from '../lib/csv.js';
+import { parseCsv, fetchCsv } from '../lib/csv.js';
 import { buildLedger } from '../model/fund.js';
 
 const REFRESH_MS = 5 * 60_000;
 const STALE_MS = 60_000;
 const CACHE_KEY = 'fund-cache:v1';
-const FETCH_TIMEOUT_MS = 15_000;
 
 // Reads both sheets, rebuilds the ledger and hands it to the view. The last
 // good copy is kept on the phone, so a weak signal on the pass still shows
@@ -68,23 +67,6 @@ export function startFund({ trip, view, clock }) {
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible' && Date.now() - lastAttempt > STALE_MS) load();
   });
-}
-
-async function fetchCsv(url) {
-  // Skips the browser cache; Google still caches published CSV for ~5 min.
-  const busted = `${url}${url.includes('?') ? '&' : '?'}_=${Date.now()}`;
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
-  try {
-    const response = await fetch(busted, { cache: 'no-store', signal: controller.signal });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    return assertCsv(await response.text());
-  } catch (error) {
-    if (error.name === 'AbortError') throw new Error('Hết thời gian tải (15s)');
-    throw error;
-  } finally {
-    clearTimeout(timer);
-  }
 }
 
 function readCache() {

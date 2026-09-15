@@ -12,7 +12,7 @@ test('followAction moves to a slot that just started, or offers it while the vie
   assert.equal(followAction({ previousId: 'a', currentId: 'b', idleMs: 29_999 }), 'hint');
 });
 
-const trip = buildTrip(JSON.parse(readFileSync(new URL('../data/trip.json', import.meta.url), 'utf8')));
+const trip = buildTrip(JSON.parse(readFileSync(new URL('./fixtures/trip.json', import.meta.url), 'utf8')));
 const statusAt = (iso) => getStatus(trip, Date.parse(iso));
 const describeAt = (iso) => describeStatus(trip, statusAt(iso));
 

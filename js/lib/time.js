@@ -115,3 +115,8 @@ export function localMinuteOf(ms, timezone) {
   const shifted = new Date(ms + offsetMinutes(timezone) * 60_000);
   return shifted.getUTCHours() * 60 + shifted.getUTCMinutes();
 }
+
+// "14:05" in the viewer's own clock: when data was fetched on this phone.
+export function clockText(ms) {
+  return new Date(ms).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+}
