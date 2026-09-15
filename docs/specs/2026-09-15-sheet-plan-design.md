@@ -51,7 +51,7 @@ Cả nhóm đã quen sửa Google Sheet (ChiTieu, GopQuy). Đã cân nhắc:
 | `Icon` | không | | |
 | `Tag` | không | | |
 | `Maps` | không | | Từ khóa Google Maps |
-| `Dự kiến` | không | `280000`, `280.000`, `280,000đ` | Trống = không có dự kiến; `0` = Miễn phí |
+| `Dự kiến` | không | `280000`, `280.000`, `280.000,00`, `280.000 ₫` | Trống = không có dự kiến; `0` = Miễn phí; số lẻ khác 0 → cảnh báo |
 | `Trống` | không | `TRUE`, `x`, `có` (không phân biệt hoa thường) | Checkbox Sheet publish ra `TRUE` / `FALSE` |
 
 - Cột tìm theo tên (`keyOf`, như quỹ) → thứ tự cột, dòng tùy ý. Trang tự sắp theo ngày rồi giờ.
@@ -124,7 +124,7 @@ Dùng `readTable` (chuyển sang `js/lib/table.js`) để tìm cột; tab thiế
 Hàm thuần, test được:
 
 ```js
-decide({ cached, fresh, buildable, elapsedMs, lastReloadAt, now })
+decide({ cached, fresh, buildable, elapsedMs, lastReloadAt, canMark, now })
 // → 'none' | 'touch' | 'save' | 'reload' | 'toast'
 ```
 
@@ -140,6 +140,7 @@ decide({ cached, fresh, buildable, elapsedMs, lastReloadAt, now })
 - `elapsedMs` tính từ `openedAt` tới lúc tải xong.
 - Chặn 60s tránh lặp khi edge cache của Google trả xen kẽ bản cũ / mới. sessionStorage không đọc/ghi được → không có cách chặn lặp qua reload → dùng `toast` thay cho `reload`.
 - localStorage bị chặn → luôn đi đường "không có bản lưu", không bao giờ reload/toast.
+- `canMark` = sessionStorage đọc/ghi được; false → `toast` thay cho `reload`.
 
 ### 5.3. "Dựng được"
 
@@ -217,6 +218,7 @@ Lỗi từ trigger: Google tự email chủ script.
 2. `LichTrinh`: bỏ dòng ngày sai, giờ sai, `Kết thúc` ≤ `Bắt đầu`, thiếu tên, `Phát sinh`, trùng tên trong ngày (giữ dòng đầu).
 3. Ngày = hợp các ngày của dòng `LichTrinh` còn lại sau bước 2 và các dòng `Ngay` có ngày hợp lệ (script đọc cả cột `Ngày` của tab `Ngay`). Ngày không có khung giờ vẫn chiếm một số `N` và có nhãn `Day N · Phát sinh` — như `buildFund` của trang.
 4. Sắp ngày tăng dần → `Day N` (N từ 1). Trong ngày sắp theo `Bắt đầu` → `Day N · <Tên>`, cuối ngày `Day N · Phát sinh`.
+5. Không ngày nào còn khung giờ hợp lệ → ném `LichTrinh: không còn khung giờ hợp lệ`, không ghi Form (trang cũng từ chối bản đó).
 
 Sắp xếp phải ổn định giống trang: khung cùng giờ bắt đầu giữ thứ tự dòng trong Sheet (`Array.prototype.sort` ổn định ở cả V8 Node và Apps Script).
 
@@ -236,8 +238,8 @@ Test `tests/form-sync.test.js` giữ hai bên không lệch (mục 9.1).
 | File | Vai trò |
 |---|---|
 | `js/lib/table.js` | `readTable`, `parseAmount` chuyển từ `model/fund.js` |
-| `js/model/plan.js` | `readPlan`, parse ngày/giờ/dự kiến/checkbox, cảnh báo; `mergePlan(json, plan)` ghép raw trip |
-| `js/controllers/plan.js` | `loadPlan` (bản lưu, tải, `decide`, reload/toast); `decide` export riêng |
+| `js/model/plan.js` | `readPlan`, parse ngày/giờ/dự kiến/checkbox, cảnh báo; `mergePlan(json, plan)` ghép raw trip, `planLinks` (kiểm tra link `plan`) |
+| `js/controllers/plan.js` | `fetchPlan`, `readCopy`/`writeCopy`, `readReloadMark`/`writeReloadMark`, `decide`, `refreshPlan` (tải ngầm + reload/toast); luồng mở trang nằm trong `main.js` |
 | `js/views/plan-warnings.js` | Banner 6.1 |
 | `js/views/update-toast.js` | Toast 6.2 |
 | `scripts/apps-script/form-sync.js` | Mục 7 |
@@ -251,7 +253,6 @@ Test `tests/form-sync.test.js` giữ hai bên không lệch (mục 9.1).
 | `js/lib/csv.js` | Thêm `fetchCsv` (chuyển từ `controllers/fund.js`) |
 | `js/model/fund.js` | Import `readTable`, `parseAmount` từ `lib/table.js` |
 | `js/controllers/fund.js` | Import `fetchCsv` từ `lib/csv.js` |
-| `js/model/trip.js` | Kiểm tra `plan.items/days/shared` là link `docs.google.com` |
 | `js/main.js` | Có `plan` → luồng 5.1; mount banner, toast; footer nhận `fetchedAt` |
 | `js/views/footer.js` | Dòng `Lịch trình cập nhật HH:MM`, trả về hàm cập nhật |
 | `js/views/fund.js` · `css/fund.css` · `css/base.css` | Style cảnh báo dùng chung; style banner, toast |
