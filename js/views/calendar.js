@@ -14,7 +14,7 @@ const STATE_TEXT = { now: ', đang diễn ra', past: ', đã qua' };
 // flips classes and moves the now line.
 export function createCalendar(model) {
   const switcher = h('div', { class: 'switch view-switch', role: 'group', 'aria-label': 'Cách xem' },
-    viewButton(LIST_VIEW, 'Danh sách'),
+    viewButton(LIST_VIEW, '☰ Danh sách'),
     viewButton(CALENDAR_VIEW, '📅 Lịch'));
 
   const heads = new Map();

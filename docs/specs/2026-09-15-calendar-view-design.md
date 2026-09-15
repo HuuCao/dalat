@@ -78,7 +78,7 @@ Trả `{ dayId, top }` hoặc `null`.
 - Con đầu tiên của `<main>`, trước các panel. Chỉ hiện khi tab `Tất cả` được chọn.
 - DOM: `div.switch.view-switch[role=group][aria-label="Cách xem"]` > hai `button.switch-btn[data-view][aria-pressed]`, `data-view` là `list` / `calendar`.
 - Style dùng chung: chuyển `.book-tabs` / `.book-tab` từ `css/fund.css` sang `css/base.css` thành `.switch` / `.switch-btn` (giữ nguyên giao diện; cột dùng `grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr)` thay `repeat(2, …)`). `views/fund.js` đổi class thành `switch books-switch`; `margin-bottom: 12px` ở lại `fund.css` dưới `.books-switch`.
-- `.view-switch`: `max-width: 280px; margin: 18px auto 0`.
+- `.view-switch`: viên nhỏ sát phải — `width: max-content; margin: 10px 0 -8px auto`, bo tròn, cao 32px (nút 26px, chữ 12px), nhãn `☰ Danh sách` / `📅 Lịch`. Vùng chạm vẫn 44px nhờ `::before` giãn mỗi nút 9px trên dưới.
 
 ### 5.2. Panel lịch
 
