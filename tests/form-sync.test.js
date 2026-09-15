@@ -109,6 +109,16 @@ test('syncForm says what is missing and always releases the lock', () => {
   assert.throws(() => load({ sheets: { ...sheetsOf(fixture), items: 'Ngày,Tên\n16/10/2026,X' } }).script.syncForm(), /LichTrinh: thiếu cột "Bắt đầu"/);
 });
 
+test('the page and the script both refuse a sheet with no valid slot', () => {
+  const sheets = { ...sheetsOf(fixture), items: 'Ngày,Bắt đầu,Kết thúc,Tên\n' };
+  assert.throws(() => buildTrip(mergePlan(fixture, readPlan(sheets))), /cần ít nhất 1 khung giờ/);
+
+  const { script, log } = load({ sheets });
+  assert.throws(() => script.syncForm(), /LichTrinh: không còn khung giờ hợp lệ/);
+  assert.equal(log.set.length, 0);
+  assert.equal(log.released, 1);
+});
+
 test('setup installs one change trigger however often it runs', () => {
   const { script, triggers } = load();
   script.setup();

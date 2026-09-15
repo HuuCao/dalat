@@ -106,6 +106,9 @@ function planLabels(itemValues, dayValues, sharedValues) {
     if (date) dayAt(date);
   }
 
+  const hasSlot = [...days.values()].some((day) => day.items.length > 0);
+  if (!hasSlot) throw new Error('LichTrinh: không còn khung giờ hợp lệ');
+
   [...days.keys()].sort().forEach((date, index) => {
     const label = `Day ${index + 1}`;
     days.get(date).items.slice()
