@@ -92,6 +92,13 @@ export function fillTemplate(text, vars) {
 export function durationText(ms) {
   if (ms < 60_000) return '< 1 phút';
   const minutes = Math.ceil(ms / 60_000);
+  // A day or more away, minutes are noise: "1 ngày 9 giờ".
+  if (minutes >= 24 * 60) {
+    const totalHours = Math.ceil(ms / 3_600_000);
+    const days = Math.floor(totalHours / 24);
+    const hoursLeft = totalHours % 24;
+    return hoursLeft === 0 ? `${days} ngày` : `${days} ngày ${hoursLeft} giờ`;
+  }
   const hours = Math.floor(minutes / 60);
   const rest = minutes % 60;
   if (hours === 0) return `${rest} phút`;

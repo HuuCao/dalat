@@ -78,9 +78,9 @@ Panel tối màu nổi đè lên mép dưới banner, nằm trên thanh tab — 
 
 | Thời điểm | Nhãn | Nội dung |
 |---|---|---|
-| **Trước chuyến đi** | `Đếm ngược khởi hành` | Ô đếm ngược `ngày · giờ · phút · giây` (bỏ đơn vị 0 ở đầu, luôn giữ ít nhất 2 ô), đồng hồ cát lật cát chảy, ghi chú `Đà Lạt đang chờ · bắt đầu 07:00 · Th 6, 16/10` |
+| **Trước chuyến đi** | `Đếm ngược khởi hành` | Ô đếm ngược `ngày · giờ · phút · giây` (bỏ đơn vị 0 ở đầu, luôn giữ ít nhất 2 ô), đồng hồ cát lật cát chảy, ghi chú `Đà Lạt đang chờ · bắt đầu 07:00 · Th 6, 16/10`. Ngày đầu chưa có khung giờ thì đếm tới 00:00 ngày đó và ghi `bắt đầu Th 3, 13/10` |
 | **Đang ở một khung giờ** | `Đang diễn ra` | Tên điểm hiện tại + nút `📍 Maps`, ghi chú `Còn 15 phút · đến 12:15`, dòng `Tiếp theo 12:45 · 🐈 Trại Mèo Mướp`, tiến độ `2/16 điểm` ở góc phải, chấm xanh nhấp nháy |
-| **Giữa hai khung giờ** | `Đang di chuyển` | Tên điểm kế tiếp + nút `📍 Maps`, ghi chú `Bắt đầu 09:15 · còn 15 phút`, dòng Tiếp theo, tiến độ |
+| **Giữa hai khung giờ** (cả những ngày trống trong chuyến) | `Đang di chuyển` | Tên điểm kế tiếp + nút `📍 Maps`, ghi chú `Bắt đầu 09:15 · còn 15 phút` — khác ngày thì `Bắt đầu T6 07:00 · còn 1 ngày 9 giờ`, dòng Tiếp theo, tiến độ |
 | **Sau chuyến đi** | `Hành trình đã khép lại` | `Hẹn gặp lại Đà Lạt ✦`, ghi chú `Đã đi qua 16 điểm trong 3 ngày` |
 
 - Điểm tiếp theo ở ngày khác thì ghi thêm thứ: `Tiếp theo T7 07:00 · 🥞 Ăn sáng — Bánh căn`.

@@ -8,6 +8,7 @@ const MAPS_SEARCH_URL = 'https://www.google.com/maps/search/?api=1&query=';
 const DOCS_URL = 'https://docs.google.com/';
 const FORMS_URL = 'https://docs.google.com/forms/';
 const SHARED_GROUP = 'Chung';
+const DAY_MS = 86_400_000;
 
 // Reserved words of the expense form: the fund as a payer, and the bucket for
 // spending outside the plan that every day and the shared group get.
@@ -48,8 +49,10 @@ export function buildTrip(raw) {
     dayCount,
     nightCount,
     placeCount: items.filter((item) => !item.empty).length,
-    start: items[0].start,
-    end: items[items.length - 1].end,
+    // An empty first or last day still belongs to the trip: it then starts at
+    // that day's midnight, or ends at the midnight after it.
+    start: days[0].items[0]?.start ?? toDate(days[0].date, '00:00', raw.timezone),
+    end: days.at(-1).items.at(-1)?.end ?? new Date(toDate(days.at(-1).date, '00:00', raw.timezone).getTime() + DAY_MS),
     items,
     days,
     fund: raw.fund != null ? buildFund(raw.fund, days) : null,

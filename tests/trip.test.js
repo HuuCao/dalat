@@ -19,6 +19,16 @@ test('trip totals come from the data', () => {
   assert.equal(trip.end.toISOString(), '2026-10-18T06:00:00.000Z');
 });
 
+test('an empty first or last day widens the trip to its midnight', () => {
+  const built = buildTrip(minimalTrip([
+    { date: '2026-10-13', items: [] },
+    { date: '2026-10-16', items: [validItem] },
+    { date: '2026-10-19', items: [] },
+  ]));
+  assert.equal(built.start.toISOString(), '2026-10-12T17:00:00.000Z');
+  assert.equal(built.end.toISOString(), '2026-10-19T17:00:00.000Z');
+});
+
 test('templates are filled', () => {
   assert.equal(trip.hero.subtitle, "16 – 18/10 · 3 ngày 2 đêm — Let's go");
   assert.equal(trip.footer.title, 'Đà Lạt Trip Plan · 3 Days · ✦');
