@@ -2,6 +2,10 @@ import { h } from '../lib/dom.js';
 
 export const ALL_TAB = 'all';
 export const FUND_TAB = 'fund';
+// "Tất cả" shows the days as a list or as a calendar (views/calendar.js).
+export const CALENDAR_PANEL = 'calendar';
+export const LIST_VIEW = 'list';
+export const CALENDAR_VIEW = 'calendar';
 
 export function renderTabs(days, { fund = false } = {}) {
   const panelId = (day) => `panel-${day.id}`;
@@ -19,7 +23,7 @@ export function renderTabs(days, { fund = false } = {}) {
   return h('div', { class: 'tabbar' },
     h('div', { class: 'wrap' },
       h('div', { class: 'tabs', role: 'tablist', 'aria-label': 'Chọn ngày' },
-        tab(ALL_TAB, days.map(panelId).join(' '), 'Tất cả'),
+        tab(ALL_TAB, [...days.map(panelId), `panel-${CALENDAR_PANEL}`].join(' '), 'Tất cả'),
         days.map((day) => tab(day.id, panelId(day), [
           h('span', { class: 'tab-name', text: day.title }),
           h('span', { class: 'tab-date', text: day.shortDate }),
