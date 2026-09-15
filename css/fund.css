@@ -135,12 +135,39 @@
 
 .ledger-group.is-warn .ledger-h { color: var(--pay-warn); }
 
-/* Contributions: one row each; a long note trims instead of widening the
-   table (max-width: 0 lets the cell shrink below its text). */
-.contrib th[scope="row"] { font-weight: 700; }
-.contrib .contrib-amount { font-weight: 800; }
-.contrib .contrib-date { color: var(--text-sub); }
-.contrib .contrib-note { width: 100%; max-width: 0; overflow: hidden; text-overflow: ellipsis; text-align: left; color: var(--text-sub); }
+/* Contributions: one row per payment — the member's initial, name, when and
+   the note (trimmed if long), and the amount on the right; the total closes
+   the list. */
+.contrib-list { margin: 0; padding: 0; list-style: none; }
+
+.contrib {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 10px;
+  padding: 10px 0;
+}
+
+.contrib + .contrib { border-top: 1px solid var(--line); }
+.contrib .fund-avatar { width: 32px; height: 32px; font-size: 13px; }
+.contrib-info { display: flex; flex-direction: column; min-width: 0; }
+.contrib-name { font-size: 14px; color: var(--text); }
+.contrib-meta { overflow: hidden; font-size: 12px; color: var(--text-sub); text-overflow: ellipsis; white-space: nowrap; }
+.contrib-amount { font-size: 15px; font-weight: 800; color: var(--primary); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+.contrib-total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0;
+  padding-top: 10px;
+  border-top: 2px solid var(--line);
+  font-size: 13px;
+  color: var(--text-sub);
+}
+
+.contrib-total b { font-size: 15px; color: var(--text); font-variant-numeric: tabular-nums; }
 
 /* ---------- BUTTONS ---------- */
 .fund-btn {
@@ -479,7 +506,10 @@ main.has-fab { padding-bottom: 88px; }
    is coloured text (refund green, owed orange). */
 .settle-person { display: flex; align-items: center; gap: 6px; }
 
-.settle-avatar {
+/* A member's initial in a disc (settlement, contributions). The colour
+   class comes from the member's place in the member list (views/fund.js),
+   so a person keeps one colour across the tab. */
+.fund-avatar {
   flex: none;
   display: grid;
   place-items: center;
@@ -492,9 +522,9 @@ main.has-fab { padding-bottom: 88px; }
   font-weight: 800;
 }
 
-.settle tbody tr:nth-child(4n + 2) .settle-avatar { background: var(--pay-member-bg); color: var(--pay-member); }
-.settle tbody tr:nth-child(4n + 3) .settle-avatar { background: #e6eef8; color: #2f5f8f; }
-.settle tbody tr:nth-child(4n + 4) .settle-avatar { background: #f3e8f1; color: #8a3f76; }
+.fund-avatar.is-c1 { background: var(--pay-member-bg); color: var(--pay-member); }
+.fund-avatar.is-c2 { background: #e6eef8; color: #2f5f8f; }
+.fund-avatar.is-c3 { background: #f3e8f1; color: #8a3f76; }
 
 .settle-name { font-size: 14px; font-weight: 700; color: var(--text); }
 
@@ -632,20 +662,6 @@ main.has-fab { padding-bottom: 88px; }
 .fund-settlement ul { margin: 0; padding: 0; list-style: none; font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .fund-settlement p { margin: 0; font-size: 13px; }
 
-/* Plain tables: the contributions book. */
-.fund-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 12.5px;
-  font-variant-numeric: tabular-nums;
-}
-
-.fund-table th,
-.fund-table td { padding: 6px 4px; text-align: right; white-space: nowrap; }
-.fund-table th[scope="row"] { text-align: left; }
-.fund-table tbody tr + tr { border-top: 1px solid var(--line); }
-.fund-table tfoot { border-top: 2px solid var(--line); font-weight: 800; }
-
 .fund-details { border-top: 1px solid var(--line); }
 
 .fund-details > summary {
@@ -700,5 +716,4 @@ main.has-fab { padding-bottom: 88px; }
   .fund-grid td { padding-left: 16px; }
   .settle-amount,
   .settle-result { font-size: 14px; }
-  .fund-table { font-size: 13.5px; }
 }

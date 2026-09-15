@@ -152,7 +152,7 @@ export function createFundView({ trip, clock }) {
         pick('contributions', `Góp quỹ · ${contributions.length} · ${formatShort(totals.contributed)}`)),
       book === 'entries'
         ? renderLedger(entries, ctx)
-        : renderContributions(contributions, totals.contributed));
+        : renderContributions(contributions, totals.contributed, ctx));
   }
 
   return {
@@ -307,19 +307,29 @@ function renderLedger(entries, ctx) {
   }));
 }
 
-// One row per contribution: who, how much, when, note.
-function renderContributions(contributions, total) {
+// A member's initial in a disc. The colour follows the member's place in the
+// fund's member list, so a person keeps one colour across the tab.
+function fundAvatar(name, index) {
+  return h('span', { class: `fund-avatar is-c${Math.max(index, 0) % 4}`, 'aria-hidden': 'true', text: initialOf(name) });
+}
+
+// One row per contribution: the member's initial and name, when and the
+// note, and the amount on the right; the total closes the list.
+function renderContributions(contributions, total, ctx) {
   if (contributions.length === 0) return h('p', { class: 'entries-empty', text: 'Chưa có khoản góp' });
-  return h('table', { class: 'fund-table contrib' },
-    h('tbody', {}, contributions.map((line) => h('tr', {},
-      h('th', { scope: 'row', text: line.member }),
-      h('td', { class: 'contrib-amount', text: formatExact(line.amount) }),
-      h('td', { class: 'contrib-date', text: line.date }),
-      h('td', { class: 'contrib-note', text: line.note })))),
-    h('tfoot', {}, h('tr', {},
-      h('th', { scope: 'row', text: 'Tổng' }),
-      h('td', { class: 'contrib-amount', text: formatShort(total) }),
-      h('td', { colspan: '2' }))));
+  return h('div', { class: 'contribs' },
+    h('ul', { class: 'contrib-list' }, contributions.map((line) => {
+      const meta = [line.date, line.note].filter(Boolean).join(' · ');
+      return h('li', { class: 'contrib' },
+        fundAvatar(line.member, ctx.members.indexOf(line.member)),
+        h('div', { class: 'contrib-info' },
+          h('b', { class: 'contrib-name', text: line.member }),
+          meta ? h('span', { class: 'contrib-meta', text: meta }) : null),
+        h('b', { class: 'contrib-amount', text: formatExact(line.amount) }));
+    })),
+    h('p', { class: 'contrib-total' },
+      h('span', { text: `Tổng · ${contributions.length} lần góp` }),
+      h('b', { text: formatShort(total) })));
 }
 
 function renderWarnings(warnings) {
@@ -502,12 +512,14 @@ function settleResult(balance) {
 // A clean table: column labels once, one line per person — initial and
 // name, the three parts, and what they get back, in colour.
 function renderSettlement(ledger) {
-  const rows = ledger.people.map((person) => {
+  // People come in member-list order (model/fund.js), so the index is the
+  // member's place and picks the same avatar colour as in the contributions.
+  const rows = ledger.people.map((person, index) => {
     const result = settleResult(person.balance);
     return h('tr', {},
       h('th', { scope: 'row' },
         h('span', { class: 'settle-person' },
-          h('span', { class: 'settle-avatar', 'aria-hidden': 'true', text: initialOf(person.name) }),
+          fundAvatar(person.name, index),
           h('span', { class: 'settle-name', text: person.name }))),
       settleAmount(person.contributed, 'plus'),
       settleAmount(person.advanced, 'plus'),
