@@ -431,43 +431,35 @@ main.has-fab { padding-bottom: 88px; }
 .fund-stat-value { font-size: 17px; font-weight: 800; color: var(--primary); font-variant-numeric: tabular-nums; }
 .fund-stat.is-over .fund-stat-value { color: var(--money-over); }
 
-/* Settlement: one row per person — initial, name, how the result comes
-   about, and the result as a coloured pill (refund green, top up red). */
-.people {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  border-radius: 14px;
-  box-shadow: inset 0 0 0 1px var(--line);
-}
+/* Settlement: two lines per person and no boxes, only hairlines between
+   people. Name and result first; then the three parts in equal columns,
+   signed the way the formula adds them up (+ green, − orange, 0 muted). */
+.people { margin: 0; padding: 0; list-style: none; }
 
-/* Name and result on the first line; the three parts in columns under the
-   name, so every person's Góp / Trả hộ / Chịu line up. */
 .person {
   display: grid;
-  grid-template-columns: 36px minmax(0, 1fr) auto;
+  grid-template-columns: 32px minmax(0, 1fr) auto;
   grid-template-areas:
     "avatar name result"
-    "avatar parts parts";
+    "parts parts parts";
   align-items: center;
-  column-gap: 12px;
-  row-gap: 8px;
-  padding: 12px;
+  column-gap: 10px;
+  row-gap: 4px;
+  padding: 12px 0;
 }
 
 .person + .person { border-top: 1px solid var(--line); }
 
 .person-avatar {
   grid-area: avatar;
-  align-self: start;
   display: grid;
   place-items: center;
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   background: var(--pay-fund-bg);
   color: var(--pay-fund);
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 800;
 }
 
@@ -476,25 +468,37 @@ main.has-fab { padding-bottom: 88px; }
 .person:nth-child(4n + 4) .person-avatar { background: #f3e8f1; color: #8a3f76; }
 
 .person-name { grid-area: name; min-width: 0; font-size: 15px; color: var(--text); }
-.person-result { grid-area: result; }
+
+.person-result {
+  grid-area: result;
+  font-size: 14px;
+  font-weight: 800;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.person-result.is-under { color: var(--money-under); }
+.person-result.is-over { color: var(--money-over); }
+.person-result.is-even { color: var(--text-sub); }
 
 .person-parts {
   grid-area: parts;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 6px;
+  column-gap: 8px;
   margin: 0;
 }
 
-.person-part { min-width: 0; padding: 6px 8px; border-radius: 10px; background: #f6f9f7; }
-.person-part dt { font-size: 11px; font-weight: 600; line-height: 1.3; color: var(--text-sub); }
+/* Label and amount on one line. */
+.person-part { display: flex; align-items: baseline; gap: 4px; min-width: 0; }
+.person-part dt { flex: none; font-size: 12px; color: var(--text-sub); }
 
 .person-part dd {
+  min-width: 0;
   margin: 0;
   overflow: hidden;
   font-size: 14px;
-  font-weight: 800;
-  line-height: 1.35;
+  font-weight: 700;
   color: var(--money-under);
   font-variant-numeric: tabular-nums;
   text-overflow: ellipsis;
@@ -502,20 +506,13 @@ main.has-fab { padding-bottom: 88px; }
 }
 
 .person-part.is-minus dd { color: var(--money-over); }
-.person-part.is-zero dd { font-weight: 600; color: var(--money-muted); }
+.person-part.is-zero dd { font-weight: 500; color: var(--money-muted); }
 
-.person-result {
-  padding: 4px 10px;
-  border-radius: 99px;
-  font-size: 13px;
-  font-weight: 800;
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
+/* Wide enough to line the parts up under the name; narrower phones give
+   them the full width so "Trả hộ +400k" still fits. */
+@media (min-width: 380px) {
+  .person { grid-template-areas: "avatar name result" ". parts parts"; }
 }
-
-.person-result.is-under { background: var(--pay-fund-bg); color: var(--money-under); }
-.person-result.is-over { background: var(--pay-warn-bg); color: var(--money-over); }
-.person-result.is-even { background: #eef1ef; color: var(--text-sub); }
 
 .fund-formula {
   display: flex;
@@ -633,5 +630,6 @@ main.has-fab { padding-bottom: 88px; }
   .fund-hero { padding: 20px; }
   .fund-hero-value { font-size: 36px; }
   .fund-stat-value { font-size: 19px; }
+  .person-parts { max-width: 440px; }
   .fund-table { font-size: 13.5px; }
 }
