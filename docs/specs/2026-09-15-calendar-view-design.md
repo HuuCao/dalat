@@ -126,7 +126,7 @@ section.panel.cal-panel#panel-calendar [role=tabpanel][aria-labelledby=tab-all][
 - Khối cao `< 40` phút → class `is-short`: ẩn `.cal-time`, `--lines: 1`.
 - Khung trống (`item.empty`): viền nét đứt `#c3cfc7`, không viền trái, nền `#f7faf8`, tên `--empty-ink` 600 — giống `.card.empty`.
 - `aria-label`: `Ngày 1, 07:00 – 09:00, Đồi chè Cầu Đất`; thêm `, đang diễn ra` / `, đã qua` theo trạng thái.
-- Hover (chỉ `@media (hover: hover)`): viền `#c9d9cf`, bóng `--shadow-md`. `:focus-visible`: viền 2px `--primary`, offset 2px.
+- Hover (chỉ `@media (hover: hover)`): bóng `--shadow-md` (khối chỉ có viền trái nên không đổi màu viền). `:focus-visible`: viền 2px `--primary`, offset 2px.
 
 ### 5.4. Trạng thái thời gian thực
 
@@ -170,10 +170,10 @@ Vạch now đang hiện → `scrollIntoView({ block: 'center', behavior })`, `be
 
 ### 6.4. Bấm khối / tiêu đề (`controllers/calendar.js`)
 
-`startCalendar({ view, tabs, show })`:
+`startCalendar({ view, tabs, show, tabbar })`:
 
 - Click ủy quyền trên `view.panel`: `.cal-block` → `show(id)`; `.cal-day` → `tabs.select(dayId, { user: true })`.
-- `--tabbar-h`: `ResizeObserver` trên `.tabbar` → `view.panel.style.setProperty('--tabbar-h', offsetHeight + 'px')`; không có `ResizeObserver` thì đặt một lần.
+- `--tabbar-h`: `ResizeObserver` trên `tabbar` → `view.panel.style.setProperty('--tabbar-h', offsetHeight + 'px')`; không có `ResizeObserver` thì đặt một lần.
 
 `moveTo(item, { openDay, flash })` thêm, sau khi cuộn:
 
