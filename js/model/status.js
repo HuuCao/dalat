@@ -24,6 +24,19 @@ export function getStatus(trip, now) {
   return { phase, now, current, next, pastPlaces, pastIds, remainingMs: Math.max(trip.start.getTime() - now, 0) };
 }
 
+// Time until the next slot starts or ends (Infinity once the last one has
+// ended), so the clock can tick on that very moment instead of up to a whole
+// tick late.
+export function msUntilNextChange(trip, now) {
+  let next = Infinity;
+  for (const item of trip.items) {
+    for (const edge of [item.start.getTime(), item.end.getTime()]) {
+      if (edge > now && edge < next) next = edge;
+    }
+  }
+  return next - now;
+}
+
 export function countdownTiles(ms) {
   const total = Math.floor(ms / 1000);
   const parts = [

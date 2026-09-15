@@ -85,7 +85,7 @@ Panel tối màu nổi đè lên mép dưới banner, nằm trên thanh tab — 
 
 - Điểm tiếp theo ở ngày khác thì ghi thêm thứ: `Tiếp theo T7 07:00 · 🥞 Ăn sáng — Bánh căn`.
 - Hàng `💰 Quỹ còn` dính liền dưới panel thành một khối.
-- Đếm ngược cập nhật mỗi giây; các trạng thái còn lại cập nhật mỗi 15 giây.
+- Đếm ngược cập nhật mỗi giây; các trạng thái còn lại cập nhật mỗi 15 giây, và ngay đúng giây một khung giờ bắt đầu hoặc kết thúc (không chờ tới lượt 15 giây kế tiếp).
 - Tiến độ chỉ đếm địa điểm thật, không đếm khung trống.
 - Có hiệu ứng vệt sáng quét chậm qua panel.
 

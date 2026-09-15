@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { buildTrip } from '../js/model/trip.js';
-import { getStatus, describeStatus, countdownTiles, followAction } from '../js/model/status.js';
+import { getStatus, describeStatus, countdownTiles, followAction, msUntilNextChange } from '../js/model/status.js';
 
 test('followAction moves to a slot that just started, or offers it while the viewer is busy', () => {
   assert.equal(followAction({ previousId: 'a', currentId: 'a', idleMs: 60_000 }), null);
@@ -17,6 +17,22 @@ const statusAt = (iso) => getStatus(trip, Date.parse(iso));
 const describeAt = (iso) => describeStatus(trip, statusAt(iso));
 
 const quiet = { progress: null, next: null, mapUrl: null };
+
+test('msUntilNextChange counts down to the next slot start or end', () => {
+  const at = (iso) => msUntilNextChange(trip, Date.parse(iso));
+  // Between slots: the next start.
+  assert.equal(at('2026-10-16T12:44:50+07:00'), 10_000);
+  // Inside a slot: its end.
+  assert.equal(at('2026-10-16T12:00:00+07:00'), 15 * 60_000);
+  // On a start: the next edge after it, never 0.
+  assert.equal(at('2026-10-16T12:45:00+07:00'), 75 * 60_000);
+  // Before the trip: the first start.
+  assert.equal(at('2026-10-16T06:59:59+07:00'), 1_000);
+  // Overnight: the next day's first start.
+  assert.equal(at('2026-10-16T22:00:00+07:00'), 9 * 3_600_000);
+  // After the last end: nothing left to wait for.
+  assert.equal(at('2026-10-18T13:00:00+07:00'), Infinity);
+});
 
 test('before the trip counts down', () => {
   const status = statusAt('2026-10-16T06:00:00+07:00');

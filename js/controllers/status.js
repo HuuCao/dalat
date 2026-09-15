@@ -1,5 +1,5 @@
 import { h } from '../lib/dom.js';
-import { getStatus, describeStatus, followAction } from '../model/status.js';
+import { getStatus, describeStatus, followAction, msUntilNextChange } from '../model/status.js';
 import { localDateOf } from '../lib/time.js';
 import { nowMark } from '../model/calendar.js';
 
@@ -71,7 +71,10 @@ export function startStatus({ trip, root, countdown, tabs, clock, hint, calendar
     if (offered && offered.id !== nextId) dismiss();
     currentId = nextId;
 
-    timer = setTimeout(tick, status.phase === 'soon' ? FAST_TICK_MS : SLOW_TICK_MS);
+    // The regular pace, or sooner when a slot starts or ends before then, so
+    // the page changes on that very second.
+    const pace = status.phase === 'soon' ? FAST_TICK_MS : SLOW_TICK_MS;
+    timer = setTimeout(tick, Math.min(pace, msUntilNextChange(trip, now)));
   }
 
   // Opening the page during the trip: open the day in progress and bring the
