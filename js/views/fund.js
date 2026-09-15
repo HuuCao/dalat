@@ -140,14 +140,14 @@ export function createFundView({ trip, clock }) {
   function renderBooks(ledger) {
     const { entries, contributions, totals } = ledger;
     const pick = (key, text) => h('button', {
-      class: 'book-tab',
+      class: 'switch-btn',
       type: 'button',
       'aria-pressed': String(book === key),
       dataset: { book: key },
     }, text);
     return h('section', { class: 'fund-section books' },
       h('h3', { class: 'fund-h', text: 'Sổ sách' }),
-      h('div', { class: 'book-tabs' },
+      h('div', { class: 'switch books-switch' },
         pick('entries', `Sổ chi · ${entries.length} · ${formatShort(totals.actual)}`),
         pick('contributions', `Góp quỹ · ${contributions.length} · ${formatShort(totals.contributed)}`)),
       book === 'entries'
