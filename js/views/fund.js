@@ -398,20 +398,26 @@ function renderShared(ledger, ctx) {
 
 const initialOf = (name) => Array.from(name.trim())[0]?.toLocaleUpperCase('vi') ?? '?';
 
-// One row per person: initial, name, what the result is made of, and the
-// result as a coloured pill.
+// One part of a result, signed the way the formula adds it up.
+function personPart(label, amount, sign) {
+  const kind = amount === 0 ? 'zero' : sign === '+' ? 'plus' : 'minus';
+  const value = amount === 0 ? '0' : `${sign === '+' ? '+' : '−'}${formatShort(amount)}`;
+  return h('div', { class: `person-part is-${kind}` }, h('dt', { text: label }), h('dd', { text: value }));
+}
+
+// One row per person: initial, name and the result as a coloured pill, then
+// the three parts it is made of in labelled columns that line up across rows.
 function renderSettlement(ledger) {
   const people = ledger.people.map((person) => {
     const result = describeBalance(person.balance);
     return h('li', { class: 'person' },
       h('span', { class: 'person-avatar', 'aria-hidden': 'true', text: initialOf(person.name) }),
-      h('div', { class: 'person-info' },
-        h('b', { class: 'person-name', text: person.name }),
-        // Three parts that each stay on one line; a long row wraps between them.
-        h('span', { class: 'person-detail' },
-          [`Góp ${formatShort(person.contributed)}`, `Trả hộ ${formatShort(person.advanced)}`, `Chịu ${formatShort(person.share)}`]
-            .flatMap((text, index) => [index > 0 ? ' ' : null, h('span', { class: 'person-part', text })]))),
-      h('span', { class: `person-result is-${result.tone ?? 'even'}`, text: result.text }));
+      h('b', { class: 'person-name', text: person.name }),
+      h('span', { class: `person-result is-${result.tone ?? 'even'}`, text: result.text }),
+      h('dl', { class: 'person-parts' },
+        personPart('Góp', person.contributed, '+'),
+        personPart('Trả hộ', person.advanced, '+'),
+        personPart('Chịu', person.share, '−')));
   });
 
   return section(ledger.done ? '🧮 Quyết toán' : '🧮 Quyết toán · tạm tính',
