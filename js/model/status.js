@@ -1,4 +1,4 @@
-import { durationText, shortWeekdayText } from '../lib/time.js';
+import { durationText, localDateOf, shortWeekdayText } from '../lib/time.js';
 
 export function getStatus(trip, now) {
   let current = null;
@@ -67,13 +67,15 @@ export function describeStatus(trip, status) {
   const quiet = { progress: null, next: null, mapUrl: null };
 
   if (status.phase === 'soon') {
-    const [first] = trip.items;
-    const firstDay = trip.days.find((day) => day.id === first.dayId);
+    // An empty first day has no start time to show, only its date.
+    const [firstDay] = trip.days;
+    const [first] = firstDay.items;
+    const start = first ? `${first.startText} · ${firstDay.dateText}` : firstDay.dateText;
     return {
       label: 'Đếm ngược khởi hành',
       tiles: countdownTiles(status.remainingMs),
       headline: null,
-      note: `${place} đang chờ · bắt đầu ${first.startText} · ${firstDay.dateText}`,
+      note: `${place} đang chờ · bắt đầu ${start}`,
       ...quiet,
     };
   }
@@ -102,11 +104,14 @@ export function describeStatus(trip, status) {
   }
 
   if (next) {
+    // On an empty day, or overnight, the next slot is not today: name its weekday.
+    const day = trip.days.find((entry) => entry.id === next.dayId);
+    const when = day.date === localDateOf(now, trip.timezone) ? next.startText : `${shortWeekdayText(day.date)} ${next.startText}`;
     return {
       label: 'Đang di chuyển',
       tiles: null,
       headline: next.heading,
-      note: `Bắt đầu ${next.startText} · còn ${durationText(next.start.getTime() - now)}`,
+      note: `Bắt đầu ${when} · còn ${durationText(next.start.getTime() - now)}`,
       progress,
       next: upNext(trip, next),
       mapUrl: next.mapUrl,

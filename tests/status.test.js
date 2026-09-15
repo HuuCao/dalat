@@ -12,7 +12,10 @@ test('followAction moves to a slot that just started, or offers it while the vie
   assert.equal(followAction({ previousId: 'a', currentId: 'b', idleMs: 29_999 }), 'hint');
 });
 
-const trip = buildTrip(JSON.parse(readFileSync(new URL('../data/trip.json', import.meta.url), 'utf8')));
+const raw = JSON.parse(readFileSync(new URL('./fixtures/trip.json', import.meta.url), 'utf8'));
+const trip = buildTrip(raw);
+// The sheet may list days before any slot is planned for them.
+const early = buildTrip({ ...raw, days: [{ date: '2026-10-13', items: [] }, { date: '2026-10-14', items: [] }, ...raw.days] });
 const statusAt = (iso) => getStatus(trip, Date.parse(iso));
 const describeAt = (iso) => describeStatus(trip, statusAt(iso));
 
@@ -46,6 +49,28 @@ test('before the trip counts down', () => {
     headline: null,
     note: 'Đà Lạt đang chờ · bắt đầu 07:00 · Th 6, 16/10',
     ...quiet,
+  });
+});
+
+test('an empty first day starts the countdown at its midnight, without a time', () => {
+  const status = getStatus(early, Date.parse('2026-10-12T23:00:00+07:00'));
+  assert.equal(status.phase, 'soon');
+  assert.equal(status.remainingMs, 3_600_000);
+  assert.equal(describeStatus(early, status).note, 'Đà Lạt đang chờ · bắt đầu Th 3, 13/10');
+});
+
+test('on an empty day of the trip the next slot names its weekday', () => {
+  const status = getStatus(early, Date.parse('2026-10-14T22:40:00+07:00'));
+  assert.equal(status.phase, 'live');
+  assert.equal(status.current, null);
+  assert.deepEqual(describeStatus(early, status), {
+    label: 'Đang di chuyển',
+    tiles: null,
+    headline: '🍃 Đồi chè Cầu Đất — Săn mây, ăn sáng, cà phê',
+    note: 'Bắt đầu T6 07:00 · còn 1 ngày 9 giờ',
+    progress: '0/16 điểm',
+    next: 'Tiếp theo 09:15 · ☕ Hidden Land',
+    mapUrl: early.items[0].mapUrl,
   });
 });
 

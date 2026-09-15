@@ -388,17 +388,6 @@ main.has-fab { padding-bottom: 88px; }
   color: var(--primary);
 }
 
-.fund-warn {
-  margin-top: 14px;
-  padding: 10px 14px;
-  border: 1px solid #e6c9c3;
-  border-radius: 12px;
-  background: #fbf1ef;
-  color: #7a3b2e;
-  font-size: 12.5px;
-}
-
-.fund-warn ul { margin: 6px 0 0; padding-left: 18px; }
 .fund-warn-line { margin: 0 0 8px; font-size: 12.5px; color: #7a3b2e; }
 
 /* Overview: what is left leads in large type, with how much of the plan is

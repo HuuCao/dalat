@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { buildTrip } from '../js/model/trip.js';
 import { buildCalendar, nowMark } from '../js/model/calendar.js';
 
-const trip = buildTrip(JSON.parse(readFileSync(new URL('../data/trip.json', import.meta.url), 'utf8')));
+const trip = buildTrip(JSON.parse(readFileSync(new URL('./fixtures/trip.json', import.meta.url), 'utf8')));
 const calendar = buildCalendar(trip);
 
 // Small trips without a fund, so titles may repeat across tests.

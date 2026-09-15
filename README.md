@@ -4,7 +4,7 @@ Trang lịch trình chuyến Đà Lạt 3 ngày 2 đêm, tối ưu cho điện t
 
 **Xem trực tiếp:** https://huucao.github.io/dalat/
 
-Toàn bộ nội dung nằm trong một file dữ liệu `data/trip.json`. Trang tự dựng giao diện, tự tính số liệu và tự cập nhật theo thời gian thực. Không có build step, không có dependency.
+Lịch trình và chi phí chung nằm trong Google Sheet — sửa trên điện thoại, trang tự cập nhật, không cần đụng code. Phần ít đổi (hero, footer, thành viên, link) nằm trong `data/trip.json`. Trang tự dựng giao diện, tự tính số liệu và tự cập nhật theo thời gian thực. Không có build step, không có dependency.
 
 ---
 
@@ -78,9 +78,9 @@ Panel tối màu nổi đè lên mép dưới banner, nằm trên thanh tab — 
 
 | Thời điểm | Nhãn | Nội dung |
 |---|---|---|
-| **Trước chuyến đi** | `Đếm ngược khởi hành` | Ô đếm ngược `ngày · giờ · phút · giây` (bỏ đơn vị 0 ở đầu, luôn giữ ít nhất 2 ô), đồng hồ cát lật cát chảy, ghi chú `Đà Lạt đang chờ · bắt đầu 07:00 · Th 6, 16/10` |
+| **Trước chuyến đi** | `Đếm ngược khởi hành` | Ô đếm ngược `ngày · giờ · phút · giây` (bỏ đơn vị 0 ở đầu, luôn giữ ít nhất 2 ô), đồng hồ cát lật cát chảy, ghi chú `Đà Lạt đang chờ · bắt đầu 07:00 · Th 6, 16/10`. Ngày đầu chưa có khung giờ thì đếm tới 00:00 ngày đó và ghi `bắt đầu Th 3, 13/10` |
 | **Đang ở một khung giờ** | `Đang diễn ra` | Tên điểm hiện tại + nút `📍 Maps`, ghi chú `Còn 15 phút · đến 12:15`, dòng `Tiếp theo 12:45 · 🐈 Trại Mèo Mướp`, tiến độ `2/16 điểm` ở góc phải, chấm xanh nhấp nháy |
-| **Giữa hai khung giờ** | `Đang di chuyển` | Tên điểm kế tiếp + nút `📍 Maps`, ghi chú `Bắt đầu 09:15 · còn 15 phút`, dòng Tiếp theo, tiến độ |
+| **Giữa hai khung giờ** (cả những ngày trống trong chuyến) | `Đang di chuyển` | Tên điểm kế tiếp + nút `📍 Maps`, ghi chú `Bắt đầu 09:15 · còn 15 phút` — khác ngày thì `Bắt đầu T6 07:00 · còn 1 ngày 9 giờ`, dòng Tiếp theo, tiến độ |
 | **Sau chuyến đi** | `Hành trình đã khép lại` | `Hẹn gặp lại Đà Lạt ✦`, ghi chú `Đã đi qua 16 điểm trong 3 ngày` |
 
 - Điểm tiếp theo ở ngày khác thì ghi thêm thứ: `Tiếp theo T7 07:00 · 🥞 Ăn sáng — Bánh căn`.
@@ -158,13 +158,12 @@ https://huucao.github.io/dalat/?now=2026-10-19T00:00:00%2B07:00   # đã kết t
 
 ### 8. Dữ liệu và xử lý lỗi
 
-- **Chỉ sửa một file** (`data/trip.json`) để thay đổi toàn bộ lịch trình — xem [Sửa lịch trình](#sửa-lịch-trình).
+- **Sửa lịch trình trong Google Sheet** (tab `LichTrinh`, `Ngay`, `ChiChung`) — xem [Sửa lịch trình](#sửa-lịch-trình). Dropdown `Địa điểm` của Form tự khớp theo.
+- **Mở nhanh, mất sóng vẫn xem được:** trang hiện ngay bản lưu gần nhất trên máy rồi tải Sheet ngầm. Sheet đổi và tải xong trong 4 giây đầu → trang tự tải lại một lần; muộn hơn → hiện `🔄 Lịch trình vừa thay đổi · Tải lại`. Footer ghi `Lịch trình cập nhật 14:05`.
 - **Tự sắp xếp:** ngày theo ngày tháng, khung giờ theo giờ bắt đầu — nhập theo thứ tự nào cũng được.
-- **Kiểm tra dữ liệu** trước khi hiển thị, báo lỗi chỉ đúng vị trí:
-  - `days[1].items[0].end: phải sau start`
-  - `days[0].items[2].start: phải có dạng HH:MM`
-  - `hero.image.src: phải chứa {w}`
-- **Lỗi tải hoặc sai cú pháp JSON:** trang hiện hộp thông báo `Không tải được lịch trình` kèm chi tiết, thay vì trang trắng.
+- **Dòng sai không làm sập trang:** dòng đó bị bỏ, đầu trang hiện `⚠️ Lịch trình có 2 dòng lỗi` — mở ra thấy đúng dòng trong Sheet (`LichTrinh dòng 7 · Kết thúc "09:00" phải sau Bắt đầu "10:00"`) và link `Mở Sheet`. Sheet mất cột bắt buộc hoặc không còn khung giờ nào → giữ bản lưu cũ.
+- **`data/trip.json` được kiểm tra** trước khi hiển thị, báo lỗi chỉ đúng vị trí (`hero.image.src: phải chứa {w}`, `plan.items: phải là link https://docs.google.com/`).
+- **Lần đầu mở mà không tải được Sheet, hoặc `trip.json` sai:** trang hiện hộp thông báo `Không tải được lịch trình` kèm chi tiết, thay vì trang trắng.
 - **Tắt JavaScript:** hiện hướng dẫn mở bằng link trong trình duyệt.
 
 ### 9. Truy cập và an toàn
@@ -244,31 +243,49 @@ Cần Node ≥ 18, không phải cài package nào. Unit test phủ phần logic
 | `tests/calendar.test.js` | Khung giờ lịch làm tròn tới giờ, vị trí và chiều cao khối, chia làn khi chồng giờ, vạch giờ hiện tại (ngoài ngày / ngoài giờ) |
 | `tests/tabs.test.js` | Tab nào hiện panel nào ở chế độ Danh sách / Lịch, đọc lựa chọn đã nhớ khi bộ nhớ trình duyệt thiếu hoặc lỗi |
 | `tests/trip.test.js` | Số ngày/đêm/điểm/khung trống, `srcset`, link Maps, sắp xếp, thông báo lỗi dữ liệu, budget, cấu hình quỹ, nhãn Form |
+| `tests/plan.test.js` | Đọc tab Sheet: ngày `16/10/2026`, giờ `7:00:00`, dự kiến, checkbox; từng loại dòng lỗi và số dòng; thiếu cột; link `plan`; Sheet → trang giống hệt `trip.json` |
+| `tests/plan-cache.test.js` | Bản lưu theo link, quyết định sau khi tải ngầm (giữ nguyên / tải lại / toast / giữ bản cũ), chặn tải lại lặp, bộ nhớ trình duyệt bị chặn |
+| `tests/form-sync.test.js` | Apps Script tạo đúng danh sách địa điểm như trang (kể cả dòng lỗi), chỉ ghi Form khi khác, báo lỗi rõ, trigger không trùng |
+| `tests/table.test.js` | Tìm cột theo tên, đọc số tiền |
 | `tests/status.test.js` | Trạng thái trước / trong / giữa / sau chuyến đi, biên đầu–cuối khung giờ, ô đếm ngược, thời gian còn lại, điểm tiếp theo (cả sang ngày khác), link Maps |
 | `tests/motion.test.js` | Parallax dự phòng khớp CSS, giới hạn giá trị, ảnh hero không bao giờ hở mép |
 | `tests/clock.test.js` | Tham số `?now=` |
 | `tests/csv.test.js` | Đọc CSV: nháy kép, dấu phẩy và xuống dòng trong ô, CRLF, BOM, trang HTML thay vì CSV |
 | `tests/text.test.js` | So tên không phân biệt hoa thường, khoảng trắng thừa, dạng Unicode |
 | `tests/money.test.js` | `1tr660`, `12tr`, `33,3k`, `260.000đ`, ▲ ▼ ✓, khoản tròn nghìn viết gọn / lẻ đồng ghi đủ |
-| `tests/fund.test.js` | Tìm cột theo tên, đọc số tiền, chia lẻ, tổng khung/ngày/chung/chuyến, quyết toán, chữ Hoàn / Nộp / Đủ, dòng lỗi, link Form điền sẵn |
+| `tests/fund.test.js` | Chia lẻ, tổng khung/ngày/chung/chuyến, quyết toán, chữ Hoàn / Nộp / Đủ, dòng lỗi, link Form điền sẵn |
 
-Phần giao diện được kiểm tra trên Chrome headless (iPhone và máy tính): chọn đúng ảnh, không cuộn ngang, trạng thái thời gian thực, cả hai lớp animation, giảm chuyển động, lịch biểu (vị trí khối, trạng thái theo giờ, bấm khối mở thẻ, nhớ chế độ xem), dữ liệu lỗi, thêm ngày mới.
+Phần giao diện được kiểm tra trên Chrome headless (iPhone và máy tính): chọn đúng ảnh, không cuộn ngang, trạng thái thời gian thực, cả hai lớp animation, giảm chuyển động, lịch biểu (vị trí khối, trạng thái theo giờ, bấm khối mở thẻ, nhớ chế độ xem), dữ liệu lỗi, thêm ngày mới, lịch trình từ Sheet (lần đầu, bản lưu, tải lại, toast, mất mạng, dòng lỗi).
 
 ## Sửa lịch trình
 
-Chỉ sửa `data/trip.json`. Thêm ngày = thêm một object vào `days`; thêm điểm = thêm một object vào `items`. Tab, số điểm, khung trống, thứ/ngày, buổi và đếm ngược tự tính lại.
+Sửa trong Google Sheet quỹ, trên điện thoại cũng được — không cần đụng code, không cần push. Thứ tự dòng và cột tùy ý (cột tìm theo tên ở dòng 1). Google cần khoảng 5 phút để công bố bản mới; dropdown `Địa điểm` của Form đổi sau vài giây.
 
-```json
-{
-  "date": "2026-10-19",
-  "icon": "🧳",
-  "note": "Ngày thêm",
-  "items": [
-    { "start": "09:00", "end": "10:30", "icon": "☕", "title": "Cà phê sáng", "map": "cà phê view đồi Đà Lạt" },
-    { "start": "11:00", "end": "12:00", "icon": "🍜", "title": "Ăn trưa — Chưa chọn", "empty": true }
-  ]
-}
-```
+**Tab `LichTrinh`** — mỗi khung giờ một dòng:
+
+| Cột | Bắt buộc | Ghi chú |
+|---|---|---|
+| `Ngày` | có | `16/10/2026` (hoặc `2026-10-16`) |
+| `Bắt đầu`, `Kết thúc` | có | `07:00` — Sheet tự đổi thành `7:00:00` cũng được; `Kết thúc` sau `Bắt đầu` |
+| `Tên` | có | `Nơi — hoạt động`, vd. `Đồi chè Cầu Đất — Săn mây, ăn sáng` |
+| `Icon` | không | Emoji |
+| `Tag` | không | |
+| `Maps` | không | Từ khóa tìm trên Google Maps; có thì hiện link `📍 Maps` |
+| `Dự kiến` | không | VND, `280000` hoặc `280.000`. Trống = không có dự kiến, `0` = `Miễn phí` Định dạng ô Tự động hoặc Số đều được (`280.000,00`, `280.000 ₫`); số lẻ như `1,5` bị báo lỗi. |
+| `Trống` | không | Checkbox (hoặc `x`) = khung trống, không tính là điểm |
+
+**Tab `Ngay`** — không bắt buộc có dòng: `Ngày` · `Icon` · `Ghi chú` cho từng ngày. Ngày chỉ có ở tab này (chưa có khung giờ) hiện `Chưa có lịch`.
+
+**Tab `ChiChung`** — chi phí không thuộc ngày nào: `Tên` · `Icon` · `Dự kiến` · `Ghi chú` (vd. `Vé xe 2 chiều` · `🚌` · `2800000` · `700k/người`).
+
+Lưu ý:
+
+- Dòng sai (ngày/giờ sai, thiếu tên…) bị bỏ qua và hiện trong `⚠️ Lịch trình có N dòng lỗi` ở đầu trang, ghi đúng số dòng.
+- Trong cùng một ngày không trùng `Tên`; không đặt tên `Phát sinh` (cả ở `ChiChung`) — Form phân biệt địa điểm bằng tên.
+- Đổi tên hoặc chuyển ngày một điểm **đã có khoản chi**: các dòng cũ rơi vào `Không khớp địa điểm` — sửa tên trong tab `ChiTieu`.
+- Thêm ngày **trước** ngày đầu tiên làm mọi `Day N` dịch số và các khoản đã nhập đều lệch — tránh khi đã bắt đầu nhập chi.
+
+**`data/trip.json`** giữ phần ít đổi:
 
 | Trường | Bắt buộc | Ghi chú |
 |---|---|---|
@@ -278,48 +295,47 @@ Chỉ sửa `data/trip.json`. Thêm ngày = thêm một object vào `days`; thê
 | `hero.subtitle`, `footer.title` | không | Dùng được `{days}`, `{nights}`, `{dates}` (vd. `16 – 18/10`) |
 | `hero.image`, `hero.thumbs[]` | không | `{ "src": "assets/img/hero-{w}.jpg", "widths": [800, 1600, 2560] }` — mỗi width là một file có sẵn |
 | `footer.note` | không | |
-| `days[].date` | có | `YYYY-MM-DD` |
-| `days[].icon`, `days[].note` | không | |
-| `items[].start`, `items[].end` | có | `HH:MM`, cùng ngày, `end` sau `start` |
-| `items[].title` | có | |
-| `items[].icon` | không | |
-| `items[].map` | không | Từ khóa tìm trên Google Maps; có thì hiện link `📍 Maps` |
-| `items[].empty` | không | `true` = khung trống, không tính là điểm |
-| `items[].budget` | không | Dự kiến, VND, số nguyên ≥ 0. `0` = `Miễn phí` |
+| `plan.items`, `plan.days`, `plan.shared` | có (khi dùng Sheet) | Link CSV publish của tab `LichTrinh`, `Ngay`, `ChiChung` |
 | `fund.members[]` | có (khi có `fund`) | Tên thành viên, không trùng, không được là `Quỹ` |
-| `fund.shared[]` | không | `{ "title", "icon", "budget", "note" }` — chi phí chung không thuộc ngày nào |
 | `fund.csv.expenses`, `fund.csv.contributions` | không | Link CSV publish của tab `ChiTieu` và `GopQuy`. Thiếu thì trang chỉ hiện dự kiến |
 | `fund.form.url`, `fund.form.placeField` | không | Link Form (`…/viewform`) và `entry.…` của câu hỏi Địa điểm |
 | `fund.sheet` | không | Link mở Google Sheet |
 
-Khi có `fund`, các khung trong cùng một ngày không được trùng `title` và không được đặt tên `Phát sinh` — Form phân biệt địa điểm bằng tên.
+Không có `plan` thì trang đọc `days[]` và `fund.shared[]` ngay trong `data/trip.json` như trước — xem mẫu đầy đủ ở `tests/fixtures/trip.json`.
 
 ## Kết nối Google Form / Sheet
 
-Làm một lần, khoảng 15 phút. **Lưu ý:** link CSV đã publish là công khai — ai có link (kể cả người xem source trang) đọc được tên và số tiền, nhưng không sửa được.
+Làm một lần, khoảng 20 phút. **Lưu ý:** link CSV đã publish là công khai — ai có link (kể cả người xem source trang) đọc được lịch trình, tên và số tiền, nhưng không sửa được.
 
-1. **Lấy danh sách địa điểm:** chạy `npm run form-options`, copy toàn bộ kết quả.
-2. **Tạo Google Form** "Chi tiêu Đà Lạt". Tên câu hỏi phải giữ **đúng chữ** như bảng:
+1. **Tạo Google Form** "Chi tiêu Đà Lạt". Tên câu hỏi phải giữ **đúng chữ** như bảng:
 
    | Câu hỏi | Loại | Lựa chọn / xác thực | Bắt buộc |
    |---|---|---|---|
    | Người nhập | Menu thả xuống | Hữu, MiMi, Khanh, Trâm | có |
-   | Địa điểm | Menu thả xuống | Paste kết quả bước 1 vào lựa chọn đầu tiên — Form tự tách mỗi dòng | có |
+   | Địa điểm | Menu thả xuống | Để một lựa chọn tạm bất kỳ — Apps Script (bước 6) sẽ điền | có |
    | Số tiền | Câu trả lời ngắn | Xác thực phản hồi: Biểu thức chính quy → Khớp → `^[1-9][0-9]*$`; văn bản lỗi: `Chỉ nhập số, vd 260000` | có |
    | Ai trả | Trắc nghiệm | Quỹ, Hữu, MiMi, Khanh, Trâm | có |
    | Chia cho | Hộp kiểm | Hữu, MiMi, Khanh, Trâm — mô tả: "Bỏ trống = chia đều cả nhóm" | không |
    | Ghi chú | Câu trả lời ngắn | | không |
 
    Trong Cài đặt → Câu trả lời: tắt thu thập email và giới hạn 1 câu trả lời, để nhập không cần đăng nhập.
-3. **Liên kết Sheet:** tab Câu trả lời → Liên kết với Trang tính → tạo bảng tính mới. Đổi tên tab câu trả lời thành `ChiTieu`.
-4. **Tạo tab `GopQuy`** trong cùng bảng tính, dòng 1 là `Ngày`, `Người góp`, `Số tiền`, `Ghi chú`. Mỗi lần góp quỹ nhập một dòng.
-5. **Đặt khu vực:** Tệp → Cài đặt → Ngôn ngữ và khu vực = **Việt Nam**.
-6. **Publish CSV:** Tệp → Chia sẻ → Công bố lên web → chọn tab `ChiTieu`, định dạng **Giá trị được phân tách bằng dấu phẩy (.csv)** → Công bố → copy link. Làm lại cho `GopQuy`. Giữ bật "Tự động công bố lại khi có thay đổi".
+2. **Liên kết Sheet:** tab Câu trả lời → Liên kết với Trang tính → tạo bảng tính mới. Đổi tên tab câu trả lời thành `ChiTieu`.
+3. **Tạo các tab còn lại** trong cùng bảng tính, dòng 1 là tên cột:
+   - `GopQuy`: `Ngày`, `Người góp`, `Số tiền`, `Ghi chú`. Mỗi lần góp quỹ nhập một dòng.
+   - `LichTrinh`, `Ngay`, `ChiChung`: cột như mục [Sửa lịch trình](#sửa-lịch-trình). Cột `Trống`: chọn cả cột → Chèn → Hộp kiểm.
+4. **Đặt khu vực:** Tệp → Cài đặt → Ngôn ngữ và khu vực = **Việt Nam**.
+5. **Publish CSV:** Tệp → Chia sẻ → Công bố lên web → chọn tab `ChiTieu`, định dạng **Giá trị được phân tách bằng dấu phẩy (.csv)** → Công bố → copy link. Làm lại cho `GopQuy`, `LichTrinh`, `Ngay`, `ChiChung`. Giữ bật "Tự động công bố lại khi có thay đổi".
+6. **Cài Apps Script đồng bộ Form:** Tiện ích mở rộng → Apps Script → xóa code mẫu → dán toàn bộ `scripts/apps-script/form-sync.js` → Lưu. Chọn hàm `setup` → Chạy → cấp quyền (Google cảnh báo "ứng dụng chưa xác minh" vì script do bạn viết: Nâng cao → Đi tới dự án). Mở lại Sheet thấy menu `🔄 Đồng bộ Form`; dropdown `Địa điểm` của Form đã có đủ địa điểm. Từ giờ sửa Sheet là Form tự đổi; lỗi sẽ được Google gửi email.
 7. **Lấy `placeField`:** trong Form, menu ⋮ → Nhận đường liên kết điền sẵn → chọn một Địa điểm bất kỳ → Nhận đường liên kết → Sao chép. Link có đoạn `entry.123456789=…`; lấy phần `entry.123456789`. Phần trước dấu `?` (kết thúc bằng `/viewform`) là link Form.
-8. **Chia sẻ bảng tính** quyền chỉnh sửa cho cả nhóm, để ai cũng sửa được dòng nhập sai.
+8. **Chia sẻ bảng tính** quyền chỉnh sửa cho cả nhóm, để ai cũng sửa được lịch trình và dòng nhập sai.
 9. **Điền vào `data/trip.json`:**
 
    ```json
+   "plan": {
+     "items": "https://docs.google.com/spreadsheets/d/e/…/pub?gid=…&single=true&output=csv",
+     "days": "https://docs.google.com/spreadsheets/d/e/…/pub?gid=…&single=true&output=csv",
+     "shared": "https://docs.google.com/spreadsheets/d/e/…/pub?gid=…&single=true&output=csv"
+   },
    "fund": {
      "members": ["Hữu", "MiMi", "Khanh", "Trâm"],
      "csv": {
@@ -327,20 +343,17 @@ Làm một lần, khoảng 15 phút. **Lưu ý:** link CSV đã publish là côn
        "contributions": "https://docs.google.com/spreadsheets/d/e/…/pub?gid=…&single=true&output=csv"
      },
      "form": { "url": "https://docs.google.com/forms/d/e/…/viewform", "placeField": "entry.123456789" },
-     "sheet": "https://docs.google.com/spreadsheets/d/…/edit",
-     "shared": [ … giữ nguyên … ]
+     "sheet": "https://docs.google.com/spreadsheets/d/…/edit"
    }
    ```
 
-10. `npm test`, mở trang local → tab `💰 Quỹ` hiện `Cập nhật HH:MM`. Push lên `main`.
-
-Đổi tên hoặc thêm khung giờ sau này: chạy lại `npm run form-options` và cập nhật lựa chọn của câu hỏi Địa điểm. Dòng cũ không khớp tên mới vẫn được tính và hiện ở mục `Không khớp địa điểm` — sửa tên trong Sheet là hết.
+10. `npm test`, mở trang local → lịch trình hiện đủ, footer có `Lịch trình cập nhật HH:MM`, tab `💰 Quỹ` hiện `Cập nhật HH:MM`. Push lên `main`.
 
 ## Cấu trúc thư mục
 
 ```
 index.html              khung trang + script chọn lớp animation
-data/trip.json          toàn bộ nội dung
+data/trip.json          cấu hình: hero, footer, thành viên, link Sheet / Form
 site.webmanifest        tên, màu, icon khi ghim ra màn hình chính (Android)
 assets/img/             ảnh nhiều kích thước
 assets/icons/           favicon (SVG + PNG 32px), apple-touch-icon 180px, icon 192/512px
@@ -354,17 +367,17 @@ css/
     scroll-timeline.css hiệu ứng theo cuộn (lớp A)
     reveal.css          nội dung ngày hiện ra khi cuộn tới / đổi tab
 js/
-  main.js               tải dữ liệu → dựng trang → khởi động
-  lib/                  giờ, đồng hồ, animation, tạo DOM, đọc CSV, định dạng tiền, so tên
-  model/                dữ liệu → model, trạng thái chuyến đi, lưới lịch biểu, sổ quỹ (thuần, có test)
-  views/                hero, tabs, ngày, lịch biểu, panel trạng thái, quỹ, footer, lỗi
-  controllers/          tabs, đồng hồ thời gian thực, bấm lịch biểu, reveal, parallax dự phòng, tải sổ quỹ
-scripts/form-options.js in danh sách địa điểm cho Google Form
-tests/                  node --test
+  main.js               tải cấu hình → bản lưu / Google Sheet → dựng trang → khởi động
+  lib/                  giờ, đồng hồ, animation, tạo DOM, đọc và tải CSV, bảng theo tên cột, định dạng tiền, so tên
+  model/                dữ liệu → model, đọc lịch trình từ Sheet, trạng thái chuyến đi, lưới lịch biểu, sổ quỹ (thuần, có test)
+  views/                hero, tabs, ngày, lịch biểu, panel trạng thái, quỹ, cảnh báo lịch trình, toast cập nhật, footer, lỗi
+  controllers/          tabs, đồng hồ thời gian thực, bấm lịch biểu, reveal, parallax dự phòng, tải sổ quỹ, bản lưu lịch trình
+scripts/apps-script/    form-sync.js — Apps Script đồng bộ dropdown Địa điểm của Form
+tests/                  node --test · fixtures/trip.json (mẫu đầy đủ) · helpers/sheets.js
 docs/                   spec và plan
 ```
 
-Luồng dữ liệu một chiều: `trip.json` → `model` (kiểm tra, tính số liệu) → `views` (dựng DOM) → `controllers` (tương tác, thời gian thực, animation).
+Luồng dữ liệu một chiều: `trip.json` + 3 tab Sheet → `model` (đọc, kiểm tra, tính số liệu) → `views` (dựng DOM) → `controllers` (tương tác, thời gian thực, animation, bản lưu).
 
 ## Deploy
 
@@ -378,6 +391,7 @@ GitHub Pages phục vụ nhánh `main`, thư mục gốc. Push lên `main` là t
 - [Kế hoạch triển khai quỹ](docs/plans/2026-09-14-fund-ledger.md).
 - [Thiết kế tinh gọn giao diện](docs/specs/2026-09-14-ui-polish-design.md) · [Kế hoạch](docs/plans/2026-09-14-ui-polish.md).
 - [Thiết kế lịch biểu](docs/specs/2026-09-15-calendar-view-design.md) · [Kế hoạch](docs/plans/2026-09-15-calendar-view.md).
+- [Thiết kế lịch trình từ Google Sheet](docs/specs/2026-09-15-sheet-plan-design.md) · [Kế hoạch](docs/plans/2026-09-15-sheet-plan.md).
 
 ## Nguồn ảnh
 

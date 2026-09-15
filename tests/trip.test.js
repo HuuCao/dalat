@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { buildTrip, countText } from '../js/model/trip.js';
 
-const raw = JSON.parse(readFileSync(new URL('../data/trip.json', import.meta.url), 'utf8'));
+const raw = JSON.parse(readFileSync(new URL('./fixtures/trip.json', import.meta.url), 'utf8'));
 const trip = buildTrip(raw);
 
 const minimalTrip = (days, hero = { title: 'Test' }) => ({ timezone: '+07:00', hero, days });
@@ -17,6 +17,16 @@ test('trip totals come from the data', () => {
   assert.equal(trip.items.length, 21);
   assert.equal(trip.start.toISOString(), '2026-10-16T00:00:00.000Z');
   assert.equal(trip.end.toISOString(), '2026-10-18T06:00:00.000Z');
+});
+
+test('an empty first or last day widens the trip to its midnight', () => {
+  const built = buildTrip(minimalTrip([
+    { date: '2026-10-13', items: [] },
+    { date: '2026-10-16', items: [validItem] },
+    { date: '2026-10-19', items: [] },
+  ]));
+  assert.equal(built.start.toISOString(), '2026-10-12T17:00:00.000Z');
+  assert.equal(built.end.toISOString(), '2026-10-19T17:00:00.000Z');
 });
 
 test('templates are filled', () => {

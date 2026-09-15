@@ -3,6 +3,7 @@ import { formatShort, formatExact } from '../lib/money.js';
 import {
   describeBucket, describeEntry, describeDay, describeBalance, progressOf, formUrl, placeLabelAt,
 } from '../model/fund.js';
+import { clockText } from '../lib/time.js';
 import { FUND_TAB } from './tabs.js';
 
 const LINK = { target: '_blank', rel: 'noopener noreferrer' };
@@ -169,8 +170,6 @@ export function createFundView({ trip, clock }) {
 
 // ---------- Pieces ----------
 
-const clockText = (ms) => new Date(ms).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-
 function metaText(meta) {
   if (meta.state === 'unlinked') return 'Chưa kết nối Google Sheet';
   if (meta.state === 'cached') return `Dữ liệu lúc ${clockText(meta.fetchedAt)} · đang tải bản mới`;
@@ -333,7 +332,7 @@ function renderContributions(contributions, total, ctx) {
 }
 
 function renderWarnings(warnings) {
-  return h('div', { class: 'fund-warn', role: 'status' },
+  return h('div', { class: 'warn-box', role: 'status' },
     h('strong', { text: `⚠️ ${warnings.length} cảnh báo cần sửa` }),
     h('ul', {}, warnings.map((text) => h('li', { text }))));
 }

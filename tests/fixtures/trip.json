@@ -1,0 +1,75 @@
+{
+  "timezone": "+07:00",
+  "hero": {
+    "eyebrow": "✦ Travel plan · Đà Lạt",
+    "title": "Đà Lạt",
+    "subtitle": "{dates} · {days} ngày {nights} đêm — Let's go",
+    "chips": ["🌿 Nature", "☕ Chill", "📸 Check-in"],
+    "image": { "src": "assets/img/hero-{w}.jpg", "widths": [800, 1600, 2560] },
+    "thumbs": [
+      { "src": "assets/img/thumb-a-{w}.jpg", "widths": [240, 480] },
+      { "src": "assets/img/thumb-b-{w}.jpg", "widths": [240, 480] }
+    ]
+  },
+  "days": [
+    {
+      "date": "2026-10-16",
+      "icon": "🌿",
+      "items": [
+        { "start": "07:00", "end": "09:00", "icon": "🍃", "title": "Đồi chè Cầu Đất — Săn mây, ăn sáng, cà phê", "tag": "Nature", "map": "Đồi chè Cầu Đất Đà Lạt", "budget": 280000 },
+        { "start": "09:15", "end": "10:30", "icon": "☕", "title": "Hidden Land", "tag": "Coffee", "map": "Hidden Land coffee Đà Lạt", "budget": 200000 },
+        { "start": "11:00", "end": "12:15", "icon": "🍗", "title": "Gà nướng + Cơm lam", "tag": "Lunch", "map": "gà nướng cơm lam gần đồi chè Cầu Đất Đà Lạt", "budget": 400000 },
+        { "start": "12:45", "end": "14:00", "icon": "🐈", "title": "Trại Mèo Mướp", "tag": "Cute spot", "map": "Trại Mèo Mướp Đà Lạt", "budget": 440000 },
+        { "start": "14:15", "end": "16:00", "icon": "☕", "title": "Phong Miên quán — Forest slow café", "tag": "Coffee", "map": "Phong Miên quán forest slow café Đà Lạt", "budget": 200000 },
+        { "start": "16:30", "end": "17:45", "icon": "🌫️", "title": "Dốc Sương Nguyệt Ánh", "tag": "Sunset", "map": "Dốc Sương Nguyệt Ánh Đà Lạt", "budget": 0 },
+        { "start": "18:00", "end": "19:00", "icon": "📡", "title": "Tháp Vinaphone Đà Lạt", "tag": "Check-in", "map": "Tháp Vinaphone Đà Lạt", "budget": 0 },
+        { "start": "19:15", "end": "20:30", "icon": "🍢", "title": "Ăn tối — Đồ nướng", "tag": "Dinner", "map": "quán nướng Đà Lạt", "budget": 1200000 },
+        { "start": "20:45", "end": "22:00", "icon": "🍡", "title": "Ăn vặt chợ Đà Lạt", "tag": "Street food", "map": "Chợ Đà Lạt", "budget": 400000 }
+      ]
+    },
+    {
+      "date": "2026-10-17",
+      "icon": "☁️",
+      "note": "Cà phê · Lẩu · Chợ Đà Lạt",
+      "items": [
+        { "start": "07:00", "end": "07:45", "icon": "🥞", "title": "Ăn sáng — Bánh căn", "tag": "Breakfast", "map": "bánh căn Đà Lạt", "budget": 240000 },
+        { "start": "08:00", "end": "10:00", "icon": "🌊", "title": "Floating Town", "tag": "Coffee", "map": "Floating Town Đà Lạt", "budget": 440000 },
+        { "start": "10:15", "end": "11:15", "icon": "☕", "title": "Cà phê — Tự do", "empty": true, "budget": 280000 },
+        { "start": "11:30", "end": "12:30", "icon": "🍚", "title": "Ăn trưa — Tự do", "empty": true, "budget": 400000 },
+        { "start": "13:00", "end": "15:00", "icon": "☕", "title": "Cà phê Chênh Vênh", "tag": "Coffee", "map": "Chênh Vênh coffee Đà Lạt", "budget": 400000 },
+        { "start": "15:30", "end": "17:30", "icon": "⛰️", "title": "Mountain Chill", "tag": "Coffee", "map": "Mountain Chill coffee Đà Lạt", "budget": 280000 },
+        { "start": "18:30", "end": "20:00", "icon": "🍲", "title": "Ăn tối — Lẩu", "tag": "Dinner", "map": "quán lẩu Đà Lạt", "budget": 800000 },
+        { "start": "20:15", "end": "21:30", "icon": "🍡", "title": "Ăn vặt chợ Đà Lạt", "tag": "Street food", "map": "Chợ Đà Lạt", "budget": 200000 }
+      ]
+    },
+    {
+      "date": "2026-10-18",
+      "icon": "🌤️",
+      "note": "Ngày cuối",
+      "items": [
+        { "start": "07:30", "end": "08:30", "icon": "🥖", "title": "Ăn sáng — Tự do", "empty": true, "budget": 240000 },
+        { "start": "08:45", "end": "10:30", "icon": "☕", "title": "Cà phê — Tự do", "empty": true, "budget": 280000 },
+        { "start": "11:00", "end": "12:00", "icon": "🍚", "title": "Ăn trưa — Tự do", "empty": true, "budget": 400000 },
+        { "start": "12:15", "end": "13:00", "icon": "🚗", "title": "Go Home", "tag": "End trip" }
+      ]
+    }
+  ],
+  "fund": {
+    "members": ["Hữu", "MiMi", "Khanh", "Trâm"],
+    "csv": {
+      "expenses": "https://docs.google.com/spreadsheets/d/e/2PACX-1vSuA0xcl9Tbq8NmPv0A1hOmkvrwqIZBZnnHjZeNVZVjJRg1MMPJtbf63CR9JOgdwBiWtF7Ckb-Aca9P/pub?gid=824356129&single=true&output=csv",
+      "contributions": "https://docs.google.com/spreadsheets/d/e/2PACX-1vSuA0xcl9Tbq8NmPv0A1hOmkvrwqIZBZnnHjZeNVZVjJRg1MMPJtbf63CR9JOgdwBiWtF7Ckb-Aca9P/pub?gid=1507554042&single=true&output=csv"
+    },
+    "form": { "url": "https://docs.google.com/forms/d/e/1FAIpQLSc44xadc_jVAsdd_udwt8UFb_Wau4_peIxYNrHqWMDyTkC0IQ/viewform", "placeField": "entry.115103053" },
+    "sheet": "https://docs.google.com/spreadsheets/d/1inFgfHyyBSKzI0HL8awfuHYDIytTq9DOyj_9LPCIB78/edit#gid=824356129",
+    "shared": [
+      { "title": "Vé xe 2 chiều", "icon": "🚌", "budget": 2800000, "note": "700k/người" },
+      { "title": "Khách sạn", "icon": "🏨", "budget": 1080000, "note": "270k/đêm/phòng" },
+      { "title": "Xe máy", "icon": "🛵", "budget": 400000, "note": "100k/xe/ngày" }
+    ]
+  },
+  "footer": {
+    "title": "Đà Lạt Trip Plan · {days} Days · ✦",
+    "note": "Công ty TNHH Du lịch & Sự kiện Gia Đình (10/2026)"
+  }
+}

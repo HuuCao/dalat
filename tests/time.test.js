@@ -91,6 +91,14 @@ test('durationText rounds up to the minute', () => {
   assert.equal(durationText(80 * 60_000), '1 giờ 20 phút');
 });
 
+test('durationText counts whole days from 24 hours, rounding up to the hour', () => {
+  assert.equal(durationText(23 * 3_600_000 + 59 * 60_000), '23 giờ 59 phút');
+  assert.equal(durationText(24 * 3_600_000), '1 ngày');
+  assert.equal(durationText(24 * 3_600_000 + 1), '1 ngày 1 giờ');
+  assert.equal(durationText(32 * 3_600_000 + 20 * 60_000), '1 ngày 9 giờ');
+  assert.equal(durationText(48 * 3_600_000), '2 ngày');
+});
+
 test('localDateOf reads the calendar date in the trip timezone', () => {
   assert.equal(localDateOf(Date.parse('2026-10-16T16:59:00Z'), '+07:00'), '2026-10-16');
   assert.equal(localDateOf(Date.parse('2026-10-16T17:00:00Z'), '+07:00'), '2026-10-17');

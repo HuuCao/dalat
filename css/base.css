@@ -92,6 +92,78 @@ main { padding-bottom: 48px; }
   color: var(--text-sub);
 }
 
+/* Rows to fix in the sheet: the fund tab's warnings and the schedule's. */
+.warn-box {
+  margin-top: 14px;
+  padding: 10px 14px;
+  border: 1px solid #e6c9c3;
+  border-radius: 12px;
+  background: #fbf1ef;
+  color: #7a3b2e;
+  font-size: 12.5px;
+}
+
+.warn-box ul { margin: 6px 0 0; padding-left: 18px; }
+
+/* The summary is the tap target: at least 44px tall inside the box padding. */
+.plan-warn summary {
+  margin: -10px 0;
+  padding: 13px 0;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.plan-warn[open] summary { margin-bottom: 0; }
+
+.plan-warn-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-weight: 700;
+  color: inherit;
+}
+
+/* Above the floating "+ Nhập chi" button (phones) and the now hint. Outside
+   <main>, like them, so position: fixed holds. */
+.update-toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(84px + env(safe-area-inset-bottom));
+  z-index: 26;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: max-content;
+  max-width: calc(100% - 32px);
+  padding: 4px 4px 4px 16px;
+  border-radius: 99px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: 0 8px 24px rgba(16, 30, 25, .3);
+  transform: translateX(-50%);
+}
+
+.update-toast-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.update-toast button {
+  min-height: 44px;
+  border: 0;
+  border-radius: 99px;
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.update-toast-reload { padding: 0 16px; background: var(--live); color: var(--live-ink); }
+.update-toast-close { width: 44px; background: transparent; color: #fff; }
+.update-toast button:focus-visible { outline: 2px solid var(--live); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .update-toast:not([hidden]) { animation: toast-in .24s ease-out both; }
+}
+
 @media (min-width: 761px) {
   .wrap { width: min(940px, calc(100% - 32px - env(safe-area-inset-left) - env(safe-area-inset-right))); }
 }

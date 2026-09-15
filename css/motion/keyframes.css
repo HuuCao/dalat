@@ -96,3 +96,9 @@
 @keyframes rise-right { from { opacity: 0; transform: translate3d(34px, 20px, 0); } }
 @keyframes bg-in { from { opacity: 0; transform: scale(1.22); } }
 @keyframes fade { from { opacity: 0; transform: translateY(6px); } }
+
+/* ---------- UPDATE TOAST (base.css) ---------- */
+/* Opacity only: the toast's own transform centres it. */
+@keyframes toast-in {
+  from { opacity: 0; }
+}

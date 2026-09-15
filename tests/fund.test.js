@@ -4,11 +4,11 @@ import { readFileSync } from 'node:fs';
 import { buildTrip } from '../js/model/trip.js';
 import { parseCsv } from '../js/lib/csv.js';
 import {
-  readTable, parseAmount, splitShares, buildLedger,
+  splitShares, buildLedger,
   describeBucket, describeEntry, describeDay, describeBalance, formUrl, placeLabelAt,
 } from '../js/model/fund.js';
 
-const trip = buildTrip(JSON.parse(readFileSync(new URL('../data/trip.json', import.meta.url), 'utf8')));
+const trip = buildTrip(JSON.parse(readFileSync(new URL('./fixtures/trip.json', import.meta.url), 'utf8')));
 const MEMBERS = ['Hữu', 'MiMi', 'Khanh', 'Trâm'];
 
 // Scenario from the spec: everyone put in 3.000k, Hữu paid the hotel by card,
@@ -37,30 +37,6 @@ const ledgerOf = (expenses = EXPENSES, contributions = CONTRIBUTIONS, now = DURI
   buildLedger(trip, { expenses: parseCsv(expenses), contributions: parseCsv(contributions) }, now);
 const withRows = (...rows) => ledgerOf([EXPENSES, ...rows].join('\n'));
 const balanceSum = (ledger) => ledger.people.reduce((sum, person) => sum + person.balance, 0);
-
-test('readTable finds columns by name, in any order, case or Unicode form', () => {
-  const rows = parseCsv('ghi chú, SỐ TIỀN ,Ai trả,Chia cho,Đi\u0323a điểm\nx,5,Quỹ,,Day 1 · Hidden Land\n,,,,\n');
-  const columns = {
-    place: { names: ['Địa điểm'], required: true },
-    amount: { names: ['Số tiền'], required: true },
-    note: { names: ['Ghi chú'] },
-    enteredBy: { names: ['Người nhập'] },
-  };
-  assert.deepEqual(readTable(rows, 'ChiTieu', columns), [
-    { line: 2, place: 'Day 1 · Hidden Land', amount: '5', note: 'x', enteredBy: '' },
-  ]);
-  assert.throws(() => readTable(parseCsv('Địa điểm\n'), 'ChiTieu', { amount: { names: ['Số tiền'], required: true } }), /ChiTieu: thiếu cột "Số tiền"/);
-  assert.throws(() => readTable([], 'GopQuy', { member: { names: ['Người góp'], required: true } }), /GopQuy: thiếu cột "Người góp"/);
-});
-
-test('amounts keep only digits', () => {
-  assert.equal(parseAmount('260000'), 260000);
-  assert.equal(parseAmount('260.000'), 260000);
-  assert.equal(parseAmount('260,000đ'), 260000);
-  assert.equal(parseAmount(''), null);
-  assert.equal(parseAmount('abc'), null);
-  assert.equal(parseAmount('0'), null);
-});
 
 test('shares split whole dong and always add up', () => {
   assert.deepEqual(splitShares(100000, 3), [33334, 33333, 33333]);
