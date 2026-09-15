@@ -339,6 +339,19 @@ main.has-fab { padding-bottom: 88px; }
 .fund-section { margin-top: 24px; }
 .fund-overview { margin-top: 14px; }
 
+/* Sections are set apart by a full-width band in the page colour, like
+   grouped settings on a phone: negative margins take the band past the
+   card's padding to its edges, and the padding puts the content back. */
+.fund-section + .fund-section {
+  margin: 20px -16px 0;
+  padding: 20px 16px 0;
+  border-top: 8px solid var(--bg);
+}
+
+@media (min-width: 761px) {
+  .fund-section + .fund-section { margin: 24px -22px 0; padding: 24px 22px 0; }
+}
+
 /* Section titles: sentence case with an icon, like the rest of the page. */
 .fund-h {
   margin: 0 0 10px;
