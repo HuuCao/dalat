@@ -6,6 +6,7 @@ import { nowMark } from '../model/calendar.js';
 const FAST_TICK_MS = 1000; // the seconds tile is on screen
 const SLOW_TICK_MS = 15_000;
 const SCROLL_DELAY_MS = 400; // let the opened panel lay out first
+const FLASH_MS = 1200; // two .6s rings (timeline.css)
 // Only real input counts: the page's own scrolling must not look like the
 // viewer is busy.
 const INPUT_EVENTS = ['pointerdown', 'touchstart', 'wheel', 'keydown'];
@@ -18,6 +19,7 @@ export function startStatus({ trip, root, countdown, tabs, clock, hint, calendar
   let offered = null;
   let lastInput = -Infinity;
   let timer = 0;
+  let flashTimer = 0;
 
   for (const type of INPUT_EVENTS) {
     window.addEventListener(type, () => {
@@ -80,16 +82,29 @@ export function startStatus({ trip, root, countdown, tabs, clock, hint, calendar
   }
 
   // Later moves only switch tabs when the slot is not on screen at all, so
-  // "Tất cả" stays open if that is where the viewer is.
-  function moveTo(item, { openDay = false } = {}) {
+  // "Tất cả" stays open if that is where the viewer is. `flash` is for slots
+  // picked on the calendar: the card rings and takes focus once in view.
+  function moveTo(item, { openDay = false, flash = false } = {}) {
     dismiss();
     const el = elements.get(item.id);
     if (!el) return;
     const switchTab = openDay || el.closest('.panel').hidden;
     if (switchTab) tabs.select(item.dayId);
-    const scroll = () => el.scrollIntoView({ behavior: reduceMotion.matches ? 'instant' : 'smooth', block: 'center' });
-    if (switchTab) setTimeout(scroll, SCROLL_DELAY_MS);
-    else scroll();
+    const arrive = () => {
+      el.scrollIntoView({ behavior: reduceMotion.matches ? 'instant' : 'smooth', block: 'center' });
+      if (flash) flashItem(el);
+    };
+    if (switchTab) setTimeout(arrive, SCROLL_DELAY_MS);
+    else arrive();
+  }
+
+  function flashItem(el) {
+    root.querySelector('.item.is-flash')?.classList.remove('is-flash');
+    clearTimeout(flashTimer);
+    void el.offsetWidth; // restart the rings when the same slot is picked again
+    el.classList.add('is-flash');
+    el.focus({ preventScroll: true });
+    flashTimer = setTimeout(() => el.classList.remove('is-flash'), FLASH_MS);
   }
 
   function offer(item) {
@@ -115,6 +130,13 @@ export function startStatus({ trip, root, countdown, tabs, clock, hint, calendar
   });
 
   tick();
+
+  return {
+    show(itemId) {
+      const item = trip.items.find((entry) => entry.id === itemId);
+      if (item) moveTo(item, { openDay: true, flash: true });
+    },
+  };
 }
 
 // On screen only the time chip changes colour; screen readers still hear

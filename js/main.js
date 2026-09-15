@@ -13,6 +13,7 @@ import { renderFooter } from './views/footer.js';
 import { renderError } from './views/error.js';
 import { createTabs } from './controllers/tabs.js';
 import { startStatus } from './controllers/status.js';
+import { startCalendar } from './controllers/calendar.js';
 import { startFund } from './controllers/fund.js';
 import { startReveal } from './controllers/reveal.js';
 import { startScrollFx } from './controllers/scroll-fx.js';
@@ -81,10 +82,11 @@ async function start() {
       switcher: view.calendar.switcher,
       storage: safeStorage(),
     });
-    startStatus({
+    const status = startStatus({
       trip, root: view.main, countdown: view.countdown, tabs, clock, hint: view.hint,
       calendar: view.calendar, calModel: view.calModel,
     });
+    startCalendar({ view: view.calendar, tabs, show: status.show, tabbar: view.tabbar });
     // The fund never takes the schedule down with it.
     if (view.fund) {
       try {
